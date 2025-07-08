@@ -50,13 +50,14 @@ class MasterService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.i(TAG, "MasterService::onCreate")
-        if (this::smsReceiver.isInitialized) return
+//        if (this::smsReceiver.isInitialized) return
     }
 
     override fun onDestroy() {
         Toast.makeText(this, "Killing Foreground Service", Toast.LENGTH_SHORT).show()
         Log.i(TAG, "MasterService::onDestroy")
-        unregisterReceiver(smsReceiver)
+        if (this::smsReceiver != null && this::smsReceiver.isInitialized)
+            unregisterReceiver(smsReceiver)
         stopBackgroundService()
         super.onDestroy()
     }
@@ -119,11 +120,13 @@ class MasterService : Service() {
         whiteListedPhoneNumber = extras?.getString(Constants.WHITE_LISTED_CONTACT_NUMBER) ?: ""
         Log.i(TAG, "Setting secret password as $secretPassword")
         Log.i(TAG, "Setting whitelisted number as $whiteListedPhoneNumber")
-        smsReceiver = SmsReceiver(secretPassword, whiteListedPhoneNumber)
-        baseContext.registerReceiver(
-            smsReceiver,
-            IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)
-        )
+        if (!this::smsReceiver.isInitialized) {
+            smsReceiver = SmsReceiver(secretPassword, whiteListedPhoneNumber)
+            baseContext.registerReceiver(
+                smsReceiver,
+                IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)
+            )
+        }
 
         Log.i(TAG, "MasterService::startingForegroundService")
         Toast.makeText(this, "Starting Foreground Service", Toast.LENGTH_SHORT).show()

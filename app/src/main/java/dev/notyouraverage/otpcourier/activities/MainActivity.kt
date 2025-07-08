@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
             arrayOf(
                 Manifest.permission.RECEIVE_SMS,
                 Manifest.permission.SEND_SMS,
+                Manifest.permission.READ_SMS,
                 Manifest.permission.POST_NOTIFICATIONS,
             ),
             0,

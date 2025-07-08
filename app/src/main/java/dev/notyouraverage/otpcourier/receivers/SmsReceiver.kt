@@ -26,6 +26,7 @@ class SmsReceiver(
 
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.i(TAG, "Using whitelisted numbers as $targetContacts")
+        Log.i(TAG, "Received Action ${intent?.action}")
 
         if (intent?.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
 

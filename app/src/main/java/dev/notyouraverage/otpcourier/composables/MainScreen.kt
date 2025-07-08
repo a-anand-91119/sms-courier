@@ -123,6 +123,9 @@ fun MainScreen() {
             }
 
         }
+        Button(onClick = { /*TODO*/ }) {
+            Text(text = "Read SMS")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

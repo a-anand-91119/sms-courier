@@ -56,6 +56,7 @@ class SmsService : Service() {
                 SmsWorker.SMS_CONTENT to smsMessageData?.rawMessage
             )
         ).build()
+        Log.i(TAG, "Created a work request to forward sms...")
         workManager.enqueue(workRequest)
     }
 
