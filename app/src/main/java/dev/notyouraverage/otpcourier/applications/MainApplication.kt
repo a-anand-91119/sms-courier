@@ -4,7 +4,6 @@ import android.app.Application
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context
 import android.util.Log
 import dev.notyouraverage.otpcourier.constants.Constants.NOTIFICATION_CHANNEL_GENERAL
 
@@ -16,7 +15,7 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         Log.i(TAG, "MainApplication::onCreate")
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         with(
             NotificationChannel(
                 NOTIFICATION_CHANNEL_GENERAL,

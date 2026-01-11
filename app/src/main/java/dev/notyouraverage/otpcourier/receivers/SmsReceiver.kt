@@ -4,134 +4,168 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
-import android.telephony.SmsMessage
 import android.util.Log
-import android.widget.Toast
+import dev.notyouraverage.otpcourier.commands.CommandParser
+import dev.notyouraverage.otpcourier.commands.ParsedCommand
+import dev.notyouraverage.otpcourier.data.SmsCourierDatabase
+import dev.notyouraverage.otpcourier.data.entities.PairingStatus
 import dev.notyouraverage.otpcourier.enums.SmsCommand
 import dev.notyouraverage.otpcourier.models.SmsMessageData
 import dev.notyouraverage.otpcourier.services.foreground.MasterService
-import dev.notyouraverage.otpcourier.services.foreground.MasterService.Companion
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class SmsReceiver(
-    private val secretPassword: String,
-    whiteListedContact: String,
-) : BroadcastReceiver() {
+/**
+ * SmsReceiver processes ALL incoming SMS messages.
+ *
+ * - Checks for OTPC commands from any sender
+ * - Routes commands to MasterService for processing via SmsCommandHandler
+ * - Forwards regular SMS only if there's an active forwarding session for that sender
+ */
+class SmsReceiver : BroadcastReceiver() {
 
     companion object {
-        private val TAG by lazy { SmsReceiver::class.java.simpleName }
+        private const val TAG = "OTPC:SmsReceiver"
     }
-
-    private val targetContacts = listOf(whiteListedContact)
-    private val commandPattern = Regex("OTPC\\s+(start|stop)\\s+(\\S+)")
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.i(TAG, "Using whitelisted numbers as $targetContacts")
-        Log.i(TAG, "Received Action ${intent?.action}")
+        if (context == null || intent?.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
 
-        if (intent?.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
+        val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+        if (messages.isEmpty()) return
 
-        val extractMessages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
-        Log.i(
-            TAG,
-            "Received sms from ${processOriginatingAddress(extractMessages[0].originatingAddress)}"
-        )
-        Toast.makeText(
-            context,
-            "Received sms from ${processOriginatingAddress(extractMessages[0].originatingAddress)}",
-            Toast.LENGTH_SHORT
-        ).show()
-        val commandMessage =
-            extractMessages.filter { message ->
-                targetContacts.contains(
-                    processOriginatingAddress(
-                        message.originatingAddress
-                    )
-                )
+        // Group message parts by sender (for multipart SMS)
+        val messagesBySender = messages.groupBy { it.originatingAddress ?: "Unknown" }
+
+        messagesBySender.forEach { (sender, parts) ->
+            // Combine multipart SMS
+            val fullMessage = parts.joinToString("") { it.messageBody ?: "" }
+
+            Log.d(TAG, "Received SMS from $sender: ${fullMessage.take(50)}...")
+
+            // Try to parse as OTPC command
+            val command = CommandParser.parse(sender, fullMessage)
+
+            if (command != null) {
+                Log.i(TAG, "Parsed OTPC command: ${command::class.simpleName} from $sender")
+                handleCommand(context, command, sender, fullMessage)
+            } else {
+                // Not a command - check if we should forward this regular SMS
+                handleRegularSms(context, sender, fullMessage)
             }
-                .firstOrNull { message -> matchesCommandPattern(message.messageBody.trim()) }
-
-        if (commandMessage != null) {
-            val smsCommand =
-                extractCommandAndPassword(
-                    commandMessage.originatingAddress,
-                    commandMessage.messageBody
-                )
-            if (smsCommand?.secretPassword != secretPassword) return
-
-            when (smsCommand.command?.uppercase()) {
-                SmsCommand.START.toString() -> {
-                    sendToMasterService(
-                        context,
-                        MasterService.START_BACKGROUND,
-                        null
-                    )
-                }
-
-                SmsCommand.STOP.toString() -> {
-                    sendToMasterService(
-                        context,
-                        MasterService.STOP_BACKGROUND,
-                        null
-                    )
-                }
-            }
-            Log.v(TAG, smsCommand.toString())
-        } else {
-            extractMessages.map(this::getSmsMessageData)
-                .forEach { smsMessageData ->
-                    sendToMasterService(
-                        context,
-                        MasterService.SEND_DATA,
-                        smsMessageData
-                    )
-                }
         }
     }
 
-    private fun processOriginatingAddress(originatingAddress: String?): String? {
-        return originatingAddress?.trim()?.replace(" ", "")?.takeLast(10)
-    }
+    private fun handleCommand(context: Context, command: ParsedCommand, sender: String, rawMessage: String) {
+        val intent = Intent(context, MasterService::class.java).apply {
+            action = MasterService.PROCESS_COMMAND
+            putExtra(MasterService.EXTRA_SENDER, sender)
+            putExtra(MasterService.EXTRA_RAW_MESSAGE, rawMessage)
 
-    private fun getSmsMessageData(smsMessage: SmsMessage?): SmsMessageData {
-        return SmsMessageData(
-            sender = smsMessage?.originatingAddress ?: "Unknown",
-            command = SmsCommand.SEND_TO_WORKER.toString(),
-            rawMessage = smsMessage?.messageBody ?: "",
-            secretPassword = "null"
-        )
-    }
-
-    private fun sendToMasterService(
-        context: Context?,
-        action: String,
-        smsMessageData: SmsMessageData?
-    ) {
-        Log.i(TAG, smsMessageData.toString())
-        Intent(context, MasterService::class.java).also {
-            it.setAction(action)
-            it.putExtra(MasterService.SMS_DATA, smsMessageData)
-            context?.startService(it)
+            // Include command-specific data
+            when (command) {
+                is ParsedCommand.PairRequest -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "PAIR_REQUEST")
+                }
+                is ParsedCommand.PairApproved -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "PAIR_APPROVED")
+                }
+                is ParsedCommand.PairRejected -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "PAIR_REJECTED")
+                }
+                is ParsedCommand.Unpair -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "UNPAIR")
+                }
+                is ParsedCommand.AuthRequest -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "AUTH_REQUEST")
+                }
+                is ParsedCommand.AuthChallenge -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "AUTH_CHALLENGE")
+                    putExtra(MasterService.EXTRA_NONCE, command.nonce)
+                }
+                is ParsedCommand.StartForward -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "START_FORWARD")
+                    putExtra(MasterService.EXTRA_PASSWORD, command.password)
+                    command.durationMinutes?.let {
+                        putExtra(MasterService.EXTRA_DURATION, it)
+                    }
+                }
+                is ParsedCommand.StopForward -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "STOP_FORWARD")
+                }
+                is ParsedCommand.ForwardedData -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "FWD")
+                    putExtra(MasterService.EXTRA_ORIGINAL_SENDER, command.originalSender)
+                    putExtra(MasterService.EXTRA_FORWARDED_CONTENT, command.message)
+                }
+                is ParsedCommand.ForwardedDataEncrypted -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "FWDE")
+                    putExtra(MasterService.EXTRA_FORWARDED_CONTENT, command.encryptedContent)
+                }
+                is ParsedCommand.LegacyStart -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "LEGACY_START")
+                    putExtra(MasterService.EXTRA_PASSWORD, command.password)
+                }
+                is ParsedCommand.LegacyStop -> {
+                    putExtra(MasterService.EXTRA_COMMAND_TYPE, "LEGACY_STOP")
+                    putExtra(MasterService.EXTRA_PASSWORD, command.password)
+                }
+                is ParsedCommand.Unknown -> {
+                    // Don't send unknown commands to the service
+                    Log.w(TAG, "Unknown command from $sender, ignoring")
+                    return
+                }
+            }
         }
+        context.startService(intent)
     }
 
-    private fun extractCommandAndPassword(
-        originatingAddress: String?,
-        messageBody: String?
-    ): SmsMessageData? {
-        val matchResult = messageBody?.trim()?.let { commandPattern.find(it) }
+    private fun handleRegularSms(context: Context, sender: String, message: String) {
+        // Check if there's an active forwarding session for this sender
+        // This runs async but we don't block the receiver
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val database = SmsCourierDatabase.getDatabase(context)
+                val sessionDao = database.forwardingSessionDao()
+                val deviceDao = database.pairedDeviceDao()
 
-        return if (matchResult != null && matchResult.groupValues.size == 3) {
-            SmsMessageData(
-                sender = processOriginatingAddress(originatingAddress) ?: "Unknown",
-                command = matchResult.groupValues[1],
-                rawMessage = messageBody,
-                secretPassword = matchResult.groupValues[2]
-            )
-        } else null
+                // Check for active sessions where we are the TARGET (sending SMS to this device)
+                val activeSessions = sessionDao.getActiveSessionsList()
 
-    }
+                if (activeSessions.isNotEmpty()) {
+                    // We have active forwarding sessions - forward this SMS to all active sources
+                    activeSessions.forEach { session ->
+                        // Get the source device that requested forwarding
+                        val sourceDevice = deviceDao.getDeviceByPhoneNumber(session.devicePhoneNumber)
 
-    private fun matchesCommandPattern(message: String): Boolean {
-        return message.matches(commandPattern)
+                        if (sourceDevice != null && sourceDevice.status == PairingStatus.APPROVED) {
+                            Log.i(TAG, "Forwarding SMS from $sender to ${session.devicePhoneNumber} (encrypted=${session.encryptionKey != null})")
+
+                            // Create forwarded message with encryption key
+                            val smsData = SmsMessageData(
+                                sender = sender,
+                                command = SmsCommand.FORWARD_SMS.toString(),
+                                rawMessage = message,
+                                secretPassword = "",
+                                targetPhoneNumber = session.devicePhoneNumber,
+                                encryptionKey = session.encryptionKey,
+                            )
+
+                            Intent(context, MasterService::class.java).also {
+                                it.action = MasterService.FORWARD_SMS
+                                it.putExtra(MasterService.SMS_DATA, smsData)
+                                context.startService(it)
+                            }
+
+                            // Increment forwarded message count
+                            sessionDao.incrementMessagesForwarded(session.id)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking forwarding sessions", e)
+            }
+        }
     }
 }

@@ -39,6 +39,15 @@
 
         <service android:name=".services.background.SmsService" />
 
+        <receiver
+            android:name=".receivers.PairingActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="dev.notyouraverage.otpcourier.ACTION_APPROVE_PAIRING" />
+                <action android:name="dev.notyouraverage.otpcourier.ACTION_REJECT_PAIRING" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

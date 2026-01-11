@@ -1,0 +1,78 @@
+package dev.notyouraverage.otpcourier.repository
+
+import dev.notyouraverage.otpcourier.data.dao.ForwardingSessionDao
+import dev.notyouraverage.otpcourier.data.entities.ForwardingSession
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+
+class ForwardingSessionRepository(
+    private val forwardingSessionDao: ForwardingSessionDao,
+) {
+    private val ioDispatcher = Dispatchers.IO
+
+    fun getActiveSessions(): Flow<List<ForwardingSession>> =
+        forwardingSessionDao.getActiveSessions()
+
+    suspend fun getActiveSessionsList(): List<ForwardingSession> = withContext(ioDispatcher) {
+        forwardingSessionDao.getActiveSessionsList()
+    }
+
+    suspend fun getActiveSessionForDevice(phoneNumber: String): ForwardingSession? =
+        withContext(ioDispatcher) {
+            forwardingSessionDao.getActiveSessionForDevice(phoneNumber)
+        }
+
+    suspend fun getSessionById(sessionId: Long): ForwardingSession? = withContext(ioDispatcher) {
+        forwardingSessionDao.getSessionById(sessionId)
+    }
+
+    fun getAllSessions(): Flow<List<ForwardingSession>> =
+        forwardingSessionDao.getAllSessions()
+
+    fun getSessionsForDevice(phoneNumber: String): Flow<List<ForwardingSession>> =
+        forwardingSessionDao.getSessionsForDevice(phoneNumber)
+
+    suspend fun startSession(devicePhoneNumber: String, durationMinutes: Int, encryptionKey: String? = null): Long =
+        withContext(ioDispatcher) {
+            val now = System.currentTimeMillis()
+            val expiresAt = now + (durationMinutes * 60 * 1000L)
+            val session = ForwardingSession(
+                devicePhoneNumber = devicePhoneNumber,
+                startedAt = now,
+                durationMinutes = durationMinutes,
+                expiresAt = expiresAt,
+                isActive = true,
+                encryptionKey = encryptionKey,
+            )
+            forwardingSessionDao.insertSession(session)
+        }
+
+    suspend fun endSession(sessionId: Long, stoppedBy: String) = withContext(ioDispatcher) {
+        forwardingSessionDao.endSession(sessionId, stoppedBy)
+    }
+
+    suspend fun endSessionForDevice(phoneNumber: String, stoppedBy: String) = withContext(ioDispatcher) {
+        forwardingSessionDao.endSessionForDevice(phoneNumber, stoppedBy)
+    }
+
+    suspend fun expireSessions() = withContext(ioDispatcher) {
+        forwardingSessionDao.expireSessions()
+    }
+
+    suspend fun recordForwardedMessage(sessionId: Long) = withContext(ioDispatcher) {
+        forwardingSessionDao.incrementMessagesForwarded(sessionId)
+    }
+
+    suspend fun updateSessionDuration(sessionId: Long, durationMinutes: Int) = withContext(ioDispatcher) {
+        val session = forwardingSessionDao.getSessionById(sessionId)
+        if (session != null) {
+            val newExpiresAt = session.startedAt + (durationMinutes * 60 * 1000L)
+            forwardingSessionDao.updateSessionDuration(sessionId, durationMinutes, newExpiresAt)
+        }
+    }
+
+    suspend fun getSessionCountForDevice(phoneNumber: String): Int = withContext(ioDispatcher) {
+        forwardingSessionDao.getSessionCountForDevice(phoneNumber)
+    }
+}
