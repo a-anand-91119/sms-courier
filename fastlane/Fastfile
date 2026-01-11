@@ -1,0 +1,52 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Increment version code"
+  lane :increment_vc do
+    increment_version_code(
+      gradle_file_path: "./app/build.gradle",
+    )
+  end
+
+ desc "Create and sign a new build"
+  lane :build do
+    gradle(tasks: ["clean", "assembleRelease", "bundleRelease"])
+  end
+
+  desc "Submit a new Beta Build to Crashlytics Beta"
+  lane :beta do
+    gradle(task: "clean assembleRelease")
+    crashlytics
+#     upload_to_play_store(
+#       track: 'internal',
+#       aab: 'app/build/outputs/bundle/release/app-release.aab',
+#       release_status: 'draft'
+#     )
+  end
+
+  desc "Deploy a new version to the Google Play"
+  lane :deploy do
+    gradle(task: "clean assembleRelease")
+    upload_to_play_store
+  end
+end

@@ -11,12 +11,6 @@ cache:
     - vendor/bundle
 
 before_script:
-  - |
-    if ! rbenv versions | grep -q "$(cat .ruby-version)"; then
-      apt-get update -qq && apt-get install -y -qq libffi-dev libyaml-dev
-      rbenv install $(cat .ruby-version) || true
-    fi
-  - rbenv global $(cat .ruby-version) || true
   - bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs $(nproc)
 
 test:
@@ -50,5 +44,5 @@ beta:
       - main
 
 variables:
-  KUBERNETES_MEMORY_REQUEST: 2Gi
-  KUBERNETES_MEMORY_LIMIT: 2Gi
+  KUBERNETES_MEMORY_REQUEST: 4Gi
+  KUBERNETES_MEMORY_LIMIT: 4Gi
