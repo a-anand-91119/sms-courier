@@ -19,11 +19,11 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "dev.notyouraverage.otpcourier"
+    namespace = "dev.notyouraverage.smscourier"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "dev.notyouraverage.otpcourier"
+        applicationId = "dev.notyouraverage.smscourier"
         minSdk = 34
         targetSdk = 34
         versionCode = 1

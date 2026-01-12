@@ -11,3 +11,6 @@ local.properties
 release-keystore.properties
 sms-courier-release-keystore.jks
 .claude
+docs
+fastlane/report.xml
+fastlane/README.md

@@ -20,11 +20,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.OTPCourier">
+        android:theme="@style/Theme.smscourier">
         <activity
             android:name=".activities.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.OTPCourier">
+            android:theme="@style/Theme.smscourier">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -43,8 +43,8 @@
             android:name=".receivers.PairingActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="dev.notyouraverage.otpcourier.ACTION_APPROVE_PAIRING" />
-                <action android:name="dev.notyouraverage.otpcourier.ACTION_REJECT_PAIRING" />
+                <action android:name="dev.notyouraverage.smscourier.ACTION_APPROVE_PAIRING" />
+                <action android:name="dev.notyouraverage.smscourier.ACTION_REJECT_PAIRING" />
             </intent-filter>
         </receiver>
 
