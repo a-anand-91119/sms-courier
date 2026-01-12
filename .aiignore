@@ -8,6 +8,4 @@
 .externalNativeBuild
 .cxx
 local.properties
-release-keystore.properties
-sms-courier-release-keystore.jks
 .claude
