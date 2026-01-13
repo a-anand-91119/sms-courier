@@ -16,10 +16,14 @@
 default_platform(:android)
 
 platform :android do
+  # ==================== TESTING ====================
+
   desc "Runs all the tests"
   lane :test do
     gradle(task: "test")
   end
+
+  # ==================== VERSIONING ====================
 
   desc "Increment version code"
   lane :increment_vc do
@@ -28,46 +32,167 @@ platform :android do
     )
   end
 
- desc "Create and sign a new build"
+  # ==================== BUILDING ====================
+
+  desc "Create and sign a new build"
   lane :build do
     gradle(tasks: ["clean", "assembleRelease", "bundleRelease"])
   end
+
+  desc "Build debug APK and test APK for screenshots"
+  lane :build_for_screenshots do
+    gradle(tasks: ["assembleDebug", "assembleDebugAndroidTest"])
+  end
+
+  # ==================== SCREENSHOTS ====================
+
+  desc "Capture screenshots using an emulator"
+  lane :screenshots do
+    build_for_screenshots
+    screengrab
+  end
+
+  # ==================== METADATA ====================
+
+  desc "Generate changelog from git commits"
+  lane :generate_changelog do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"] || "1"
+
+    changelog = changelog_from_git_commits(
+      commits_count: 20,
+      pretty: "- %s",
+      merge_commit_filtering: "exclude_merges"
+    )
+
+    # Write changelog for specific version
+    changelog_path = "fastlane/metadata/android/en-US/changelogs/#{version_code}.txt"
+    File.write(changelog_path, changelog)
+
+    UI.success("Changelog written to #{changelog_path}")
+  end
+
+  desc "Upload only metadata (descriptions, changelogs) to Play Store"
+  lane :upload_metadata do
+    upload_to_play_store(
+      track: "internal",
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Upload only screenshots to Play Store"
+  lane :upload_screenshots do
+    upload_to_play_store(
+      track: "internal",
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+  end
+
+  desc "Upload all store assets (metadata + screenshots) to Play Store"
+  lane :upload_store_assets do
+    upload_to_play_store(
+      track: "internal",
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+  end
+
+  # ==================== DEPLOYMENT ====================
 
   desc "Submit a new Beta Build to Crashlytics Beta"
   lane :beta do
     gradle(task: "clean assembleRelease")
     crashlytics
-#     upload_to_play_store(
-#       track: 'internal',
-#       aab: 'app/build/outputs/bundle/release/app-release.aab',
-#       release_status: 'draft'
-#     )
   end
 
   desc "Submit a new Internal Build to Play Store"
   lane :internal do
-    gradle(task: "clean assembleRelease")
-    upload_to_play_store(track: 'internal', apk: 'app/build/outputs/apk/release/app-release.apk')
+    gradle(task: "clean assembleRelease bundleRelease")
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
   end
+
+  desc "Submit internal build with metadata and changelog"
+  lane :internal_with_metadata do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"] || "1"
+
+    # Generate changelog from git commits
+    generate_changelog(version_code: version_code)
+
+    # Build and upload
+    gradle(task: "clean assembleRelease bundleRelease")
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  # ==================== PROMOTIONS ====================
 
   desc "Promote Internal to Alpha"
   lane :promote_internal_to_alpha do
-    upload_to_play_store(track: 'internal', track_promote_to: 'alpha')
+    upload_to_play_store(track: "internal", track_promote_to: "alpha")
   end
 
   desc "Promote Alpha to Beta"
   lane :promote_alpha_to_beta do
-    upload_to_play_store(track: 'alpha', track_promote_to: 'beta')
+    upload_to_play_store(track: "alpha", track_promote_to: "beta")
   end
 
   desc "Promote Beta to Production"
   lane :promote_beta_to_production do
-    upload_to_play_store(track: 'beta', track_promote_to: 'production')
+    upload_to_play_store(track: "beta", track_promote_to: "production")
   end
 
-  desc "Deploy a new version to the Google Play"
+  # ==================== FULL PIPELINES ====================
+
+  desc "Full release: test, build, and deploy to internal track with metadata"
+  lane :full_release do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"] || "1"
+
+    test
+    generate_changelog(version_code: version_code)
+    build
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+  end
+
+  desc "Deploy a new version to Google Play Production"
   lane :deploy do
-    gradle(task: "clean assembleRelease")
-    upload_to_play_store
+    gradle(task: "clean assembleRelease bundleRelease")
+    upload_to_play_store(
+      track: "production",
+      aab: "app/build/outputs/bundle/release/app-release.aab"
+    )
   end
 end

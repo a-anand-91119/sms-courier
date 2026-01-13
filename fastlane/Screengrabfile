@@ -1,0 +1,41 @@
+# Screengrabfile - Fastlane screengrab configuration
+# https://docs.fastlane.tools/actions/screengrab/
+
+# Package name of the app
+app_package_name("dev.notyouraverage.smscourier")
+
+# Test class to run for screenshots
+use_tests_in_classes(["dev.notyouraverage.smscourier.ScreenshotTest"])
+
+# Path to debug APK
+app_apk_path("app/build/outputs/apk/debug/app-debug.apk")
+
+# Path to test APK
+tests_apk_path("app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk")
+
+# Locales to capture (add more as needed)
+locales(["en-US"])
+
+# Clear old screenshots before capturing new ones
+clear_previous_screenshots(true)
+
+# Output directory for screenshots
+output_directory("fastlane/metadata/android")
+
+# Exit on first test failure
+exit_on_test_failure(false)
+
+# Reinstall app before running tests
+reinstall_app(true)
+
+# Use ADB instead of USB (for CI emulator)
+use_adb_root(false)
+
+# Specific device serial (leave empty for auto-detect)
+# specific_device("")
+
+# Launch arguments for the app
+# launch_arguments(["--screenshots"])
+
+# Skip open summary at the end
+skip_open_summary(true)
