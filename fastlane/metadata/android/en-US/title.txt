@@ -1,1 +1,1 @@
-OTP Courier - SMS Forwarder
+SMS Courier
