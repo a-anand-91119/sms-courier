@@ -84,9 +84,13 @@ build:
       echo "ANDROID_HOME=$ANDROID_HOME"
       echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
 
+      echo "=== Accepting SDK licenses ==="
+      mkdir -p $ANDROID_SDK_ROOT/licenses
+      echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+      echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+
       echo "=== Installing Android SDK components ==="
-      yes | sdkmanager --licenses || true
-      sdkmanager "system-images;android-34;google_apis;x86_64" "emulator" "platform-tools" "platforms;android-34"
+      sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-34;google_apis;x86_64" "emulator" "platform-tools" "platforms;android-34"
 
       echo "=== Verifying emulator installation ==="
       which emulator
