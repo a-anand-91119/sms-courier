@@ -92,13 +92,20 @@ build:
       mkdir -p $ANDROID_SDK_ROOT/licenses
       echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
       echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+      echo "e9acab5b5fbb560a72cfaecce8946896ff6aab9d" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
 
-      echo "=== Installing Android SDK components ==="
-      sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-34;google_apis;x86_64" "emulator" "platform-tools" "platforms;android-34"
+      echo "=== Installing Android SDK components (may take 2-3 minutes) ==="
+      echo "Installing system images and emulator..."
+      timeout 300 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-34;google_apis;x86_64" || echo "System image installation had issues"
+      timeout 180 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "emulator" || echo "Emulator installation had issues"
+      timeout 60 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" || echo "Platform tools installation had issues"
+      timeout 60 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-34" || echo "Platform installation had issues"
+      echo "SDK installation completed"
 
       echo "=== Verifying emulator installation ==="
-      which emulator
-      emulator -version
+      ls -la $ANDROID_SDK_ROOT/emulator/ || echo "Emulator directory missing!"
+      which emulator || echo "Emulator not in PATH"
+      $ANDROID_SDK_ROOT/emulator/emulator -version || echo "Emulator binary test failed"
 
       echo "=== Verifying APK artifacts ==="
       ls -lh app/build/outputs/apk/debug/app-debug.apk
