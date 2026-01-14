@@ -1,2 +1,2 @@
-json_key_file("sms-courier-a3c4e-e9b5a0526b8b.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+json_key_file("sms-courier-a3c4e-ccbbe74686c5.json")
 package_name("dev.notyouraverage.smscourier")
