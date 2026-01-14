@@ -20,12 +20,12 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "dev.notyouraverage.smscourier"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "dev.notyouraverage.smscourier"
         minSdk = 34
-        targetSdk = 34
+        targetSdk = 35
         versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
         versionName = "0.0.1-${System.getenv("VERSION_SHA") ?: "dev"}"
 
@@ -52,6 +52,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
         }
     }
     compileOptions {
@@ -115,6 +118,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+//    androidTestImplementation(libs.screengrab)
+//    androidTestImplementation(libs.uiautomator)
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

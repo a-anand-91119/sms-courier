@@ -1,0 +1,28 @@
+SMS Courier enables secure SMS forwarding between two Android devices using a simple pairing system.
+
+<b>Key Features:</b>
+
+- <b>Secure Pairing</b>: Pair devices using a password-protected handshake
+- <b>Controlled Forwarding</b>: Start and stop forwarding sessions on demand
+- <b>Session Management</b>: Set duration limits for forwarding sessions
+- <b>Privacy Focused</b>: All communication happens via SMS, no cloud servers involved
+
+<b>How It Works:</b>
+
+1. Install the app on both devices
+2. Send a pairing request from the source device
+3. Approve the pairing on the target device with a password
+4. Start forwarding sessions when needed
+5. Receive SMS messages from the target device on your source device
+
+<b>Use Cases:</b>
+
+- Receive OTP codes on a secondary device
+- Monitor SMS on a device you don't carry daily
+- Forward important messages between personal and work phones
+
+<b>Security:</b>
+
+- Passwords are hashed using bcrypt
+- Failed authentication attempts trigger device lockout
+- All commands use a secure protocol prefix

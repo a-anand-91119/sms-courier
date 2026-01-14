@@ -19,14 +19,14 @@ import kotlinx.coroutines.launch
 /**
  * SmsReceiver processes ALL incoming SMS messages.
  *
- * - Checks for OTPC commands from any sender
+ * - Checks for SMSC commands from any sender
  * - Routes commands to MasterService for processing via SmsCommandHandler
  * - Forwards regular SMS only if there's an active forwarding session for that sender
  */
 class SmsReceiver : BroadcastReceiver() {
 
     companion object {
-        private const val TAG = "OTPC:SmsReceiver"
+        private const val TAG = "SMSC:SmsReceiver"
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -44,11 +44,11 @@ class SmsReceiver : BroadcastReceiver() {
 
             Log.d(TAG, "Received SMS from $sender: ${fullMessage.take(50)}...")
 
-            // Try to parse as OTPC command
+            // Try to parse as SMSC command
             val command = CommandParser.parse(sender, fullMessage)
 
             if (command != null) {
-                Log.i(TAG, "Parsed OTPC command: ${command::class.simpleName} from $sender")
+                Log.i(TAG, "Parsed SMSC command: ${command::class.simpleName} from $sender")
                 handleCommand(context, command, sender, fullMessage)
             } else {
                 // Not a command - check if we should forward this regular SMS

@@ -10,7 +10,7 @@ import dev.notyouraverage.smscourier.services.foreground.MasterService
 class PairingActionReceiver : BroadcastReceiver() {
 
     companion object {
-        private const val TAG = "OTPC:PairingReceiver"
+        private const val TAG = "SMSC:PairingReceiver"
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {

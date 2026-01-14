@@ -10,7 +10,6 @@ lifecycleRuntimeKtx = "2.8.4"
 activityCompose = "1.9.1"
 composeBom = "2024.08.00"
 workRuntimeKtx = "2.9.1"
-ktlint = "12.1.1"
 spotless = "6.25.0"
 datastorePreferences = "1.1.1"
 room = "2.6.1"
@@ -21,6 +20,8 @@ mockk = "1.13.8"
 coroutinesTest = "1.7.3"
 turbine = "1.0.0"
 robolectric = "4.11.1"
+screengrab = "2.1.1"
+uiautomator = "2.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,6 +50,8 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+screengrab = { group = "tools.fastlane", name = "screengrab", version.ref = "screengrab" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

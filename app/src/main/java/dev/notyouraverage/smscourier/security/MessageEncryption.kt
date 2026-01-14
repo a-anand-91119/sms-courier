@@ -14,7 +14,7 @@ import javax.crypto.spec.SecretKeySpec
  * Uses AES-256-CBC with PBKDF2 key derivation.
  */
 object MessageEncryption {
-    private const val TAG = "OTPC:Encryption"
+    private const val TAG = "SMSC:Encryption"
     private const val ALGORITHM = "AES/CBC/PKCS5Padding"
     private const val KEY_ALGORITHM = "AES"
     private const val KEY_DERIVATION = "PBKDF2WithHmacSHA256"
