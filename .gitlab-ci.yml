@@ -56,10 +56,14 @@ build:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - bundle exec fastlane build
+    # Also build debug APKs for screenshots
+    - bundle exec fastlane build_for_screenshots
   artifacts:
     paths:
       - app/build/outputs/bundle/release/app-release.aab
       - app/build/outputs/apk/release/app-release.apk
+      - app/build/outputs/apk/debug/app-debug.apk
+      - app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     expire_in: 1 week
   rules:
 #    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -96,14 +100,25 @@ build:
       which emulator
       emulator -version
 
-      echo "=== Building APKs ==="
-      bundle exec fastlane build_for_screenshots
+      echo "=== Verifying APK artifacts ==="
+      ls -lh app/build/outputs/apk/debug/app-debug.apk
+      ls -lh app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 
-      echo "=== Creating AVD ==="
+      echo "=== Creating AVD with minimal hardware profile ==="
       echo "no" | avdmanager create avd -n test -k "system-images;android-34;google_apis;x86_64" --force --device "pixel_6"
 
-      echo "=== Starting emulator ==="
-      $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -memory 4096 -partition-size 4096 -wipe-data &
+      echo "=== Starting emulator with optimized settings ==="
+      $ANDROID_SDK_ROOT/emulator/emulator -avd test \
+        -no-window \
+        -no-audio \
+        -no-boot-anim \
+        -gpu swiftshader_indirect \
+        -no-snapshot \
+        -memory 4096 \
+        -cores 2 \
+        -partition-size 4096 \
+        -wipe-data \
+        -qemu -enable-kvm 2>/dev/null || true &
       EMULATOR_PID=$!
       echo "Emulator started with PID $EMULATOR_PID"
 
@@ -150,6 +165,11 @@ screenshots:
   image: fabernovel/android:api-34-v1.10.1
   stage: screenshots
   <<: *emulator_setup
+  dependencies:
+    - build  # Use APK artifacts from build job
+  needs:
+    - build
+  timeout: 30m  # Increased timeout for emulator boot and screenshot capture
   variables:
     KUBERNETES_MEMORY_REQUEST: 8Gi
     KUBERNETES_MEMORY_LIMIT: 8Gi
