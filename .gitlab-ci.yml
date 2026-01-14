@@ -1,7 +1,6 @@
 stages:
   - test
   - build
-  - screenshots
   - deploy
 
 # ====================
@@ -56,148 +55,15 @@ build:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - bundle exec fastlane build
-    # Also build debug APKs for screenshots
-    - bundle exec fastlane build_for_screenshots
   artifacts:
     paths:
       - app/build/outputs/bundle/release/app-release.aab
       - app/build/outputs/apk/release/app-release.apk
-      - app/build/outputs/apk/debug/app-debug.apk
-      - app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     expire_in: 1 week
   rules:
 #    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_BRANCH == "feature/automated_deployment"
 
-# ====================
-# SCREENSHOTS (with emulator)
-# ====================
-
-.emulator_template: &emulator_setup
-  before_script:
-    - |
-      set -e  # Exit on error
-      echo "=== Installing Ruby dependencies ==="
-      bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs $(nproc)
-
-      echo "=== Setting up Android SDK paths ==="
-      export ANDROID_SDK_ROOT=/opt/android/sdk
-      export ANDROID_HOME=/opt/android/sdk
-      export PATH=$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
-
-      echo "ANDROID_HOME=$ANDROID_HOME"
-      echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-
-      echo "=== Accepting SDK licenses ==="
-      mkdir -p $ANDROID_SDK_ROOT/licenses
-      echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
-      echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
-      echo "e9acab5b5fbb560a72cfaecce8946896ff6aab9d" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
-
-      echo "=== Installing Android SDK components (may take 2-3 minutes) ==="
-      echo "Installing system images and emulator..."
-      timeout 300 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "system-images;android-34;google_apis;x86_64" || echo "System image installation had issues"
-      timeout 180 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "emulator" || echo "Emulator installation had issues"
-      timeout 60 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" || echo "Platform tools installation had issues"
-      timeout 60 sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-34" || echo "Platform installation had issues"
-      echo "SDK installation completed"
-
-      echo "=== Verifying emulator installation ==="
-      ls -la $ANDROID_SDK_ROOT/emulator/ || echo "Emulator directory missing!"
-      which emulator || echo "Emulator not in PATH"
-      $ANDROID_SDK_ROOT/emulator/emulator -version || echo "Emulator binary test failed"
-
-      echo "=== Verifying APK artifacts ==="
-      ls -lh app/build/outputs/apk/debug/app-debug.apk
-      ls -lh app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-
-      echo "=== Creating AVD with minimal hardware profile ==="
-      echo "no" | avdmanager create avd -n test -k "system-images;android-34;google_apis;x86_64" --force --device "pixel_6"
-
-      echo "=== Starting emulator with optimized settings ==="
-      $ANDROID_SDK_ROOT/emulator/emulator -avd test \
-        -no-window \
-        -no-audio \
-        -no-boot-anim \
-        -gpu swiftshader_indirect \
-        -no-snapshot \
-        -memory 4096 \
-        -cores 2 \
-        -partition-size 4096 \
-        -wipe-data \
-        -qemu -enable-kvm 2>/dev/null || true &
-      EMULATOR_PID=$!
-      echo "Emulator started with PID $EMULATOR_PID"
-
-      echo "=== Waiting for device to be online ==="
-      adb wait-for-device
-      echo "Device detected by ADB"
-
-      echo "=== Waiting for boot to complete ==="
-      timeout=300
-      while [ $timeout -gt 0 ]; do
-        boot_status=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r\n' || echo "")
-        if [ "$boot_status" = "1" ]; then
-          echo "Boot completed!"
-          break
-        fi
-        echo "Waiting for boot... ($timeout seconds remaining)"
-        sleep 5
-        timeout=$((timeout - 5))
-      done
-
-      if [ $timeout -le 0 ]; then
-        echo "ERROR: Emulator boot timeout"
-        adb devices
-        exit 1
-      fi
-
-      echo "=== Waiting for system to settle ==="
-      sleep 15
-
-      echo "=== Verifying emulator ==="
-      adb devices -l
-      adb shell getprop ro.build.version.sdk
-
-      echo "=== Configuring emulator for screenshots ==="
-      adb shell settings put global window_animation_scale 0
-      adb shell settings put global transition_animation_scale 0
-      adb shell settings put global animator_duration_scale 0
-      adb shell input keyevent 82
-      adb shell svc power stayon true
-
-      echo "=== Emulator is ready ==="
-
-screenshots:
-  image: fabernovel/android:api-34-v1.10.1
-  stage: screenshots
-  <<: *emulator_setup
-  dependencies:
-    - build  # Use APK artifacts from build job
-  needs:
-    - build
-  timeout: 30m  # Increased timeout for emulator boot and screenshot capture
-  variables:
-    KUBERNETES_MEMORY_REQUEST: 8Gi
-    KUBERNETES_MEMORY_LIMIT: 8Gi
-    KUBERNETES_CPU_REQUEST: "4"
-    KUBERNETES_CPU_LIMIT: "4"
-  script:
-    - bundle exec fastlane screenshots
-  artifacts:
-    paths:
-      - fastlane/metadata/android/
-    expire_in: 1 week
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-    - if: $CI_COMMIT_BRANCH == "feature/automated_deployment"
-      when: manual  # Manual screenshots - AVD automation needs more work
-  allow_failure: true
-#  tags:
-#    - kvm  # Requires KVM-enabled runner for emulator
-
-# ====================
 # DEPLOYMENT JOBS
 # ====================
 
@@ -231,7 +97,7 @@ upload_metadata:
     - if: $CI_COMMIT_BRANCH == "feature/automated_deployment"
       when: manual
 
-# Upload screenshots only
+# Upload screenshots only (screenshots must be committed to repo manually)
 upload_screenshots:
   image: fabernovel/android:api-34-v1.10.1
   stage: deploy
@@ -241,9 +107,6 @@ upload_screenshots:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - bundle exec fastlane upload_screenshots
-  needs:
-    - job: screenshots
-      optional: true
   rules:
 #    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_BRANCH == "feature/automated_deployment"
@@ -283,7 +146,7 @@ deploy_internal_with_metadata:
     - if: $CI_COMMIT_BRANCH == "feature/automated_deployment"
       when: manual
 
-# Full release with everything (build + metadata + screenshots)
+# Full release with everything (build + metadata + screenshots from repo)
 full_release:
   image: fabernovel/android:api-34-v1.10.1
   stage: deploy
@@ -295,8 +158,6 @@ full_release:
     - bundle exec fastlane full_release version_code:$VERSION_CODE
   needs:
     - build
-    - job: screenshots
-      optional: true
   rules:
     #    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_BRANCH == "feature/automated_deployment"
