@@ -20,12 +20,12 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "dev.notyouraverage.smscourier"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "dev.notyouraverage.smscourier"
         minSdk = 34
-        targetSdk = 34
+        targetSdk = 35
         versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
         versionName = "0.0.1-${System.getenv("VERSION_SHA") ?: "dev"}"
 
