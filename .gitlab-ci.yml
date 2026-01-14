@@ -189,10 +189,10 @@ screenshots:
       - fastlane/metadata/android/
     expire_in: 1 week
   rules:
-    #    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    #      when: manual
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
     - if: $CI_COMMIT_BRANCH == "feature/automated_deployment"
-      when: on_success  # Auto-run for testing, change to manual later
+      when: manual  # Manual screenshots - AVD automation needs more work
   allow_failure: true
 #  tags:
 #    - kvm  # Requires KVM-enabled runner for emulator
