@@ -71,48 +71,76 @@ build:
 
 .emulator_template: &emulator_setup
   before_script:
-    - bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs $(nproc)
-    # Set SDK paths correctly (fabernovel image uses /opt/android/sdk)
-    - export ANDROID_SDK_ROOT=/opt/android/sdk
-    - export ANDROID_HOME=/opt/android/sdk
-    - export PATH=$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
-    # Debug - verify paths
-    - echo "ANDROID_HOME=$ANDROID_HOME"
-    - echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-    - echo "PATH=$PATH"
-    - which emulator || echo "emulator not in PATH yet"
-    - ls -la $ANDROID_SDK_ROOT/emulator/ || echo "No emulator directory"
-    # Accept licenses
-    - yes | sdkmanager --licenses || echo "License acceptance completed"
-    # Install system image for API 34
-    - sdkmanager "system-images;android-34;google_apis;x86_64" "emulator" "platform-tools" "platforms;android-34"
-    # Verify emulator is now available
-    - which emulator
-    - emulator -version
-    # Build APKs first (before starting emulator)
-    - bundle exec fastlane build_for_screenshots
-    # Create AVD with optimal settings for screenshots
-    - echo "no" | avdmanager create avd -n test -k "system-images;android-34;google_apis;x86_64" --force --device "pixel_6"
-    # Start emulator in background with software rendering
-    - $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -memory 4096 -partition-size 4096 &
-    - export EMULATOR_PID=$!
-    - echo "Emulator started with PID $EMULATOR_PID"
-    # Wait for ADB to detect device
-    - adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done'
-    - echo "Device boot completed"
-    # Wait a bit more for services to start
-    - sleep 10
-    # Verify emulator is running
-    - adb devices -l
-    - adb shell getprop ro.build.version.sdk
-    # Disable animations for clean screenshots
-    - adb shell settings put global window_animation_scale 0
-    - adb shell settings put global transition_animation_scale 0
-    - adb shell settings put global animator_duration_scale 0
-    # Unlock screen and set awake
-    - adb shell input keyevent 82
-    - adb shell svc power stayon true
-    - echo "Emulator is ready for screenshots"
+    - |
+      set -e  # Exit on error
+      echo "=== Installing Ruby dependencies ==="
+      bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs $(nproc)
+
+      echo "=== Setting up Android SDK paths ==="
+      export ANDROID_SDK_ROOT=/opt/android/sdk
+      export ANDROID_HOME=/opt/android/sdk
+      export PATH=$PATH:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+
+      echo "ANDROID_HOME=$ANDROID_HOME"
+      echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
+      echo "=== Installing Android SDK components ==="
+      yes | sdkmanager --licenses || true
+      sdkmanager "system-images;android-34;google_apis;x86_64" "emulator" "platform-tools" "platforms;android-34"
+
+      echo "=== Verifying emulator installation ==="
+      which emulator
+      emulator -version
+
+      echo "=== Building APKs ==="
+      bundle exec fastlane build_for_screenshots
+
+      echo "=== Creating AVD ==="
+      echo "no" | avdmanager create avd -n test -k "system-images;android-34;google_apis;x86_64" --force --device "pixel_6"
+
+      echo "=== Starting emulator ==="
+      $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -memory 4096 -partition-size 4096 -wipe-data &
+      EMULATOR_PID=$!
+      echo "Emulator started with PID $EMULATOR_PID"
+
+      echo "=== Waiting for device to be online ==="
+      adb wait-for-device
+      echo "Device detected by ADB"
+
+      echo "=== Waiting for boot to complete ==="
+      timeout=300
+      while [ $timeout -gt 0 ]; do
+        boot_status=$(adb shell getprop sys.boot_completed 2>&1 | tr -d '\r\n' || echo "")
+        if [ "$boot_status" = "1" ]; then
+          echo "Boot completed!"
+          break
+        fi
+        echo "Waiting for boot... ($timeout seconds remaining)"
+        sleep 5
+        timeout=$((timeout - 5))
+      done
+
+      if [ $timeout -le 0 ]; then
+        echo "ERROR: Emulator boot timeout"
+        adb devices
+        exit 1
+      fi
+
+      echo "=== Waiting for system to settle ==="
+      sleep 15
+
+      echo "=== Verifying emulator ==="
+      adb devices -l
+      adb shell getprop ro.build.version.sdk
+
+      echo "=== Configuring emulator for screenshots ==="
+      adb shell settings put global window_animation_scale 0
+      adb shell settings put global transition_animation_scale 0
+      adb shell settings put global animator_duration_scale 0
+      adb shell input keyevent 82
+      adb shell svc power stayon true
+
+      echo "=== Emulator is ready ==="
 
 screenshots:
   image: fabernovel/android:api-34-v1.10.1
