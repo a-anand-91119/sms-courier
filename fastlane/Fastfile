@@ -58,6 +58,11 @@ platform :android do
   lane :generate_changelog do |options|
     version_code = options[:version_code] || ENV["VERSION_CODE"] || "1"
 
+    # Ensure version_code is not empty
+    if version_code.to_s.strip.empty?
+      UI.user_error!("version_code cannot be empty. Please provide version_code parameter or set VERSION_CODE environment variable.")
+    end
+
     changelog = changelog_from_git_commits(
       commits_count: 20,
       pretty: "- %s",
@@ -65,7 +70,10 @@ platform :android do
     )
 
     # Write changelog for specific version
-    changelog_path = "fastlane/metadata/android/en-US/changelogs/#{version_code}.txt"
+    changelogs_dir = "fastlane/metadata/android/en-US/changelogs"
+    FileUtils.mkdir_p(changelogs_dir) unless Dir.exist?(changelogs_dir)
+
+    changelog_path = "#{changelogs_dir}/#{version_code}.txt"
     File.write(changelog_path, changelog)
 
     UI.success("Changelog written to #{changelog_path}")
