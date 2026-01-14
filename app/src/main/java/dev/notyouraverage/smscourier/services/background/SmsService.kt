@@ -15,7 +15,7 @@ class SmsService : Service() {
     private lateinit var workManager: WorkManager
 
     companion object {
-        private const val TAG = "OTPC:SmsService"
+        private const val TAG = "SMSC:SmsService"
         const val SMS_DATA = "SMS_DATA"
         const val SEND_SMS = "SEND_SMS"
     }

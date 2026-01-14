@@ -5,8 +5,8 @@ object CommandParser {
     fun parse(senderPhoneNumber: String, messageBody: String): ParsedCommand? {
         val trimmedMessage = messageBody.trim()
 
-        // Check if it's an OTPC command at all
-        if (!CommandPatterns.isOtpcCommand(trimmedMessage)) {
+        // Check if it's an SMSC command at all
+        if (!CommandPatterns.isSmscCommand(trimmedMessage)) {
             return null
         }
 
@@ -89,11 +89,11 @@ object CommandParser {
             }
         }
 
-        // If it started with OTPC but didn't match any pattern
+        // If it started with SMSC but didn't match any pattern
         return ParsedCommand.Unknown(senderPhoneNumber, trimmedMessage)
     }
 
     fun isCommand(messageBody: String): Boolean {
-        return CommandPatterns.isOtpcCommand(messageBody.trim())
+        return CommandPatterns.isSmscCommand(messageBody.trim())
     }
 }

@@ -69,7 +69,7 @@ class MasterService : Service() {
     )
 
     companion object {
-        private const val TAG = "OTPC:MasterService"
+        private const val TAG = "SMSC:MasterService"
 
         // Track service running state
         @Volatile
@@ -467,8 +467,8 @@ class MasterService : Service() {
         Toast.makeText(this, "Starting Foreground Service", Toast.LENGTH_SHORT).show()
         with(NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_GENERAL)) {
             setTicker(null)
-            setContentTitle("OTP Courier")
-            setContentText("OTP Courier is running")
+            setContentTitle("SMS Courier")
+            setContentText("SMS Courier is running")
             setAutoCancel(false)
             setOngoing(true)
             setWhen(System.currentTimeMillis())

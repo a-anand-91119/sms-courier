@@ -21,7 +21,7 @@ class SmsCommandHandler(
     private val onForwardingStateChanged: (ForwardingState) -> Unit,
 ) {
     companion object {
-        private const val TAG = "OTPC:CommandHandler"
+        private const val TAG = "SMSC:CommandHandler"
         private const val DEFAULT_FORWARD_DURATION_MINUTES = 30
     }
 

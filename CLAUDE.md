@@ -26,7 +26,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SMS Courier (OTP Courier) is an Android app for forwarding SMS messages between two devices via SMS commands. It enables a "source" device to receive SMS messages forwarded from a "target" device using a secure pairing system.
+SMS Courier is an Android app for forwarding SMS messages between two devices via SMS commands. It enables a "source" device to receive SMS messages forwarded from a "target" device using a secure pairing system.
 
 **Key terminology:**
 - **Source device**: The device that requests to receive forwarded SMS messages
@@ -36,17 +36,17 @@ SMS Courier (OTP Courier) is an Android app for forwarding SMS messages between 
 
 ### SMS Command Protocol
 
-All commands are SMS messages prefixed with `OTPC`. The protocol supports:
+All commands are SMS messages prefixed with `SMSC`. The protocol supports:
 
 | Command | Format | Description |
 |---------|--------|-------------|
-| Pair Request | `OTPC PAIR_REQUEST` | Initiate pairing |
-| Pair Approved | `OTPC PAIR_APPROVED` | Accept pairing |
-| Pair Rejected | `OTPC PAIR_REJECTED` | Reject pairing |
-| Unpair | `OTPC UNPAIR` | Remove pairing |
-| Start Forward | `OTPC START_FORWARD <password> [duration]` | Begin forwarding session |
-| Stop Forward | `OTPC STOP_FORWARD` | End forwarding session |
-| Forward Data | `OTPC FWD <+sender> message` | Forwarded SMS content |
+| Pair Request | `SMSC PAIR_REQUEST` | Initiate pairing |
+| Pair Approved | `SMSC PAIR_APPROVED` | Accept pairing |
+| Pair Rejected | `SMSC PAIR_REJECTED` | Reject pairing |
+| Unpair | `SMSC UNPAIR` | Remove pairing |
+| Start Forward | `SMSC START_FORWARD <password> [duration]` | Begin forwarding session |
+| Stop Forward | `SMSC STOP_FORWARD` | End forwarding session |
+| Forward Data | `SMSC FWD <+sender> message` | Forwarded SMS content |
 
 Command parsing is handled in `commands/CommandParser.kt` using regex patterns defined in `commands/CommandPatterns.kt`.
 
@@ -54,7 +54,7 @@ Command parsing is handled in `commands/CommandParser.kt` using regex patterns d
 
 - **MasterService** (`services/foreground/MasterService.kt`): Foreground service that orchestrates all SMS operations. Registers the SMS receiver, manages forwarding sessions, and coordinates between components.
 - **SmsReceiver** (`receivers/SmsReceiver.kt`): BroadcastReceiver that intercepts all incoming SMS, parses commands, and routes to MasterService.
-- **SmsCommandHandler** (`handlers/SmsCommandHandler.kt`): Core business logic for handling all OTPC commands (pairing, forwarding, authentication).
+- **SmsCommandHandler** (`handlers/SmsCommandHandler.kt`): Core business logic for handling all SMSC commands (pairing, forwarding, authentication).
 - **SmsSender** (`services/SmsSender.kt`): Handles outgoing SMS for commands and forwarded messages.
 
 ### Data Layer

@@ -9,7 +9,7 @@ import android.util.Log
 class SmsSender(private val context: Context) {
 
     companion object {
-        private const val TAG = "OTPC:SmsSender"
+        private const val TAG = "SMSC:SmsSender"
         const val SMS_SENT_ACTION = "dev.notyouraverage.smscourier.SMS_SENT"
         const val EXTRA_PHONE_NUMBER = "phone_number"
     }
@@ -60,35 +60,35 @@ class SmsSender(private val context: Context) {
 
     // Command-specific SMS methods
     fun sendPairRequest(targetPhoneNumber: String) {
-        send(targetPhoneNumber, "OTPC PAIR_REQUEST")
+        send(targetPhoneNumber, "SMSC PAIR_REQUEST")
     }
 
     fun sendPairApproved(sourcePhoneNumber: String) {
-        send(sourcePhoneNumber, "OTPC PAIR_APPROVED")
+        send(sourcePhoneNumber, "SMSC PAIR_APPROVED")
     }
 
     fun sendPairRejected(sourcePhoneNumber: String) {
-        send(sourcePhoneNumber, "OTPC PAIR_REJECTED")
+        send(sourcePhoneNumber, "SMSC PAIR_REJECTED")
     }
 
     fun sendUnpair(phoneNumber: String) {
-        send(phoneNumber, "OTPC UNPAIR")
+        send(phoneNumber, "SMSC UNPAIR")
     }
 
     // Authentication commands (challenge-response)
     fun sendAuthRequest(targetPhoneNumber: String) {
-        send(targetPhoneNumber, "OTPC AUTH_REQUEST")
+        send(targetPhoneNumber, "SMSC AUTH_REQUEST")
     }
 
     fun sendAuthChallenge(sourcePhoneNumber: String, nonce: String) {
-        send(sourcePhoneNumber, "OTPC AUTH_CHALLENGE $nonce")
+        send(sourcePhoneNumber, "SMSC AUTH_CHALLENGE $nonce")
     }
 
     fun sendStartForwardWithResponse(targetPhoneNumber: String, response: String, durationMinutes: Int? = null) {
         val message = if (durationMinutes != null) {
-            "OTPC START_FORWARD $response $durationMinutes"
+            "SMSC START_FORWARD $response $durationMinutes"
         } else {
-            "OTPC START_FORWARD $response"
+            "SMSC START_FORWARD $response"
         }
         send(targetPhoneNumber, message)
     }
@@ -96,15 +96,15 @@ class SmsSender(private val context: Context) {
     // Legacy: send START_FORWARD with plain password (backward compatibility)
     fun sendStartForward(targetPhoneNumber: String, password: String, durationMinutes: Int? = null) {
         val message = if (durationMinutes != null) {
-            "OTPC START_FORWARD $password $durationMinutes"
+            "SMSC START_FORWARD $password $durationMinutes"
         } else {
-            "OTPC START_FORWARD $password"
+            "SMSC START_FORWARD $password"
         }
         send(targetPhoneNumber, message)
     }
 
     fun sendStopForward(targetPhoneNumber: String) {
-        send(targetPhoneNumber, "OTPC STOP_FORWARD")
+        send(targetPhoneNumber, "SMSC STOP_FORWARD")
     }
 
     fun sendForwardedSms(sourcePhoneNumber: String, originalSender: String, message: String, encryptionKey: String? = null) {
@@ -114,13 +114,13 @@ class SmsSender(private val context: Context) {
             val encrypted = dev.notyouraverage.smscourier.security.MessageEncryption.encrypt(plainContent, encryptionKey)
             if (encrypted != null) {
                 Log.i(TAG, "Encrypted forwarded message successfully")
-                "OTPC FWDE $encrypted" // FWDE = Forward Encrypted
+                "SMSC FWDE $encrypted" // FWDE = Forward Encrypted
             } else {
                 Log.w(TAG, "Encryption failed, sending unencrypted")
-                "OTPC FWD <$originalSender> $message"
+                "SMSC FWD <$originalSender> $message"
             }
         } else {
-            "OTPC FWD <$originalSender> $message"
+            "SMSC FWD <$originalSender> $message"
         }
         send(sourcePhoneNumber, forwardMessage)
     }

@@ -19,7 +19,7 @@ class MainApplication : Application() {
         with(
             NotificationChannel(
                 NOTIFICATION_CHANNEL_GENERAL,
-                "OTP Courier",
+                "SMS Courier",
                 NotificationManager.IMPORTANCE_HIGH,
             ),
         ) {

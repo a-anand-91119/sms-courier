@@ -14,7 +14,7 @@ class SecurityManager(
     private val deviceRepository: PairedDeviceRepository,
 ) {
     companion object {
-        private const val TAG = "OTPC:SecurityManager"
+        private const val TAG = "SMSC:SecurityManager"
         private const val BCRYPT_COST = 12
         const val MAX_FAILED_ATTEMPTS = 5
         const val LOCKOUT_DURATION_MS = 15 * 60 * 1000L // 15 minutes

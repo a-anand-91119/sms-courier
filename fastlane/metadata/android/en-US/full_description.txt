@@ -1,4 +1,4 @@
-OTP Courier (SMS Courier) enables secure SMS forwarding between two Android devices using a simple pairing system.
+SMS Courier enables secure SMS forwarding between two Android devices using a simple pairing system.
 
 <b>Key Features:</b>
 
