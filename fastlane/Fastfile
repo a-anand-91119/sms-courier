@@ -111,7 +111,7 @@ platform :android do
   lane :upload_store_assets do
     upload_to_play_store(
       track: "internal",
-      skip_upload_apk: true,
+      skip_upload_apk: false,
       skip_upload_aab: true,
       skip_upload_metadata: false,
       skip_upload_changelogs: false,
@@ -134,6 +134,7 @@ platform :android do
     upload_to_play_store(
       track: "internal",
       aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
       skip_upload_metadata: true,
       skip_upload_changelogs: true,
       skip_upload_images: true,
@@ -153,6 +154,7 @@ platform :android do
     upload_to_play_store(
       track: "internal",
       aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
       skip_upload_metadata: false,
       skip_upload_changelogs: false,
       skip_upload_images: true,
@@ -191,6 +193,7 @@ platform :android do
       track: "internal",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_metadata: false,
+      skip_upload_apk: true,
       skip_upload_changelogs: false,
       skip_upload_images: false,
       skip_upload_screenshots: false
@@ -202,7 +205,9 @@ platform :android do
     gradle(task: "clean assembleRelease bundleRelease")
     upload_to_play_store(
       track: "production",
-      aab: "app/build/outputs/bundle/release/app-release.aab"
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true
+
     )
   end
 end
