@@ -18,6 +18,19 @@ opt_out_usage
 default_platform(:android)
 
 platform :android do
+  # Helper method to get Play Store JSON key
+  def play_store_json_key
+    # Check for JSON key file in current directory (from GitLab secure files)
+    if File.exist?("sms-courier-a3c4e-e9b5a0526b8b.json")
+      return "sms-courier-a3c4e-e9b5a0526b8b.json"
+    # Check for any .json file that looks like a service account key
+    elsif Dir.glob("*.json").any? { |f| File.read(f).include?("service_account") rescue false }
+      return Dir.glob("*.json").find { |f| File.read(f).include?("service_account") rescue false }
+    else
+      UI.user_error!("No Play Store service account JSON key found. Please check GitLab Secure Files configuration.")
+    end
+  end
+
   # ==================== TESTING ====================
 
   desc "Runs all the tests"
@@ -84,6 +97,7 @@ platform :android do
   desc "Upload only metadata (descriptions, changelogs) to Play Store"
   lane :upload_metadata do
     upload_to_play_store(
+      json_key: play_store_json_key,
       track: "internal",
       skip_upload_apk: true,
       skip_upload_aab: true,
@@ -97,6 +111,7 @@ platform :android do
   desc "Upload only screenshots to Play Store"
   lane :upload_screenshots do
     upload_to_play_store(
+      json_key: play_store_json_key,
       track: "internal",
       skip_upload_apk: true,
       skip_upload_aab: true,
@@ -110,6 +125,7 @@ platform :android do
   desc "Upload all store assets (metadata + screenshots) to Play Store"
   lane :upload_store_assets do
     upload_to_play_store(
+      json_key: play_store_json_key,
       track: "internal",
       skip_upload_apk: true,
       skip_upload_aab: true,
@@ -132,6 +148,7 @@ platform :android do
   lane :internal do
     gradle(task: "clean assembleRelease bundleRelease")
     upload_to_play_store(
+      json_key: play_store_json_key,
       track: "internal",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_metadata: true,
@@ -151,6 +168,7 @@ platform :android do
     # Build and upload
     gradle(task: "clean assembleRelease bundleRelease")
     upload_to_play_store(
+      json_key: play_store_json_key,
       track: "internal",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_metadata: false,
@@ -164,17 +182,17 @@ platform :android do
 
   desc "Promote Internal to Alpha"
   lane :promote_internal_to_alpha do
-    upload_to_play_store(track: "internal", track_promote_to: "alpha")
+    upload_to_play_store(json_key: play_store_json_key, track: "internal", track_promote_to: "alpha")
   end
 
   desc "Promote Alpha to Beta"
   lane :promote_alpha_to_beta do
-    upload_to_play_store(track: "alpha", track_promote_to: "beta")
+    upload_to_play_store(json_key: play_store_json_key, track: "alpha", track_promote_to: "beta")
   end
 
   desc "Promote Beta to Production"
   lane :promote_beta_to_production do
-    upload_to_play_store(track: "beta", track_promote_to: "production")
+    upload_to_play_store(json_key: play_store_json_key, track: "beta", track_promote_to: "production")
   end
 
   # ==================== FULL PIPELINES ====================
@@ -188,6 +206,7 @@ platform :android do
     build
 
     upload_to_play_store(
+      json_key: play_store_json_key,
       track: "internal",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_metadata: false,
@@ -201,6 +220,7 @@ platform :android do
   lane :deploy do
     gradle(task: "clean assembleRelease bundleRelease")
     upload_to_play_store(
+      json_key: play_store_json_key,
       track: "production",
       aab: "app/build/outputs/bundle/release/app-release.aab"
     )
