@@ -56,8 +56,9 @@ None currently identified.
 
 ### Pending Todos
 
-1 todo tracked in `.planning/todos/pending/`:
+2 todos tracked in `.planning/todos/pending/`:
 - **security**: Encrypt activeEncryptionKey in database
+- **ui**: Pairing notification approve button does nothing
 
 ## Roadmap Evolution
 
