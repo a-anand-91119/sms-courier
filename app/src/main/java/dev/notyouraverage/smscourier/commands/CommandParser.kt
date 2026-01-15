@@ -28,7 +28,7 @@ object CommandParser {
         }
 
         CommandPatterns.UNPAIR.find(trimmedMessage)?.let { matchResult ->
-            val roleStr = matchResult.groupValues.getOrNull(1)
+            val roleStr = matchResult.groupValues.getOrNull(1)?.takeIf { it.isNotEmpty() }
             val role = roleStr?.let {
                 when (it.uppercase()) {
                     "SOURCE" -> DeviceRole.SOURCE
