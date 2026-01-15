@@ -78,25 +78,39 @@ class SmsCommandHandler(
     suspend fun handlePairRequest(senderPhone: String) {
         Log.i(TAG, "Pair request from: $senderPhone")
 
-        val existing = deviceRepository.getByPhoneNumber(senderPhone)
+        // Check if TARGET role already exists (this device forwards TO sender)
+        val existingTarget = deviceRepository.getByPhoneNumberAndRole(
+            senderPhone,
+            DeviceRole.TARGET
+        )
 
-        when (existing?.status) {
+        when (existingTarget?.status) {
             PairingStatus.APPROVED -> {
-                Log.d(TAG, "Already approved device: $senderPhone - ignoring duplicate request")
+                Log.d(TAG, "Already approved as TARGET: $senderPhone - ignoring duplicate request")
                 return
             }
             PairingStatus.PENDING_SENT, PairingStatus.PENDING_RECEIVED -> {
-                Log.d(TAG, "Pending device: $senderPhone - refreshing notification")
+                Log.d(TAG, "Pending as TARGET: $senderPhone - refreshing notification")
                 notificationManager.showPairingRequestNotification(senderPhone)
                 return
             }
             PairingStatus.REJECTED -> {
-                Log.d(TAG, "Previously rejected device: $senderPhone - allowing re-request")
-                deviceRepository.updatePairingStatus(senderPhone, PairingStatus.PENDING_RECEIVED)
+                Log.d(TAG, "Previously rejected as TARGET: $senderPhone - allowing re-request")
+                deviceRepository.updatePairingStatus(senderPhone, DeviceRole.TARGET, PairingStatus.PENDING_RECEIVED)
                 notificationManager.showPairingRequestNotification(senderPhone)
                 return
             }
             null -> {
+                // No existing TARGET pairing
+                // Check if SOURCE role exists (bidirectional scenario)
+                val existingSource = deviceRepository.getByPhoneNumberAndRole(
+                    senderPhone,
+                    DeviceRole.SOURCE
+                )
+                if (existingSource != null) {
+                    Log.d(TAG, "SOURCE pairing exists for $senderPhone - creating bidirectional pair")
+                }
+
                 // New request (they are source, we are target)
                 deviceRepository.insert(
                     PairedDevice(
@@ -115,15 +129,16 @@ class SmsCommandHandler(
     suspend fun handlePairApproved(senderPhone: String) {
         Log.i(TAG, "Pair approved from: $senderPhone")
 
-        val device = deviceRepository.getByPhoneNumber(senderPhone)
+        // We are SOURCE, they are TARGET - check our SOURCE record
+        val device = deviceRepository.getByPhoneNumberAndRole(senderPhone, DeviceRole.SOURCE)
         if (device == null) {
             Log.w(TAG, "Received PAIR_APPROVED from unknown device: $senderPhone")
             return
         }
 
         if (device.status == PairingStatus.PENDING_SENT) {
-            deviceRepository.updatePairingStatus(senderPhone, PairingStatus.APPROVED)
-            deviceRepository.updateLastActivity(senderPhone)
+            deviceRepository.updatePairingStatus(senderPhone, DeviceRole.SOURCE, PairingStatus.APPROVED)
+            deviceRepository.updateLastActivity(senderPhone, DeviceRole.SOURCE)
             Log.i(TAG, "Device $senderPhone is now approved")
             notificationManager.showPairingResponseNotification(senderPhone, approved = true)
         }
@@ -132,15 +147,16 @@ class SmsCommandHandler(
     suspend fun handlePairRejected(senderPhone: String) {
         Log.i(TAG, "Pair rejected from: $senderPhone")
 
-        val device = deviceRepository.getByPhoneNumber(senderPhone)
+        // We are SOURCE, they are TARGET - check our SOURCE record
+        val device = deviceRepository.getByPhoneNumberAndRole(senderPhone, DeviceRole.SOURCE)
         if (device == null) {
             Log.w(TAG, "Received PAIR_REJECTED from unknown device: $senderPhone")
             return
         }
 
         if (device.status == PairingStatus.PENDING_SENT) {
-            deviceRepository.updatePairingStatus(senderPhone, PairingStatus.REJECTED)
-            deviceRepository.updateLastActivity(senderPhone)
+            deviceRepository.updatePairingStatus(senderPhone, DeviceRole.SOURCE, PairingStatus.REJECTED)
+            deviceRepository.updateLastActivity(senderPhone, DeviceRole.SOURCE)
             Log.i(TAG, "Device $senderPhone rejected pairing")
             notificationManager.showPairingResponseNotification(senderPhone, approved = false)
         }
@@ -149,16 +165,18 @@ class SmsCommandHandler(
     suspend fun handleUnpair(senderPhone: String) {
         Log.i(TAG, "Unpair from: $senderPhone")
 
-        val device = deviceRepository.getByPhoneNumber(senderPhone)
-        if (device != null) {
+        val devices = deviceRepository.getByPhoneNumber(senderPhone)
+        if (devices.isNotEmpty()) {
             sessionRepository.endSessionForDevice(senderPhone, "UNPAIR")
+            // Delete all pairings (both SOURCE and TARGET roles if they exist)
+            // When the remote device sends UNPAIR, they want to disconnect completely
             deviceRepository.deleteByPhoneNumber(senderPhone)
-            Log.i(TAG, "Device $senderPhone unpaired")
+            Log.i(TAG, "Device $senderPhone unpaired (removed ${devices.size} role(s))")
 
-            // Send UNPAIR back so the other device also removes us
-            // (If they already deleted us, they'll ignore this)
-            smsSender.sendUnpair(senderPhone)
-            Log.i(TAG, "Sent UNPAIR confirmation to $senderPhone")
+            // NOTE: We do NOT send UNPAIR confirmation back
+            // Sending confirmation creates a deletion cascade where both devices
+            // end up deleting all roles bidirectionally. The sender already knows
+            // they unpaired - no confirmation needed.
         }
     }
 
@@ -169,7 +187,8 @@ class SmsCommandHandler(
     suspend fun handleAuthRequest(senderPhone: String) {
         Log.i(TAG, "Auth request from: $senderPhone")
 
-        val device = deviceRepository.getByPhoneNumber(senderPhone)
+        // We are TARGET, they are SOURCE - check our TARGET record
+        val device = deviceRepository.getByPhoneNumberAndRole(senderPhone, DeviceRole.TARGET)
         if (device == null || device.status != dev.notyouraverage.smscourier.data.entities.PairingStatus.APPROVED) {
             Log.w(TAG, "AUTH_REQUEST from unknown/unapproved device: $senderPhone")
             return
@@ -279,7 +298,8 @@ class SmsCommandHandler(
     suspend fun handleForwardedDataEncrypted(senderPhone: String, encryptedContent: String) {
         Log.i(TAG, "Received encrypted forwarded data from $senderPhone")
 
-        val device = deviceRepository.getByPhoneNumber(senderPhone)
+        // We are SOURCE, they are TARGET - check our SOURCE record
+        val device = deviceRepository.getByPhoneNumberAndRole(senderPhone, DeviceRole.SOURCE)
         if (device == null) {
             Log.w(TAG, "Received encrypted data from unknown device: $senderPhone")
             return
@@ -342,10 +362,24 @@ class SmsCommandHandler(
     }
 
     suspend fun initiatePairing(targetPhoneNumber: String) {
-        val existing = deviceRepository.getByPhoneNumber(targetPhoneNumber)
-        if (existing != null) {
-            Log.w(TAG, "Device $targetPhoneNumber already exists with status ${existing.status}")
+        // Check if SOURCE role already exists for this phone number
+        val existingSource = deviceRepository.getByPhoneNumberAndRole(
+            targetPhoneNumber,
+            DeviceRole.SOURCE
+        )
+
+        if (existingSource != null) {
+            Log.w(TAG, "SOURCE pairing already exists for $targetPhoneNumber with status ${existingSource.status}")
             return
+        }
+
+        // It's OK if TARGET role exists - bidirectional pairing is allowed
+        val existingTarget = deviceRepository.getByPhoneNumberAndRole(
+            targetPhoneNumber,
+            DeviceRole.TARGET
+        )
+        if (existingTarget != null) {
+            Log.d(TAG, "TARGET pairing exists for $targetPhoneNumber - creating bidirectional pair")
         }
 
         // We are source, they are target
@@ -366,19 +400,22 @@ class SmsCommandHandler(
     suspend fun approvePairing(sourcePhoneNumber: String, password: String) {
         val passwordHash = SecurityManager.hashPassword(password)
         val authKey = SecurityManager.deriveAuthKey(password)
+        // We are TARGET, they are SOURCE - update our TARGET record
         deviceRepository.updatePassword(
             sourcePhoneNumber,
+            DeviceRole.TARGET,
             passwordHash.hash,
             passwordHash.salt,
         )
-        deviceRepository.updateAuthKey(sourcePhoneNumber, authKey)
-        deviceRepository.updatePairingStatus(sourcePhoneNumber, PairingStatus.APPROVED)
+        deviceRepository.updateAuthKey(sourcePhoneNumber, DeviceRole.TARGET, authKey)
+        deviceRepository.updatePairingStatus(sourcePhoneNumber, DeviceRole.TARGET, PairingStatus.APPROVED)
         smsSender.sendPairApproved(sourcePhoneNumber)
         Log.i(TAG, "Approved pairing for $sourcePhoneNumber (with auth key)")
     }
 
     suspend fun rejectPairing(sourcePhoneNumber: String) {
-        deviceRepository.updatePairingStatus(sourcePhoneNumber, PairingStatus.REJECTED)
+        // We are TARGET, they are SOURCE - update our TARGET record
+        deviceRepository.updatePairingStatus(sourcePhoneNumber, DeviceRole.TARGET, PairingStatus.REJECTED)
         smsSender.sendPairRejected(sourcePhoneNumber)
         Log.i(TAG, "Rejected pairing for $sourcePhoneNumber")
     }
