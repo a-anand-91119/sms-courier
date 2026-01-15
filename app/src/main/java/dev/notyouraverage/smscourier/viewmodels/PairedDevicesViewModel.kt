@@ -11,6 +11,7 @@ import dev.notyouraverage.smscourier.services.SmsSender
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -43,6 +44,16 @@ class PairedDevicesViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _resendingDevice = MutableStateFlow<String?>(null)
+    val resendingDevice: StateFlow<String?> = _resendingDevice.asStateFlow()
+
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
+
+    fun clearSnackbar() {
+        _snackbarMessage.value = null
+    }
+
     fun canResendPairingRequest(device: PairedDevice): ResendStatus {
         if (device.status != PairingStatus.PENDING_SENT) return ResendStatus.NotPending
         if (device.resendAttemptCount >= MAX_RESEND_ATTEMPTS) return ResendStatus.MaxAttemptsReached
@@ -56,8 +67,14 @@ class PairedDevicesViewModel(
 
     fun resendPairingRequest(device: PairedDevice) {
         viewModelScope.launch {
-            deviceRepository.recordResendAttempt(device.phoneNumber, device.role)
-            smsSender.sendPairRequest(device.phoneNumber)
+            _resendingDevice.value = device.phoneNumber
+            try {
+                deviceRepository.recordResendAttempt(device.phoneNumber, device.role)
+                smsSender.sendPairRequest(device.phoneNumber)
+                _snackbarMessage.value = "Pairing request sent to ${device.phoneNumber}"
+            } finally {
+                _resendingDevice.value = null
+            }
         }
     }
 

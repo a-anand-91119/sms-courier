@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,10 +41,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -72,10 +77,20 @@ fun PairedDevicesScreen(
 ) {
     val sourceDevices by viewModel.sourceDevices.collectAsState()
     val targetDevices by viewModel.targetDevices.collectAsState()
+    val resendingDevice by viewModel.resendingDevice.collectAsState()
+    val snackbarMessage by viewModel.snackbarMessage.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
     var deviceToDelete by remember { mutableStateOf<PairedDevice?>(null) }
     var showMenuForDevice by remember { mutableStateOf<PairedDevice?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearSnackbar()
+        }
+    }
 
     // Confirmation dialog for device removal
     deviceToDelete?.let { device ->
@@ -105,6 +120,7 @@ fun PairedDevicesScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             LargeTopAppBar(
                 title = {
@@ -188,6 +204,7 @@ fun PairedDevicesScreen(
                     onDismissMenu = { showMenuForDevice = null },
                     onDeleteDevice = { deviceToDelete = it },
                     viewModel = viewModel,
+                    resendingDevice = resendingDevice,
                 )
                 1 -> DeviceList(
                     devices = targetDevices,
@@ -199,6 +216,7 @@ fun PairedDevicesScreen(
                     onDismissMenu = { showMenuForDevice = null },
                     onDeleteDevice = { deviceToDelete = it },
                     viewModel = viewModel,
+                    resendingDevice = resendingDevice,
                 )
             }
         }
@@ -216,6 +234,7 @@ fun DeviceList(
     onDismissMenu: () -> Unit,
     onDeleteDevice: (PairedDevice) -> Unit,
     viewModel: PairedDevicesViewModel,
+    resendingDevice: String?,
 ) {
     if (devices.isEmpty()) {
         Box(
@@ -267,6 +286,7 @@ fun DeviceList(
                         device = device,
                         onClick = { onDeviceClick(device) },
                         onLongClick = { onLongPressDevice(device) },
+                        isResending = resendingDevice == device.phoneNumber,
                     )
                     DropdownMenu(
                         expanded = showMenuForDevice == device,
@@ -322,6 +342,7 @@ fun DeviceCard(
     device: PairedDevice,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    isResending: Boolean = false,
 ) {
     Card(
         modifier = Modifier
@@ -382,8 +403,15 @@ fun DeviceCard(
                 }
             }
 
-            // Status Badge
-            StatusBadge(status = device.status)
+            // Loading indicator or Status Badge
+            if (isResending) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                StatusBadge(status = device.status)
+            }
         }
     }
 }
