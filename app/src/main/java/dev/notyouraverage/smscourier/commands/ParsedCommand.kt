@@ -1,5 +1,7 @@
 package dev.notyouraverage.smscourier.commands
 
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
+
 sealed class ParsedCommand {
     abstract val senderPhoneNumber: String
 
@@ -18,6 +20,7 @@ sealed class ParsedCommand {
 
     data class Unpair(
         override val senderPhoneNumber: String,
+        val roleToDelete: DeviceRole? = null, // null for backward compatibility
     ) : ParsedCommand()
 
     // Authentication commands (challenge-response)

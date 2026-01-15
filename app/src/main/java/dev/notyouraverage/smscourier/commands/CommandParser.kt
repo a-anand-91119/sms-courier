@@ -1,5 +1,7 @@
 package dev.notyouraverage.smscourier.commands
 
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
+
 object CommandParser {
 
     fun parse(senderPhoneNumber: String, messageBody: String): ParsedCommand? {
@@ -25,8 +27,16 @@ object CommandParser {
             return ParsedCommand.PairRejected(senderPhoneNumber)
         }
 
-        CommandPatterns.UNPAIR.find(trimmedMessage)?.let {
-            return ParsedCommand.Unpair(senderPhoneNumber)
+        CommandPatterns.UNPAIR.find(trimmedMessage)?.let { matchResult ->
+            val roleStr = matchResult.groupValues.getOrNull(1)
+            val role = roleStr?.let {
+                when (it.uppercase()) {
+                    "SOURCE" -> DeviceRole.SOURCE
+                    "TARGET" -> DeviceRole.TARGET
+                    else -> null
+                }
+            }
+            return ParsedCommand.Unpair(senderPhoneNumber, role)
         }
 
         // Authentication commands (challenge-response)

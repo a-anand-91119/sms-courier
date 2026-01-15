@@ -39,7 +39,7 @@ class SmsCommandHandler(
             is ParsedCommand.PairRequest -> handlePairRequest(command.senderPhoneNumber)
             is ParsedCommand.PairApproved -> handlePairApproved(command.senderPhoneNumber)
             is ParsedCommand.PairRejected -> handlePairRejected(command.senderPhoneNumber)
-            is ParsedCommand.Unpair -> handleUnpair(command.senderPhoneNumber)
+            is ParsedCommand.Unpair -> handleUnpair(command.senderPhoneNumber, command.roleToDelete)
             is ParsedCommand.AuthRequest -> handleAuthRequest(command.senderPhoneNumber)
             is ParsedCommand.AuthChallenge -> {
                 // AUTH_CHALLENGE is handled directly by MasterService on SOURCE side
@@ -162,22 +162,34 @@ class SmsCommandHandler(
         }
     }
 
-    suspend fun handleUnpair(senderPhone: String) {
-        Log.i(TAG, "Unpair from: $senderPhone")
+    suspend fun handleUnpair(senderPhone: String, roleToDelete: DeviceRole? = null) {
+        Log.i(TAG, "Unpair from: $senderPhone, role: $roleToDelete")
 
-        val devices = deviceRepository.getByPhoneNumber(senderPhone)
-        if (devices.isNotEmpty()) {
-            sessionRepository.endSessionForDevice(senderPhone, "UNPAIR")
-            // Delete all pairings (both SOURCE and TARGET roles if they exist)
-            // When the remote device sends UNPAIR, they want to disconnect completely
-            deviceRepository.deleteByPhoneNumber(senderPhone)
-            Log.i(TAG, "Device $senderPhone unpaired (removed ${devices.size} role(s))")
-
-            // NOTE: We do NOT send UNPAIR confirmation back
-            // Sending confirmation creates a deletion cascade where both devices
-            // end up deleting all roles bidirectionally. The sender already knows
-            // they unpaired - no confirmation needed.
+        if (roleToDelete != null) {
+            // Role-specific deletion (new protocol)
+            val device = deviceRepository.getByPhoneNumberAndRole(senderPhone, roleToDelete)
+            if (device != null) {
+                sessionRepository.endSessionForDevice(senderPhone, "UNPAIR")
+                deviceRepository.deleteByPhoneNumberAndRole(senderPhone, roleToDelete)
+                Log.i(TAG, "Device $senderPhone unpaired (removed $roleToDelete role)")
+            } else {
+                Log.w(TAG, "Unpair: $roleToDelete role not found for $senderPhone")
+            }
+        } else {
+            // Legacy behavior: delete all roles (backward compatibility)
+            val devices = deviceRepository.getByPhoneNumber(senderPhone)
+            if (devices.isNotEmpty()) {
+                sessionRepository.endSessionForDevice(senderPhone, "UNPAIR")
+                // Delete all pairings (both SOURCE and TARGET roles if they exist)
+                deviceRepository.deleteByPhoneNumber(senderPhone)
+                Log.i(TAG, "Device $senderPhone unpaired (removed ${devices.size} role(s) - legacy)")
+            }
         }
+
+        // NOTE: We do NOT send UNPAIR confirmation back
+        // Sending confirmation creates a deletion cascade where both devices
+        // end up deleting all roles bidirectionally. The sender already knows
+        // they unpaired - no confirmation needed.
     }
 
     /**

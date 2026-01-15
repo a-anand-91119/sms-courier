@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.telephony.SmsManager
 import android.util.Log
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 
 class SmsSender(private val context: Context) {
 
@@ -71,8 +72,8 @@ class SmsSender(private val context: Context) {
         send(sourcePhoneNumber, "SMSC PAIR_REJECTED")
     }
 
-    fun sendUnpair(phoneNumber: String) {
-        send(phoneNumber, "SMSC UNPAIR")
+    fun sendUnpair(phoneNumber: String, roleToDelete: DeviceRole) {
+        send(phoneNumber, "SMSC UNPAIR ${roleToDelete.name}")
     }
 
     // Authentication commands (challenge-response)

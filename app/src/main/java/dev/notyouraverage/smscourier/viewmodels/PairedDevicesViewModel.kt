@@ -34,9 +34,19 @@ class PairedDevicesViewModel(
         viewModelScope.launch {
             // 1. End any active forwarding sessions for this device
             sessionRepository.endSessionForDevice(device.phoneNumber, "USER")
-            // 2. Send UNPAIR SMS to notify the other device
-            smsSender.sendUnpair(device.phoneNumber)
-            // 3. Delete only this specific role from local database (role-specific deletion)
+
+            // 2. Send role-specific UNPAIR - tell other device to delete the inverse role
+            // If we're SOURCE (we request FROM them), they're TARGET (they forward TO us)
+            // If we're TARGET (we forward TO them), they're SOURCE (they request FROM us)
+            val roleToDeleteOnRemote = when (device.role) {
+                dev.notyouraverage.smscourier.data.entities.DeviceRole.SOURCE ->
+                    dev.notyouraverage.smscourier.data.entities.DeviceRole.TARGET
+                dev.notyouraverage.smscourier.data.entities.DeviceRole.TARGET ->
+                    dev.notyouraverage.smscourier.data.entities.DeviceRole.SOURCE
+            }
+            smsSender.sendUnpair(device.phoneNumber, roleToDeleteOnRemote)
+
+            // 3. Delete only this specific role from local database
             deviceRepository.deleteByPhoneNumberAndRole(device.phoneNumber, device.role)
         }
     }
