@@ -374,7 +374,7 @@ fun PasswordCreationSheet(
                     enabled = isValid,
                     shape = RoundedCornerShape(12.dp),
                 ) {
-                    Text("Approve & Create")
+                    Text("Approve")
                 }
             }
         }
