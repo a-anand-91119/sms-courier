@@ -48,6 +48,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".receivers.ServiceNotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="dev.notyouraverage.smscourier.NOTIFICATION_DISMISSED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

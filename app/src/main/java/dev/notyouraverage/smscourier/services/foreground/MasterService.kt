@@ -3,6 +3,7 @@ package dev.notyouraverage.smscourier.services.foreground
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -24,6 +25,7 @@ import dev.notyouraverage.smscourier.data.SmsCourierDatabase
 import dev.notyouraverage.smscourier.handlers.SmsCommandHandler
 import dev.notyouraverage.smscourier.models.SmsMessageData
 import dev.notyouraverage.smscourier.notifications.PairingNotificationManager
+import dev.notyouraverage.smscourier.receivers.ServiceNotificationReceiver
 import dev.notyouraverage.smscourier.receivers.SmsReceiver
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
@@ -83,6 +85,7 @@ class MasterService : Service() {
         const val START_BACKGROUND = "START_BACKGROUND"
         const val STOP_BACKGROUND = "STOP_BACKGROUND"
         const val SEND_DATA = "SEND_DATA"
+        const val RECREATE_NOTIFICATION = "RECREATE_NOTIFICATION"
 
         // New actions for pairing system
         const val PAIRING_APPROVE_REQUESTED = "PAIRING_APPROVE_REQUESTED"
@@ -148,6 +151,39 @@ class MasterService : Service() {
         notificationManager.createNotificationChannel(channel)
     }
 
+    private fun buildForegroundNotification(): android.app.Notification {
+        // Create delete intent for when user dismisses the notification
+        val deleteIntent = Intent(this, ServiceNotificationReceiver::class.java).apply {
+            action = ServiceNotificationReceiver.ACTION_NOTIFICATION_DISMISSED
+        }
+        val deletePendingIntent = PendingIntent.getBroadcast(
+            this,
+            0,
+            deleteIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
+        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_GENERAL)
+            .setTicker(null)
+            .setContentTitle("SMS Courier")
+            .setContentText("SMS Courier is running")
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .setWhen(System.currentTimeMillis())
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setDeleteIntent(deletePendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+    }
+
+    private fun recreateForegroundNotification() {
+        if (!isRunning) return
+        Log.i(TAG, "Recreating foreground notification")
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.notify(CODE_FOREGROUND_SERVICE, buildForegroundNotification())
+    }
+
     override fun onDestroy() {
         isRunning = false
         Toast.makeText(this, "Killing Foreground Service", Toast.LENGTH_SHORT).show()
@@ -198,6 +234,7 @@ class MasterService : Service() {
                 intent.getStringExtra(EXTRA_PASSWORD),
                 intent.getIntExtra(EXTRA_DURATION, 30),
             )
+            RECREATE_NOTIFICATION -> recreateForegroundNotification()
         }
         return START_STICKY
     }
@@ -480,18 +517,7 @@ class MasterService : Service() {
         Log.i(TAG, "MasterService::startingForegroundService")
         isRunning = true
         Toast.makeText(this, "Starting Foreground Service", Toast.LENGTH_SHORT).show()
-        with(NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_GENERAL)) {
-            setTicker(null)
-            setContentTitle("SMS Courier")
-            setContentText("SMS Courier is running")
-            setAutoCancel(false)
-            setOngoing(true)
-            setCategory(NotificationCompat.CATEGORY_SERVICE)
-            setWhen(System.currentTimeMillis())
-            setSmallIcon(R.drawable.ic_launcher_foreground)
-            priority = NotificationCompat.PRIORITY_LOW
-            startForeground(CODE_FOREGROUND_SERVICE, build())
-        }
+        startForeground(CODE_FOREGROUND_SERVICE, buildForegroundNotification())
     }
 
     private suspend fun resumeActiveForwardingSessions() {
