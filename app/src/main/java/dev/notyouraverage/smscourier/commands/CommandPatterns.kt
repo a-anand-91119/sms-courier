@@ -39,8 +39,10 @@ object CommandPatterns {
 
     // UNPAIR [SOURCE|TARGET]
     // Group 1: optional role (SOURCE or TARGET)
+    // Note: Use word boundary \b after role to ensure full word match,
+    // and make role mandatory pattern followed by optional empty to avoid greedy issues
     val UNPAIR = Regex(
-        """SMSC\s+UNPAIR(?:\s+(SOURCE|TARGET))?(?:\s|$)""",
+        """SMSC\s+UNPAIR(?:\s+(SOURCE|TARGET)\b)?""",
         RegexOption.IGNORE_CASE,
     )
 

@@ -94,17 +94,19 @@ class PairedDevicesViewModelTest {
     }
 
     @Test
-    fun `deleteDevice ends sessions, sends UNPAIR, and deletes from DB`() = runTest {
-        val device = createTestDevice(phoneNumber = "+1234567890")
+    fun `deleteDevice ends sessions, sends UNPAIR with inverse role, and deletes from DB`() = runTest {
+        // Device has TARGET role by default, so inverse role for remote is SOURCE
+        val device = createTestDevice(phoneNumber = "+1234567890", role = DeviceRole.TARGET)
         coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
-        coEvery { deviceRepository.delete(any()) } just runs
+        coEvery { deviceRepository.deleteByPhoneNumberAndRole(any(), any()) } just runs
 
         viewModel.deleteDevice(device)
 
         // With UnconfinedTestDispatcher, coroutines complete immediately
         coVerify { sessionRepository.endSessionForDevice("+1234567890", "USER") }
-        verify { smsSender.sendUnpair("+1234567890") }
-        coVerify { deviceRepository.delete(device) }
+        // TARGET device -> tell remote to delete SOURCE role (inverse)
+        verify { smsSender.sendUnpair("+1234567890", DeviceRole.SOURCE) }
+        coVerify { deviceRepository.deleteByPhoneNumberAndRole("+1234567890", DeviceRole.TARGET) }
     }
 
     @Test
