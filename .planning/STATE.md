@@ -56,9 +56,10 @@ None currently identified.
 
 ### Pending Todos
 
-2 todos tracked in `.planning/todos/pending/`:
+3 todos tracked in `.planning/todos/pending/`:
 - **security**: Encrypt activeEncryptionKey in database
 - **ui**: Pairing notification approve button does nothing
+- **logic**: Skip UNPAIR SMS when deleting rejected devices
 
 ## Roadmap Evolution
 
