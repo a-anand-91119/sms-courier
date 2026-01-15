@@ -193,8 +193,9 @@ platform :android do
     version_code = options[:version_code] || ENV["VERSION_CODE"] || "1"
     aab_path = options[:aab_path] || "app/build/outputs/bundle/release/app-release.aab"
 
-    # Verify AAB exists
-    UI.user_error!("AAB not found at #{aab_path}") unless File.exist?(aab_path)
+    # Verify AAB exists (resolve path from project root, not fastlane/ directory)
+    aab_full_path = File.expand_path("../#{aab_path}", __dir__)
+    UI.user_error!("AAB not found at #{aab_path}") unless File.exist?(aab_full_path)
 
     # Generate changelog
     generate_changelog(version_code: version_code)
