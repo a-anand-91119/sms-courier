@@ -123,7 +123,8 @@ Plans:
 **Depends on**: Phase 5 (bidirectional architecture changes may affect this)
 **Research**: Likely (UI patterns for multi-action gestures, abuse prevention strategies)
 **Research topics**: Material Design patterns for contextual actions, rate limiting for resend requests, unpair workflow best practices
-**Plans**: TBD
+**Status**: In Progress
+**Plans**: 1/3 complete
 
 Key deliverables:
 - Resend pairing request from pending state with abuse prevention (rate limiting, max attempts)
@@ -134,7 +135,9 @@ Key deliverables:
 - Test scenarios: rapid resend attempts, network failures, stale pending states
 
 Plans:
-- [ ] 06-01: TBD
+- [x] 06-01: Resend pairing request with rate limiting (database + ViewModel)
+- [ ] 06-02: UI for resend action
+- [ ] 06-03: Unpair acknowledgment workflow
 
 #### Phase 7: UI/UX Polish
 
@@ -163,5 +166,5 @@ Plans:
 | 3. Pre-Launch Testing | v1.0 | 0/? | In Progress | - |
 | 4. Public Release | v1.0 | 0/? | Not Started | - |
 | 5. Bidirectional Pairing | v1.1 | 0/1 | Not Started | - |
-| 6. Pending State & Pairing UX | v1.1 | 0/? | Not Started | - |
+| 6. Pending State & Pairing UX | v1.1 | 1/3 | In Progress | - |
 | 7. UI/UX Polish | v1.1 | 0/? | Not Started | - |

@@ -2,12 +2,12 @@
 
 ## Current Position
 
-Phase: 1 of 4 (Play Store Submission Requirements)
-Plan: Not yet broken down
-Status: In Progress - completing permissions declarations and demo video
-Last activity: 2026-01-15 - Milestone v1.0 created, phases 1-3 in progress
+Phase: 6 of 7 (Pending State & Pairing UX)
+Plan: 1 of 3 in current phase
+Status: In Progress
+Last activity: 2026-01-15 - Completed 06-01-PLAN.md
 
-Progress: ██░░░░░░░░ 25%
+Progress: ████████░░ 80%
 
 ## Accumulated Context
 
@@ -36,6 +36,10 @@ Progress: ██░░░░░░░░ 25%
 - Draft releases required (app not yet published)
 - Permissions: SMS (RECEIVE_SMS, SEND_SMS), FOREGROUND_SERVICE_REMOTE_MESSAGING
 
+**Phase 6 (new):**
+- Rate limiting for resend pairing: max 5 attempts, 1-minute cooldown
+- ResendStatus sealed class for exhaustive state handling
+
 ### Technical Context
 
 **Current State:**
@@ -43,12 +47,13 @@ Progress: ██░░░░░░░░ 25%
 - CI/CD pipeline built and configured
 - Play Store app created, internal testing track set up
 - Service account configured with Admin permissions
+- Database at version 5 with resend tracking fields
 
 **In Progress:**
-- SMS and foreground service permissions declarations (form submission)
-- Demo video for Play Store reviewers
-- Privacy policy finalization
-- Pipeline testing across all tracks
+- Phase 6: Pending State & Pairing UX
+  - 06-01 complete: Rate limiting infrastructure
+  - 06-02 pending: UI for resend action
+  - 06-03 pending: Unpair acknowledgment workflow
 
 ### Blockers/Concerns Carried Forward
 
@@ -71,11 +76,10 @@ None currently identified.
 
 ## Session Continuity
 
-Last session: 2026-01-15 21:00 UTC
-Stopped at: v1.1 milestone created, Phase 1 (Play Store requirements) still active
+Last session: 2026-01-15 12:53 UTC
+Stopped at: Completed 06-01-PLAN.md (resend rate limiting)
 Resume file: None
 
 **Context for next session:**
-- v1.0 Phase 1: Complete permissions declarations, create demo video, finalize privacy policy
-- v1.0 Phase 2: Test full CI/CD pipeline flow with actual tag deployment
-- v1.1 Phase 5-7: Ready to plan once starting v1.1 development (can start in parallel with v1.0)
+- Phase 6 plan 2: UI for resend action on pending devices
+- Phase 6 plan 3: Unpair acknowledgment workflow
