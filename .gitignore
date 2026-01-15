@@ -12,3 +12,4 @@ local.properties
 docs
 fastlane/report.xml
 fastlane/README.md
+agent-history.json
