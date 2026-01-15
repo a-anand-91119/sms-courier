@@ -79,3 +79,7 @@ Jetpack Compose with Navigation Compose. Screens are in `composables/screens/`, 
 - Kotlin with ktlint via Spotless plugin
 - Run `./gradlew spotlessApply` before committing
 - Spotless ratchets from `origin/main` (only checks changed files)
+
+## Git Conventions
+
+**IMPORTANT:** Never include `Co-Authored-By: Claude` or similar AI attribution in commit messages. All commits should appear as authored by the repository owner only.
