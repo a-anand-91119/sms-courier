@@ -144,7 +144,8 @@ Plans:
 **Goal**: Fix UI bugs and improve user experience for production quality
 **Depends on**: Phase 6 (all functional changes complete)
 **Research**: Unlikely (standard Android UI fixes)
-**Plans**: TBD
+**Status**: Complete
+**Plans**: 1/1 complete
 
 Key deliverables:
 - Fix button text overflow on smaller devices (Samsung S25 and similar)
@@ -155,7 +156,7 @@ Key deliverables:
 - Accessibility audit and fixes
 
 Plans:
-- [ ] 07-01: TBD
+- [x] 07-01: Segmented button text overflow and service toggle loading state
 
 ## Progress
 
@@ -167,4 +168,4 @@ Plans:
 | 4. Public Release | v1.0 | 0/? | Not Started | - |
 | 5. Bidirectional Pairing | v1.1 | 0/1 | Not Started | - |
 | 6. Pending State & Pairing UX | v1.1 | 3/3 | Complete | 2026-01-15 |
-| 7. UI/UX Polish | v1.1 | 0/? | Not Started | - |
+| 7. UI/UX Polish | v1.1 | 1/1 | Complete | 2026-01-15 |
