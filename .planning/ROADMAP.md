@@ -11,7 +11,20 @@ None (Android app development patterns already established in codebase)
 ## Milestones
 
 - 🚧 **v1.0 Play Store Launch** - Phases 1-4 (in progress)
-- 📋 **v1.1 Feature Improvements** - Phases 5-7 (planned)
+- ✅ [**v1.1 Feature Improvements**](milestones/v1.1-ROADMAP.md) - Phases 5-7 (shipped 2026-01-15)
+
+## Completed Milestones
+
+<details>
+<summary>✅ v1.1 Feature Improvements (Phases 5-7) — SHIPPED 2026-01-15</summary>
+
+- [x] Phase 5: Bidirectional Pairing Architecture — completed 2026-01-15
+- [x] Phase 6: Pending State & Pairing UX (3/3 plans) — completed 2026-01-15
+- [x] Phase 7: UI/UX Polish (1/1 plan + fix) — completed 2026-01-15
+
+See [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md) for full details.
+
+</details>
 
 ## Phases
 
@@ -87,76 +100,10 @@ Key deliverables:
 - Monitor crash reports and analytics
 - Respond to user reviews
 - Prepare user documentation and FAQs
-- Plan v1.1 improvements based on initial feedback
+- Plan v1.2 improvements based on initial feedback
 
 Plans:
 - [ ] 04-01: TBD
-
-### 📋 v1.1 Feature Improvements (Planned)
-
-**Milestone Goal:** Address critical bugs and add key features discovered during development - bidirectional pairing, improved pending state management, and UI polish for production readiness.
-
-**Note:** v1.1 features can ship to internal/alpha/beta tracks while v1.0 awaits Play Store production approval.
-
-#### Phase 5: Bidirectional Pairing Architecture
-
-**Goal**: Enable same phone number to exist in both "Forwarded to me" and "I forward to" sections simultaneously
-**Depends on**: Phase 1 (basic app functionality must be stable)
-**Research**: Likely (database schema changes, architectural implications)
-**Research topics**: Database migration strategy, relationship modeling for bidirectional pairs, UI state management for dual roles
-**Plans**: TBD
-
-Key deliverables:
-- Analyze current database schema and constraints preventing bidirectional pairing
-- Design new relationship model supporting dual roles
-- Implement database migration for bidirectional support
-- Update PairedDeviceRepository to handle bidirectional relationships
-- Modify UI to display and manage bidirectional pairs
-- Test edge cases (both devices initiate simultaneously, role conflicts)
-
-Plans:
-- [ ] 05-01: Bidirectional Pairing Architecture Implementation
-
-#### Phase 6: Pending State & Pairing UX
-
-**Goal**: Improve pairing workflow with resend capability, unpair acknowledgment, and abuse prevention
-**Depends on**: Phase 5 (bidirectional architecture changes may affect this)
-**Research**: Likely (UI patterns for multi-action gestures, abuse prevention strategies)
-**Research topics**: Material Design patterns for contextual actions, rate limiting for resend requests, unpair workflow best practices
-**Status**: Complete
-**Plans**: 3/3 complete
-
-Key deliverables:
-- Resend pairing request from pending state with abuse prevention (rate limiting, max attempts)
-- Research and implement UI pattern for multiple actions on long-press (resend + delete)
-- Interview stakeholder on unpair acknowledgment requirements (needed? optional? always?)
-- Implement chosen unpair acknowledgment workflow
-- Add visual feedback for pending operations
-- Test scenarios: rapid resend attempts, network failures, stale pending states
-
-Plans:
-- [x] 06-01: Resend pairing request with rate limiting (database + ViewModel)
-- [x] 06-02: UI for resend action (dropdown menu and visual feedback)
-- [x] 06-03: Notification approve flow and smart UNPAIR
-
-#### Phase 7: UI/UX Polish
-
-**Goal**: Fix UI bugs and improve user experience for production quality
-**Depends on**: Phase 6 (all functional changes complete)
-**Research**: Unlikely (standard Android UI fixes)
-**Status**: Complete
-**Plans**: 1/1 complete
-
-Key deliverables:
-- Fix button text overflow on smaller devices (Samsung S25 and similar)
-- Improve service toggle UX with loading states during foreground service startup
-- Add visual feedback/spinner while service is starting
-- Ensure all UI elements are responsive across device sizes
-- Polish animations and transitions
-- Accessibility audit and fixes
-
-Plans:
-- [x] 07-01: Segmented button text overflow and service toggle loading state
 
 ## Progress
 
@@ -166,6 +113,6 @@ Plans:
 | 2. CI/CD Pipeline | v1.0 | 0/? | In Progress | - |
 | 3. Pre-Launch Testing | v1.0 | 0/? | In Progress | - |
 | 4. Public Release | v1.0 | 0/? | Not Started | - |
-| 5. Bidirectional Pairing | v1.1 | 0/1 | Not Started | - |
+| 5. Bidirectional Pairing | v1.1 | 2/2 | Complete | 2026-01-15 |
 | 6. Pending State & Pairing UX | v1.1 | 3/3 | Complete | 2026-01-15 |
-| 7. UI/UX Polish | v1.1 | 1/1 | Complete | 2026-01-15 |
+| 7. UI/UX Polish | v1.1 | 2/2 | Complete | 2026-01-15 |
