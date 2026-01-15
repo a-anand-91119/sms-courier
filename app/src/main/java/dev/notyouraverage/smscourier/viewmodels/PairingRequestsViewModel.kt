@@ -3,6 +3,7 @@ package dev.notyouraverage.smscourier.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
@@ -31,9 +32,10 @@ class PairingRequestsViewModel(
             try {
                 val passwordHash = SecurityManager.hashPassword(password)
                 val authKey = SecurityManager.deriveAuthKey(password)
-                deviceRepository.updatePassword(phoneNumber, passwordHash.hash, passwordHash.salt)
-                deviceRepository.updateAuthKey(phoneNumber, authKey)
-                deviceRepository.updatePairingStatus(phoneNumber, PairingStatus.APPROVED)
+                // We are TARGET, they are SOURCE
+                deviceRepository.updatePassword(phoneNumber, DeviceRole.TARGET, passwordHash.hash, passwordHash.salt)
+                deviceRepository.updateAuthKey(phoneNumber, DeviceRole.TARGET, authKey)
+                deviceRepository.updatePairingStatus(phoneNumber, DeviceRole.TARGET, PairingStatus.APPROVED)
                 smsSender.sendPairApproved(phoneNumber)
             } finally {
                 _approvalInProgress.value = null
@@ -43,7 +45,8 @@ class PairingRequestsViewModel(
 
     fun rejectPairing(phoneNumber: String) {
         viewModelScope.launch {
-            deviceRepository.updatePairingStatus(phoneNumber, PairingStatus.REJECTED)
+            // We are TARGET, they are SOURCE
+            deviceRepository.updatePairingStatus(phoneNumber, DeviceRole.TARGET, PairingStatus.REJECTED)
             smsSender.sendPairRejected(phoneNumber)
         }
     }

@@ -91,8 +91,8 @@ class ForwardingControlViewModel(
             try {
                 // End the local session
                 sessionRepository.endSessionForDevice(devicePhoneNumber, "USER")
-                // Clear the stored encryption key
-                deviceRepository.updateEncryptionKey(devicePhoneNumber, null)
+                // Clear the stored encryption key (we are SOURCE)
+                deviceRepository.updateEncryptionKey(devicePhoneNumber, DeviceRole.SOURCE, null)
                 _uiState.value = _uiState.value.copy(isLoading = false)
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(

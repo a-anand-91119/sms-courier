@@ -169,13 +169,13 @@ class ForwardingControlViewModelTest {
     @Test
     fun `stopForwarding ends session and clears encryption key`() = runTest {
         coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
-        coEvery { deviceRepository.updateEncryptionKey(any(), any()) } just runs
+        coEvery { deviceRepository.updateEncryptionKey(any(), any(), any()) } just runs
 
         viewModel.stopForwarding("+1234567890")
 
         // With UnconfinedTestDispatcher, coroutines complete immediately
         coVerify { sessionRepository.endSessionForDevice("+1234567890", "USER") }
-        coVerify { deviceRepository.updateEncryptionKey("+1234567890", null) }
+        coVerify { deviceRepository.updateEncryptionKey("+1234567890", DeviceRole.SOURCE, null) }
     }
 
     @Test

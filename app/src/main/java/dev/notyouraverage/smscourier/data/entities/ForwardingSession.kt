@@ -8,14 +8,6 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "forwarding_sessions",
-    foreignKeys = [
-        ForeignKey(
-            entity = PairedDevice::class,
-            parentColumns = ["phoneNumber"],
-            childColumns = ["device_phone_number"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-    ],
     indices = [Index("device_phone_number")],
 )
 data class ForwardingSession(

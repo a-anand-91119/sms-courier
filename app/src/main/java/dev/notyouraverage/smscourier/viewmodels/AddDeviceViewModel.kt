@@ -39,15 +39,26 @@ class AddDeviceViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
             try {
-                // Check if device already exists
-                val existing = deviceRepository.getByPhoneNumber(phoneNumber)
-                if (existing != null) {
+                // Check if SOURCE role already exists
+                val existingSource = deviceRepository.getByPhoneNumberAndRole(
+                    phoneNumber,
+                    DeviceRole.SOURCE
+                )
+
+                if (existingSource != null) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = "Device already exists with status: ${existing.status}",
+                        error = "Already paired as SOURCE with status: ${existingSource.status}",
                     )
                     return@launch
                 }
+
+                // It's OK if TARGET role exists - bidirectional pairing is allowed
+                val existingTarget = deviceRepository.getByPhoneNumberAndRole(
+                    phoneNumber,
+                    DeviceRole.TARGET
+                )
+                // Note: existingTarget can be non-null, we'll create bidirectional pair
 
                 // Create new device entry (we are source, they are target)
                 deviceRepository.insert(

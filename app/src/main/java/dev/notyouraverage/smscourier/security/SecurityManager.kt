@@ -102,12 +102,12 @@ class SecurityManager(
             null
         }
 
-        deviceRepository.updateFailedAttempts(device.phoneNumber, newAttempts, lockedUntil)
+        deviceRepository.updateFailedAttempts(device.phoneNumber, device.role, newAttempts, lockedUntil)
     }
 
     suspend fun resetFailedAttempts(device: PairedDevice) {
         if (device.failedAttempts > 0 || device.lockedUntil != null) {
-            deviceRepository.updateFailedAttempts(device.phoneNumber, 0, null)
+            deviceRepository.updateFailedAttempts(device.phoneNumber, device.role, 0, null)
         }
     }
 
@@ -196,11 +196,11 @@ class SecurityManager(
 
         return if (validateChallengeResponse(senderPhoneNumber, response, authKey)) {
             resetFailedAttempts(device)
-            deviceRepository.updateLastActivity(senderPhoneNumber)
+            deviceRepository.updateLastActivity(senderPhoneNumber, device.role)
             AuthenticationResult.Success(device)
         } else {
             recordFailedAttempt(device)
-            val updatedDevice = deviceRepository.getByPhoneNumber(senderPhoneNumber)
+            val updatedDevice = deviceRepository.getByPhoneNumberAndRole(senderPhoneNumber, device.role)
             AuthenticationResult.InvalidResponse(
                 attemptsRemaining = MAX_FAILED_ATTEMPTS - (updatedDevice?.failedAttempts ?: 0),
             )

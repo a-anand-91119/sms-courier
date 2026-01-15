@@ -114,23 +114,24 @@ class SecurityManagerTest {
     @Test
     fun `recordFailedAttempt increments failed attempts`() = runTest {
         val device = createTestDevice(failedAttempts = 2)
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
 
         securityManager.recordFailedAttempt(device)
 
-        coVerify { deviceRepository.updateFailedAttempts(device.phoneNumber, 3, null) }
+        coVerify { deviceRepository.updateFailedAttempts(device.phoneNumber, device.role, 3, null) }
     }
 
     @Test
     fun `recordFailedAttempt locks device after max attempts`() = runTest {
         val device = createTestDevice(failedAttempts = 4) // One more triggers lockout
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
 
         securityManager.recordFailedAttempt(device)
 
         coVerify {
             deviceRepository.updateFailedAttempts(
                 device.phoneNumber,
+                device.role,
                 5,
                 match { it != null && it > System.currentTimeMillis() },
             )
@@ -140,11 +141,11 @@ class SecurityManagerTest {
     @Test
     fun `recordFailedAttempt does not lock before max attempts`() = runTest {
         val device = createTestDevice(failedAttempts = 3)
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
 
         securityManager.recordFailedAttempt(device)
 
-        coVerify { deviceRepository.updateFailedAttempts(device.phoneNumber, 4, null) }
+        coVerify { deviceRepository.updateFailedAttempts(device.phoneNumber, device.role, 4, null) }
     }
 
     // ==================== resetFailedAttempts ====================
@@ -152,11 +153,11 @@ class SecurityManagerTest {
     @Test
     fun `resetFailedAttempts clears counter and lockout`() = runTest {
         val device = createTestDevice(failedAttempts = 3, lockedUntil = System.currentTimeMillis() + 60000)
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
 
         securityManager.resetFailedAttempts(device)
 
-        coVerify { deviceRepository.updateFailedAttempts(device.phoneNumber, 0, null) }
+        coVerify { deviceRepository.updateFailedAttempts(device.phoneNumber, device.role, 0, null) }
     }
 
     @Test
@@ -165,7 +166,7 @@ class SecurityManagerTest {
 
         securityManager.resetFailedAttempts(device)
 
-        coVerify(exactly = 0) { deviceRepository.updateFailedAttempts(any(), any(), any()) }
+        coVerify(exactly = 0) { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) }
     }
 
     // ==================== generateChallenge ====================
@@ -306,8 +307,8 @@ class SecurityManagerTest {
         val device = createTestDevice(phoneNumber = phone, authKey = authKey)
 
         coEvery { deviceRepository.getApprovedSourceDevice(phone) } returns device
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
-        coEvery { deviceRepository.updateLastActivity(any()) } just runs
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateLastActivity(any(), any()) } just runs
 
         // Generate challenge and compute response
         val nonce = securityManager.generateChallenge(phone)
@@ -326,8 +327,8 @@ class SecurityManagerTest {
         val device = createTestDevice(phoneNumber = phone, authKey = authKey, failedAttempts = 1)
 
         coEvery { deviceRepository.getApprovedSourceDevice(phone) } returns device
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
-        coEvery { deviceRepository.getByPhoneNumber(phone) } returns device.copy(failedAttempts = 2)
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, device.role) } returns device.copy(failedAttempts = 2)
 
         securityManager.generateChallenge(phone)
         val result = securityManager.validateChallengeAndAuthenticate(phone, "wrongResponse")
@@ -343,15 +344,15 @@ class SecurityManagerTest {
         val device = createTestDevice(phoneNumber = phone, authKey = authKey, failedAttempts = 3)
 
         coEvery { deviceRepository.getApprovedSourceDevice(phone) } returns device
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
-        coEvery { deviceRepository.updateLastActivity(any()) } just runs
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateLastActivity(any(), any()) } just runs
 
         val nonce = securityManager.generateChallenge(phone)
         val response = SecurityManager.computeHmac(authKey, nonce)
 
         securityManager.validateChallengeAndAuthenticate(phone, response)
 
-        coVerify { deviceRepository.updateFailedAttempts(phone, 0, null) }
+        coVerify { deviceRepository.updateFailedAttempts(phone, device.role, 0, null) }
     }
 
     @Test
@@ -361,12 +362,12 @@ class SecurityManagerTest {
         val device = createTestDevice(phoneNumber = phone, authKey = authKey, failedAttempts = 2)
 
         coEvery { deviceRepository.getApprovedSourceDevice(phone) } returns device
-        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any()) } just runs
-        coEvery { deviceRepository.getByPhoneNumber(phone) } returns device.copy(failedAttempts = 3)
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, device.role) } returns device.copy(failedAttempts = 3)
 
         securityManager.generateChallenge(phone)
         securityManager.validateChallengeAndAuthenticate(phone, "wrongResponse")
 
-        coVerify { deviceRepository.updateFailedAttempts(phone, 3, null) }
+        coVerify { deviceRepository.updateFailedAttempts(phone, device.role, 3, null) }
     }
 }

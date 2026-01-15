@@ -102,7 +102,7 @@ class AddDeviceViewModelTest {
             phoneNumber = "+1234567890",
             status = PairingStatus.APPROVED,
         )
-        coEvery { deviceRepository.getByPhoneNumber("+1234567890") } returns existingDevice
+        coEvery { deviceRepository.getByPhoneNumberAndRole("+1234567890", any()) } returns existingDevice
 
         viewModel.uiState.test {
             awaitItem() // Initial state
@@ -118,7 +118,7 @@ class AddDeviceViewModelTest {
                 state = awaitItem()
             }
 
-            assertTrue(state.error?.contains("already exists") == true)
+            assertTrue(state.error?.contains("Already paired") == true)
             assertFalse(state.isLoading)
             cancelAndIgnoreRemainingEvents()
         }
@@ -130,7 +130,7 @@ class AddDeviceViewModelTest {
             phoneNumber = "+1234567890",
             status = PairingStatus.PENDING_SENT,
         )
-        coEvery { deviceRepository.getByPhoneNumber("+1234567890") } returns existingDevice
+        coEvery { deviceRepository.getByPhoneNumberAndRole("+1234567890", any()) } returns existingDevice
 
         viewModel.uiState.test {
             awaitItem() // Initial state
@@ -146,14 +146,14 @@ class AddDeviceViewModelTest {
                 state = awaitItem()
             }
 
-            assertTrue(state.error?.contains("already exists") == true)
+            assertTrue(state.error?.contains("Already paired") == true)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun `sendPairingRequest succeeds and inserts device`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumber("+1234567890") } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole("+1234567890", any()) } returns null
         coEvery { deviceRepository.insert(any()) } just runs
 
         viewModel.uiState.test {
@@ -182,7 +182,7 @@ class AddDeviceViewModelTest {
 
     @Test
     fun `sendPairingRequest completes successfully`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), any()) } returns null
         coEvery { deviceRepository.insert(any()) } just runs
 
         viewModel.updatePhoneNumber("+1234567890")
@@ -199,7 +199,7 @@ class AddDeviceViewModelTest {
 
     @Test
     fun `clearSuccess resets success flag`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), any()) } returns null
         coEvery { deviceRepository.insert(any()) } just runs
 
         viewModel.uiState.test {

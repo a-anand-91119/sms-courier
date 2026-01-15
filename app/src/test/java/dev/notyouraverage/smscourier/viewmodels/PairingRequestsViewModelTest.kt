@@ -3,6 +3,7 @@ package dev.notyouraverage.smscourier.viewmodels
 import app.cash.turbine.test
 import dev.notyouraverage.smscourier.MainCoroutineRule
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
@@ -72,24 +73,24 @@ class PairingRequestsViewModelTest {
 
     @Test
     fun `approvePairing updates password, authKey, status and sends SMS`() = runTest {
-        coEvery { deviceRepository.updatePassword(any(), any(), any()) } just runs
-        coEvery { deviceRepository.updateAuthKey(any(), any()) } just runs
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
+        coEvery { deviceRepository.updatePassword(any(), any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateAuthKey(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
 
         viewModel.approvePairing("+1234567890", "testPassword")
 
         // With UnconfinedTestDispatcher, coroutines complete immediately
-        coVerify { deviceRepository.updatePassword("+1234567890", any(), any()) }
-        coVerify { deviceRepository.updateAuthKey("+1234567890", any()) }
-        coVerify { deviceRepository.updatePairingStatus("+1234567890", PairingStatus.APPROVED) }
+        coVerify { deviceRepository.updatePassword("+1234567890", DeviceRole.TARGET, any(), any()) }
+        coVerify { deviceRepository.updateAuthKey("+1234567890", DeviceRole.TARGET, any()) }
+        coVerify { deviceRepository.updatePairingStatus("+1234567890", DeviceRole.TARGET, PairingStatus.APPROVED) }
         verify { smsSender.sendPairApproved("+1234567890") }
     }
 
     @Test
     fun `approvePairing completes and clears approvalInProgress`() = runTest {
-        coEvery { deviceRepository.updatePassword(any(), any(), any()) } just runs
-        coEvery { deviceRepository.updateAuthKey(any(), any()) } just runs
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
+        coEvery { deviceRepository.updatePassword(any(), any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateAuthKey(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
 
         viewModel.approvePairing("+1234567890", "password")
 
@@ -102,12 +103,12 @@ class PairingRequestsViewModelTest {
 
     @Test
     fun `rejectPairing updates status and sends SMS`() = runTest {
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
 
         viewModel.rejectPairing("+1234567890")
 
         // With UnconfinedTestDispatcher, coroutines complete immediately
-        coVerify { deviceRepository.updatePairingStatus("+1234567890", PairingStatus.REJECTED) }
+        coVerify { deviceRepository.updatePairingStatus("+1234567890", DeviceRole.TARGET, PairingStatus.REJECTED) }
         verify { smsSender.sendPairRejected("+1234567890") }
     }
 

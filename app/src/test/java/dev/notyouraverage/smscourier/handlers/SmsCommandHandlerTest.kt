@@ -68,7 +68,8 @@ class SmsCommandHandlerTest {
     @Test
     fun `handlePairRequest creates new device for unknown sender`() = runTest {
         val phone = "+1234567890"
-        coEvery { deviceRepository.getByPhoneNumber(phone) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, DeviceRole.TARGET) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, DeviceRole.SOURCE) } returns null
         coEvery { deviceRepository.insert(any()) } just runs
 
         handler.handlePairRequest(phone)
@@ -87,8 +88,8 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handlePairRequest ignores already approved device`() = runTest {
-        val device = createTestDevice(status = PairingStatus.APPROVED)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(status = PairingStatus.APPROVED, role = DeviceRole.TARGET)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns device
 
         handler.handlePairRequest(device.phoneNumber)
 
@@ -98,20 +99,20 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handlePairRequest allows re-request from rejected device`() = runTest {
-        val device = createTestDevice(status = PairingStatus.REJECTED)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
+        val device = createTestDevice(status = PairingStatus.REJECTED, role = DeviceRole.TARGET)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns device
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
 
         handler.handlePairRequest(device.phoneNumber)
 
-        coVerify { deviceRepository.updatePairingStatus(device.phoneNumber, PairingStatus.PENDING_RECEIVED) }
+        coVerify { deviceRepository.updatePairingStatus(device.phoneNumber, DeviceRole.TARGET, PairingStatus.PENDING_RECEIVED) }
         verify { notificationManager.showPairingRequestNotification(device.phoneNumber) }
     }
 
     @Test
     fun `handlePairRequest refreshes notification for pending device`() = runTest {
-        val device = createTestDevice(status = PairingStatus.PENDING_RECEIVED)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(status = PairingStatus.PENDING_RECEIVED, role = DeviceRole.TARGET)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns device
 
         handler.handlePairRequest(device.phoneNumber)
 
@@ -123,48 +124,48 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handlePairApproved updates status to APPROVED`() = runTest {
-        val device = createTestDevice(status = PairingStatus.PENDING_SENT)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
-        coEvery { deviceRepository.updateLastActivity(any()) } just runs
+        val device = createTestDevice(status = PairingStatus.PENDING_SENT, role = DeviceRole.SOURCE)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns device
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateLastActivity(any(), any()) } just runs
 
         handler.handlePairApproved(device.phoneNumber)
 
-        coVerify { deviceRepository.updatePairingStatus(device.phoneNumber, PairingStatus.APPROVED) }
+        coVerify { deviceRepository.updatePairingStatus(device.phoneNumber, DeviceRole.SOURCE, PairingStatus.APPROVED) }
         verify { notificationManager.showPairingResponseNotification(device.phoneNumber, approved = true) }
     }
 
     @Test
     fun `handlePairApproved ignores unknown device`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns null
 
         handler.handlePairApproved("+1234567890")
 
-        coVerify(exactly = 0) { deviceRepository.updatePairingStatus(any(), any()) }
+        coVerify(exactly = 0) { deviceRepository.updatePairingStatus(any(), any(), any()) }
     }
 
     @Test
     fun `handlePairApproved ignores device not in PENDING_SENT status`() = runTest {
-        val device = createTestDevice(status = PairingStatus.APPROVED)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(status = PairingStatus.APPROVED, role = DeviceRole.SOURCE)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns device
 
         handler.handlePairApproved(device.phoneNumber)
 
-        coVerify(exactly = 0) { deviceRepository.updatePairingStatus(any(), any()) }
+        coVerify(exactly = 0) { deviceRepository.updatePairingStatus(any(), any(), any()) }
     }
 
     // ==================== handlePairRejected ====================
 
     @Test
     fun `handlePairRejected updates status to REJECTED`() = runTest {
-        val device = createTestDevice(status = PairingStatus.PENDING_SENT)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
-        coEvery { deviceRepository.updateLastActivity(any()) } just runs
+        val device = createTestDevice(status = PairingStatus.PENDING_SENT, role = DeviceRole.SOURCE)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns device
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateLastActivity(any(), any()) } just runs
 
         handler.handlePairRejected(device.phoneNumber)
 
-        coVerify { deviceRepository.updatePairingStatus(device.phoneNumber, PairingStatus.REJECTED) }
+        coVerify { deviceRepository.updatePairingStatus(device.phoneNumber, DeviceRole.SOURCE, PairingStatus.REJECTED) }
         verify { notificationManager.showPairingResponseNotification(device.phoneNumber, approved = false) }
     }
 
@@ -173,7 +174,7 @@ class SmsCommandHandlerTest {
     @Test
     fun `handleUnpair ends sessions and deletes device`() = runTest {
         val device = createTestDevice()
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        coEvery { deviceRepository.getByPhoneNumber(any()) } returns listOf(device)
         coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
         coEvery { deviceRepository.deleteByPhoneNumber(any()) } just runs
 
@@ -185,7 +186,7 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleUnpair does nothing for unknown device`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns null
+        coEvery { deviceRepository.getByPhoneNumber(any()) } returns emptyList()
 
         handler.handleUnpair("+1234567890")
 
@@ -196,8 +197,8 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleAuthRequest generates challenge for approved device`() = runTest {
-        val device = createTestDevice(status = PairingStatus.APPROVED)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(status = PairingStatus.APPROVED, role = DeviceRole.TARGET)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns device
         every { securityManager.isDeviceLocked(device) } returns false
         every { securityManager.generateChallenge(any()) } returns "testNonce123"
 
@@ -209,8 +210,8 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleAuthRequest ignores unapproved device`() = runTest {
-        val device = createTestDevice(status = PairingStatus.PENDING_RECEIVED)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(status = PairingStatus.PENDING_RECEIVED, role = DeviceRole.TARGET)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns device
 
         handler.handleAuthRequest(device.phoneNumber)
 
@@ -219,8 +220,8 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleAuthRequest ignores locked device`() = runTest {
-        val device = createTestDevice(status = PairingStatus.APPROVED)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(status = PairingStatus.APPROVED, role = DeviceRole.TARGET)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns device
         every { securityManager.isDeviceLocked(device) } returns true
 
         handler.handleAuthRequest(device.phoneNumber)
@@ -230,7 +231,7 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleAuthRequest ignores unknown device`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns null
 
         handler.handleAuthRequest("+1234567890")
 
@@ -356,8 +357,8 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleForwardedDataEncrypted shows notification on decryption failure`() = runTest {
-        val device = createTestDevice(activeEncryptionKey = null)
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(activeEncryptionKey = null, role = DeviceRole.SOURCE)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns device
 
         handler.handleForwardedDataEncrypted(device.phoneNumber, "encryptedContent")
 
@@ -366,7 +367,7 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleForwardedDataEncrypted handles unknown device`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns null
 
         handler.handleForwardedDataEncrypted("+1234567890", "encryptedContent")
 
@@ -415,7 +416,8 @@ class SmsCommandHandlerTest {
     @Test
     fun `initiatePairing creates device and sends SMS`() = runTest {
         val phone = "+1234567890"
-        coEvery { deviceRepository.getByPhoneNumber(phone) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, DeviceRole.SOURCE) } returns null
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, DeviceRole.TARGET) } returns null
         coEvery { deviceRepository.insert(any()) } just runs
 
         handler.initiatePairing(phone)
@@ -434,8 +436,8 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `initiatePairing does nothing if device already exists`() = runTest {
-        val device = createTestDevice()
-        coEvery { deviceRepository.getByPhoneNumber(any()) } returns device
+        val device = createTestDevice(role = DeviceRole.SOURCE)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns device
 
         handler.initiatePairing(device.phoneNumber)
 
@@ -449,15 +451,15 @@ class SmsCommandHandlerTest {
     fun `approvePairing hashes password and sends SMS`() = runTest {
         val phone = "+1234567890"
         val password = "testPassword"
-        coEvery { deviceRepository.updatePassword(any(), any(), any()) } just runs
-        coEvery { deviceRepository.updateAuthKey(any(), any()) } just runs
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
+        coEvery { deviceRepository.updatePassword(any(), any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateAuthKey(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
 
         handler.approvePairing(phone, password)
 
-        coVerify { deviceRepository.updatePassword(phone, any(), any()) }
-        coVerify { deviceRepository.updateAuthKey(phone, any()) }
-        coVerify { deviceRepository.updatePairingStatus(phone, PairingStatus.APPROVED) }
+        coVerify { deviceRepository.updatePassword(phone, DeviceRole.TARGET, any(), any()) }
+        coVerify { deviceRepository.updateAuthKey(phone, DeviceRole.TARGET, any()) }
+        coVerify { deviceRepository.updatePairingStatus(phone, DeviceRole.TARGET, PairingStatus.APPROVED) }
         verify { smsSender.sendPairApproved(phone) }
     }
 
@@ -466,11 +468,11 @@ class SmsCommandHandlerTest {
     @Test
     fun `rejectPairing updates status and sends SMS`() = runTest {
         val phone = "+1234567890"
-        coEvery { deviceRepository.updatePairingStatus(any(), any()) } just runs
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
 
         handler.rejectPairing(phone)
 
-        coVerify { deviceRepository.updatePairingStatus(phone, PairingStatus.REJECTED) }
+        coVerify { deviceRepository.updatePairingStatus(phone, DeviceRole.TARGET, PairingStatus.REJECTED) }
         verify { smsSender.sendPairRejected(phone) }
     }
 }
