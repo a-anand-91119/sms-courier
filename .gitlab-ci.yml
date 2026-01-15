@@ -1,3 +1,23 @@
+# ====================
+# CI/CD PIPELINE
+# ====================
+#
+# Tag Format: v<MAJOR>.<MINOR>.<PATCH>
+# Examples: v1.0.0, v1.2.3, v2.0.0
+#
+# Version Code Calculation:
+# v1.2.3 → VERSION_CODE = 10203 (1*10000 + 2*100 + 3)
+# v2.0.0 → VERSION_CODE = 20000 (2*10000 + 0*100 + 0)
+#
+# Deployment Flow:
+# 1. Tag (v*) → Automatic: Build + Deploy to Internal Testing
+# 2. Manual: Internal → Alpha (Closed Testing)
+# 3. Manual: Alpha → Beta (Open Testing)
+# 4. Manual: Beta → Production
+#
+# Feature/Main branches: Build only (no deployment)
+# ====================
+
 stages:
   - test
   - build
@@ -19,8 +39,6 @@ variables:
   ANDROID_COMPILE_SDK: "35"
   ANDROID_BUILD_TOOLS: "35.0.0"
   ANDROID_SDK_TOOLS: "9477386"
-  # Use pipeline IID for feature branches, extract from tag for releases
-  VERSION_CODE: "${CI_PIPELINE_IID}"
 
 cache:
   key:
@@ -31,10 +49,36 @@ cache:
     - .gradle/
 
 before_script:
+  # Calculate VERSION_CODE from tag or use pipeline IID
+  - |
+    if [ -n "$CI_COMMIT_TAG" ]; then
+      # Extract version from tag (e.g., v1.2.3 or 1.2.3)
+      TAG_VERSION=$(echo $CI_COMMIT_TAG | sed 's/^v//')
+
+      # Split into major.minor.patch
+      MAJOR=$(echo $TAG_VERSION | cut -d. -f1)
+      MINOR=$(echo $TAG_VERSION | cut -d. -f2)
+      PATCH=$(echo $TAG_VERSION | cut -d. -f3)
+
+      # Calculate version code: MAJOR * 10000 + MINOR * 100 + PATCH
+      # v1.2.3 -> 10203, v2.0.0 -> 20000
+      export VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+      export VERSION_NAME=$TAG_VERSION
+
+      echo "📦 Tag: $CI_COMMIT_TAG"
+      echo "🔢 VERSION_CODE: $VERSION_CODE"
+      echo "📝 VERSION_NAME: $VERSION_NAME"
+    else
+      # Fallback for non-tag builds (feature branches)
+      export VERSION_CODE="${CI_PIPELINE_IID}"
+      export VERSION_NAME="0.0.1-dev"
+      echo "🔧 Development build"
+      echo "🔢 VERSION_CODE: $VERSION_CODE (pipeline ID)"
+    fi
   - bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs $(nproc)
 
 # ====================
-# TESTING
+# TEST STAGE
 # ====================
 
 test:
@@ -43,11 +87,11 @@ test:
   script:
     - bundle exec fastlane test
   rules:
-    # Run automatically on merge requests
+    # Run on merge requests
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    # Run automatically on main branch
+    # Run on main branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # Run automatically on tags
+    # Run on tags
     - if: $CI_COMMIT_TAG
     # Manual on feature branches
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
@@ -55,7 +99,7 @@ test:
       allow_failure: true
 
 # ====================
-# BUILDING
+# BUILD STAGE
 # ====================
 
 build:
@@ -73,36 +117,20 @@ build:
       - app/build/outputs/apk/release/app-release.apk
     expire_in: 1 week
   rules:
-    # Build automatically on main branch
+    # Build on main branch
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # Build automatically on tags (releases)
+    # Build on tags
     - if: $CI_COMMIT_TAG
-    # Build automatically on feature branches (to verify compilation)
+    # Build on feature branches
     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
 
 # ====================
-# DEPLOYMENT JOBS
+# DEPLOY STAGE
 # ====================
 
-# Generate changelog from git commits
-generate_changelog:
-  image: fabernovel/android:api-35-v1.10.1
-  stage: deploy
-  script:
-    - bundle exec fastlane generate_changelog version_code:$VERSION_CODE
-  artifacts:
-    paths:
-      - fastlane/metadata/android/en-US/changelogs/
-    expire_in: 1 week
-  rules:
-    # Available on main and tags only
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-    - if: $CI_COMMIT_TAG
-      when: manual
+# ===== INTERNAL TESTING (Auto on Tags) =====
 
-# Upload metadata only (descriptions, changelogs)
-upload_metadata:
+deploy:internal:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
@@ -110,16 +138,87 @@ upload_metadata:
   script:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane upload_metadata
+    - bundle exec fastlane generate_changelog version_code:$VERSION_CODE
+    - bundle exec fastlane internal_with_metadata version_code:$VERSION_CODE
+  needs:
+    - job: build
+      artifacts: true
   rules:
-    # Available on main and tags only
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
+    # Automatic deployment on tags
+    - if: $CI_COMMIT_TAG
+  environment:
+    name: internal
+    url: https://play.google.com/console
+
+# ===== ALPHA (CLOSED TESTING) - Manual Promotion =====
+
+deploy:alpha:
+  image: fabernovel/android:api-35-v1.10.1
+  stage: deploy
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: "./"
+  script:
+    - apt update -y && apt install -y curl
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
+    - bundle exec fastlane promote_internal_to_alpha
+  needs:
+    - job: deploy:internal
+  rules:
+    # Manual promotion from internal to alpha (only on tags)
     - if: $CI_COMMIT_TAG
       when: manual
+  environment:
+    name: alpha
+    url: https://play.google.com/console
 
-# Upload screenshots only (screenshots must be committed to repo manually)
-upload_screenshots:
+# ===== BETA (OPEN TESTING) - Manual Promotion =====
+
+deploy:beta:
+  image: fabernovel/android:api-35-v1.10.1
+  stage: deploy
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: "./"
+  script:
+    - apt update -y && apt install -y curl
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
+    - bundle exec fastlane promote_alpha_to_beta
+  needs:
+    - job: deploy:alpha
+  rules:
+    # Manual promotion from alpha to beta (only on tags)
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: beta
+    url: https://play.google.com/console
+
+# ===== PRODUCTION - Manual Promotion =====
+
+deploy:production:
+  image: fabernovel/android:api-35-v1.10.1
+  stage: deploy
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: "./"
+  script:
+    - apt update -y && apt install -y curl
+    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
+    - bundle exec fastlane promote_beta_to_production
+  needs:
+    - job: deploy:beta
+  rules:
+    # Manual promotion from beta to production (only on tags)
+    - if: $CI_COMMIT_TAG
+      when: manual
+  environment:
+    name: production
+    url: https://play.google.com/console
+
+# ====================
+# UTILITY JOBS (Manual)
+# ====================
+
+# Upload screenshots separately (rarely needed)
+upload:screenshots:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
@@ -129,14 +228,13 @@ upload_screenshots:
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
     - bundle exec fastlane upload_screenshots
   rules:
-    # Available on main and tags only (screenshots are rarely updated)
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
     - if: $CI_COMMIT_TAG
       when: manual
+  environment:
+    name: screenshots
 
-# Deploy to internal track (AAB only)
-deploy_internal:
+# Upload metadata separately (rarely needed)
+upload:metadata:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
@@ -144,100 +242,9 @@ deploy_internal:
   script:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane internal
-  needs:
-    - build
+    - bundle exec fastlane upload_metadata
   rules:
-    # Manual on main branch
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-    # Automatic on tags (can change to manual if preferred)
-    - if: $CI_COMMIT_TAG
-
-# Deploy to internal with metadata and changelog (recommended)
-deploy_internal_with_metadata:
-  image: fabernovel/android:api-35-v1.10.1
-  stage: deploy
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: "./"
-  script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane internal_with_metadata version_code:$VERSION_CODE
-  needs:
-    - build
-  rules:
-    # Manual on main branch
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-    # Automatic on tags
-    - if: $CI_COMMIT_TAG
-
-# Full release with everything (build + metadata + screenshots from repo)
-full_release:
-  image: fabernovel/android:api-35-v1.10.1
-  stage: deploy
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: "./"
-  script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane full_release version_code:$VERSION_CODE
-  needs:
-    - build
-  rules:
-    # Manual on main branch only
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-
-# ====================
-# PROMOTION JOBS
-# ====================
-
-promote_to_alpha:
-  image: fabernovel/android:api-35-v1.10.1
-  stage: deploy
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: "./"
-  script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_internal_to_alpha
-  rules:
-    # Manual on main and tags
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
     - if: $CI_COMMIT_TAG
       when: manual
-
-promote_to_beta:
-  image: fabernovel/android:api-35-v1.10.1
-  stage: deploy
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: "./"
-  script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_alpha_to_beta
-  rules:
-    # Manual on main and tags
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-    - if: $CI_COMMIT_TAG
-      when: manual
-
-promote_to_production:
-  image: fabernovel/android:api-35-v1.10.1
-  stage: deploy
-  variables:
-    SECURE_FILES_DOWNLOAD_PATH: "./"
-  script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_beta_to_production
-  rules:
-    # Manual on main and tags only
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-      when: manual
-    - if: $CI_COMMIT_TAG
-      when: manual
+  environment:
+    name: metadata
