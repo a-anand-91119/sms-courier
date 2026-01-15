@@ -133,6 +133,7 @@ platform :android do
     gradle(task: "clean assembleRelease bundleRelease")
     upload_to_play_store(
       track: "internal",
+      release_status: "draft",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_apk: true,
       skip_upload_metadata: true,
@@ -153,6 +154,7 @@ platform :android do
     gradle(task: "clean assembleRelease bundleRelease")
     upload_to_play_store(
       track: "internal",
+      release_status: "draft",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_apk: true,
       skip_upload_metadata: false,
@@ -191,6 +193,7 @@ platform :android do
 
     upload_to_play_store(
       track: "internal",
+      release_status: "draft",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_metadata: false,
       skip_upload_apk: true,
@@ -205,9 +208,9 @@ platform :android do
     gradle(task: "clean assembleRelease bundleRelease")
     upload_to_play_store(
       track: "production",
+      release_status: "draft",
       aab: "app/build/outputs/bundle/release/app-release.aab",
       skip_upload_apk: true
-
     )
   end
 end
