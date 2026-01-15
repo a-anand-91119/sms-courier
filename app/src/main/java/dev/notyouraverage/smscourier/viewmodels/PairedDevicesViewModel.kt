@@ -83,16 +83,21 @@ class PairedDevicesViewModel(
             // 1. End any active forwarding sessions for this device
             sessionRepository.endSessionForDevice(device.phoneNumber, "USER")
 
-            // 2. Send role-specific UNPAIR - tell other device to delete the inverse role
-            // If we're SOURCE (we request FROM them), they're TARGET (they forward TO us)
-            // If we're TARGET (we forward TO them), they're SOURCE (they request FROM us)
-            val roleToDeleteOnRemote = when (device.role) {
-                dev.notyouraverage.smscourier.data.entities.DeviceRole.SOURCE ->
-                    dev.notyouraverage.smscourier.data.entities.DeviceRole.TARGET
-                dev.notyouraverage.smscourier.data.entities.DeviceRole.TARGET ->
-                    dev.notyouraverage.smscourier.data.entities.DeviceRole.SOURCE
+            // 2. Only send UNPAIR SMS if pairing was actually established (APPROVED status)
+            // Skip for: REJECTED (they already know), PENDING_SENT (they don't have us),
+            //           PENDING_RECEIVED (pairing never completed)
+            if (device.status == PairingStatus.APPROVED) {
+                // Send role-specific UNPAIR - tell other device to delete the inverse role
+                // If we're SOURCE (we request FROM them), they're TARGET (they forward TO us)
+                // If we're TARGET (we forward TO them), they're SOURCE (they request FROM us)
+                val roleToDeleteOnRemote = when (device.role) {
+                    dev.notyouraverage.smscourier.data.entities.DeviceRole.SOURCE ->
+                        dev.notyouraverage.smscourier.data.entities.DeviceRole.TARGET
+                    dev.notyouraverage.smscourier.data.entities.DeviceRole.TARGET ->
+                        dev.notyouraverage.smscourier.data.entities.DeviceRole.SOURCE
+                }
+                smsSender.sendUnpair(device.phoneNumber, roleToDeleteOnRemote)
             }
-            smsSender.sendUnpair(device.phoneNumber, roleToDeleteOnRemote)
 
             // 3. Delete only this specific role from local database
             deviceRepository.deleteByPhoneNumberAndRole(device.phoneNumber, device.role)
