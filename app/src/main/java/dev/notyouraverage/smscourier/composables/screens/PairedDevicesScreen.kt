@@ -176,7 +176,7 @@ fun PairedDevicesScreen(
                     },
                 ) {
                     Text(
-                        text = "Incoming (${sourceDevices.size})",
+                        text = "Forward To Me (${sourceDevices.size})",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -194,7 +194,7 @@ fun PairedDevicesScreen(
                     },
                 ) {
                     Text(
-                        text = "Outgoing (${targetDevices.size})",
+                        text = "I Forward To (${targetDevices.size})",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
