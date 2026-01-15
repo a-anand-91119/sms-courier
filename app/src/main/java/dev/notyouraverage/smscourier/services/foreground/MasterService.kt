@@ -23,6 +23,7 @@ import dev.notyouraverage.smscourier.activities.MainActivity
 import dev.notyouraverage.smscourier.constants.Constants.CODE_FOREGROUND_SERVICE
 import dev.notyouraverage.smscourier.constants.Constants.NOTIFICATION_CHANNEL_GENERAL
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.handlers.SmsCommandHandler
 import dev.notyouraverage.smscourier.models.SmsMessageData
 import dev.notyouraverage.smscourier.notifications.PairingNotificationManager
@@ -104,6 +105,7 @@ class MasterService : Service() {
         const val EXTRA_ORIGINAL_SENDER = "EXTRA_ORIGINAL_SENDER"
         const val EXTRA_FORWARDED_CONTENT = "EXTRA_FORWARDED_CONTENT"
         const val EXTRA_NONCE = "EXTRA_NONCE"
+        const val EXTRA_UNPAIR_ROLE = "EXTRA_UNPAIR_ROLE"
 
         // Action for handling auth challenge on SOURCE side
         const val AUTH_CHALLENGE_RECEIVED = "AUTH_CHALLENGE_RECEIVED"
@@ -324,7 +326,15 @@ class MasterService : Service() {
                     commandHandler.handlePairRejected(sender)
                 }
                 "UNPAIR" -> {
-                    commandHandler.handleUnpair(sender)
+                    val roleStr = intent.getStringExtra(EXTRA_UNPAIR_ROLE)
+                    val role = roleStr?.let {
+                        when (it) {
+                            "SOURCE" -> DeviceRole.SOURCE
+                            "TARGET" -> DeviceRole.TARGET
+                            else -> null
+                        }
+                    }
+                    commandHandler.handleUnpair(sender, role)
                 }
                 "AUTH_REQUEST" -> {
                     commandHandler.handleAuthRequest(sender)
@@ -408,7 +418,8 @@ class MasterService : Service() {
         // Also store encryption key for later decryption (use authKey for consistency with TARGET)
         val authKey = SecurityManager.deriveAuthKey(password)
         serviceScope.launch {
-            deviceRepository.updateEncryptionKey(targetPhone, authKey)
+            // We are SOURCE, they are TARGET
+            deviceRepository.updateEncryptionKey(targetPhone, DeviceRole.SOURCE, authKey)
         }
 
         // Send AUTH_REQUEST

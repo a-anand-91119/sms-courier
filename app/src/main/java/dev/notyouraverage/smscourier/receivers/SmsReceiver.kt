@@ -8,6 +8,7 @@ import android.util.Log
 import dev.notyouraverage.smscourier.commands.CommandParser
 import dev.notyouraverage.smscourier.commands.ParsedCommand
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.enums.SmsCommand
 import dev.notyouraverage.smscourier.models.SmsMessageData
@@ -76,6 +77,9 @@ class SmsReceiver : BroadcastReceiver() {
                 }
                 is ParsedCommand.Unpair -> {
                     putExtra(MasterService.EXTRA_COMMAND_TYPE, "UNPAIR")
+                    command.roleToDelete?.let { role ->
+                        putExtra(MasterService.EXTRA_UNPAIR_ROLE, role.name)
+                    }
                 }
                 is ParsedCommand.AuthRequest -> {
                     putExtra(MasterService.EXTRA_COMMAND_TYPE, "AUTH_REQUEST")
@@ -136,8 +140,11 @@ class SmsReceiver : BroadcastReceiver() {
                 if (activeSessions.isNotEmpty()) {
                     // We have active forwarding sessions - forward this SMS to all active sources
                     activeSessions.forEach { session ->
-                        // Get the source device that requested forwarding
-                        val sourceDevice = deviceDao.getDeviceByPhoneNumber(session.devicePhoneNumber)
+                        // Get the source device that requested forwarding (we are TARGET, they are SOURCE)
+                        val sourceDevice = deviceDao.getDeviceByPhoneNumberAndRole(
+                            session.devicePhoneNumber,
+                            DeviceRole.SOURCE
+                        )
 
                         if (sourceDevice != null && sourceDevice.status == PairingStatus.APPROVED) {
                             Log.i(TAG, "Forwarding SMS from $sender to ${session.devicePhoneNumber} (encrypted=${session.encryptionKey != null})")
