@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -58,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.viewmodels.PairedDevicesViewModel
+import dev.notyouraverage.smscourier.viewmodels.ResendStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +74,7 @@ fun PairedDevicesScreen(
     val targetDevices by viewModel.targetDevices.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
     var deviceToDelete by remember { mutableStateOf<PairedDevice?>(null) }
+    var showMenuForDevice by remember { mutableStateOf<PairedDevice?>(null) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     // Confirmation dialog for device removal
@@ -179,14 +183,22 @@ fun PairedDevicesScreen(
                     emptyTitle = "No devices yet",
                     emptyMessage = "Add a device to receive forwarded SMS from them.",
                     onDeviceClick = onDeviceClick,
-                    onLongPressDevice = { deviceToDelete = it },
+                    onLongPressDevice = { showMenuForDevice = it },
+                    showMenuForDevice = showMenuForDevice,
+                    onDismissMenu = { showMenuForDevice = null },
+                    onDeleteDevice = { deviceToDelete = it },
+                    viewModel = viewModel,
                 )
                 1 -> DeviceList(
                     devices = targetDevices,
                     emptyTitle = "No devices yet",
                     emptyMessage = "Other devices can request pairing with you.",
                     onDeviceClick = onDeviceClick,
-                    onLongPressDevice = { deviceToDelete = it },
+                    onLongPressDevice = { showMenuForDevice = it },
+                    showMenuForDevice = showMenuForDevice,
+                    onDismissMenu = { showMenuForDevice = null },
+                    onDeleteDevice = { deviceToDelete = it },
+                    viewModel = viewModel,
                 )
             }
         }
@@ -200,6 +212,10 @@ fun DeviceList(
     emptyMessage: String,
     onDeviceClick: (PairedDevice) -> Unit,
     onLongPressDevice: (PairedDevice) -> Unit,
+    showMenuForDevice: PairedDevice?,
+    onDismissMenu: () -> Unit,
+    onDeleteDevice: (PairedDevice) -> Unit,
+    viewModel: PairedDevicesViewModel,
 ) {
     if (devices.isEmpty()) {
         Box(
@@ -245,12 +261,53 @@ fun DeviceList(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(devices, key = { it.phoneNumber }) { device ->
-                DeviceCard(
-                    device = device,
-                    onClick = { onDeviceClick(device) },
-                    onLongClick = { onLongPressDevice(device) },
-                )
+            items(devices, key = { "${it.phoneNumber}_${it.role}" }) { device ->
+                Box {
+                    DeviceCard(
+                        device = device,
+                        onClick = { onDeviceClick(device) },
+                        onLongClick = { onLongPressDevice(device) },
+                    )
+                    DropdownMenu(
+                        expanded = showMenuForDevice == device,
+                        onDismissRequest = onDismissMenu,
+                    ) {
+                        // Show "Resend Request" only for PENDING_SENT status
+                        if (device.status == PairingStatus.PENDING_SENT) {
+                            val resendStatus = viewModel.canResendPairingRequest(device)
+                            DropdownMenuItem(
+                                text = {
+                                    when (resendStatus) {
+                                        is ResendStatus.CanResend -> Text("Resend Request")
+                                        is ResendStatus.Cooldown -> Text(
+                                            "Resend (${resendStatus.remainingMs / 1000}s)",
+                                        )
+                                        is ResendStatus.MaxAttemptsReached -> Text(
+                                            "Max Attempts Reached",
+                                        )
+                                        else -> Text("Resend Request")
+                                    }
+                                },
+                                onClick = {
+                                    if (resendStatus is ResendStatus.CanResend) {
+                                        viewModel.resendPairingRequest(device)
+                                        onDismissMenu()
+                                    }
+                                },
+                                enabled = resendStatus is ResendStatus.CanResend,
+                            )
+                        }
+
+                        // Always show delete option
+                        DropdownMenuItem(
+                            text = { Text("Remove Device") },
+                            onClick = {
+                                onDismissMenu()
+                                onDeleteDevice(device)
+                            },
+                        )
+                    }
+                }
             }
             item {
                 Spacer(modifier = Modifier.height(80.dp)) // FAB space
