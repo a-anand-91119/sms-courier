@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -47,7 +48,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,6 +76,8 @@ fun HomeScreen(
     val context = LocalContext.current
     val homeState by viewModel.homeState.collectAsState()
     var serviceRunning by remember { mutableStateOf(MasterService.isRunning) }
+    var isTogglingService by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     // Refresh service state when screen is shown
@@ -122,7 +128,9 @@ fun HomeScreen(
             // Service Status Card
             ServiceStatusCard(
                 isRunning = serviceRunning,
+                isToggling = isTogglingService,
                 onToggle = { enabled ->
+                    isTogglingService = true
                     if (enabled) {
                         Intent(context, MasterService::class.java).also {
                             it.action = MasterService.START_SELF
@@ -134,7 +142,18 @@ fun HomeScreen(
                             context.startService(it)
                         }
                     }
-                    serviceRunning = enabled
+                    // Poll MasterService.isRunning until it matches expected state or timeout
+                    coroutineScope.launch {
+                        val maxWaitMs = 2000L
+                        val pollIntervalMs = 100L
+                        var elapsed = 0L
+                        while (elapsed < maxWaitMs && MasterService.isRunning != enabled) {
+                            delay(pollIntervalMs)
+                            elapsed += pollIntervalMs
+                        }
+                        serviceRunning = MasterService.isRunning
+                        isTogglingService = false
+                    }
                 },
             )
 
@@ -211,6 +230,7 @@ fun HomeScreen(
 @Composable
 fun ServiceStatusCard(
     isRunning: Boolean,
+    isToggling: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
     val backgroundColor by animateColorAsState(
@@ -284,16 +304,23 @@ fun ServiceStatusCard(
                     )
                 }
             }
-            Switch(
-                checked = isRunning,
-                onCheckedChange = onToggle,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.primary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                ),
-            )
+            if (isToggling) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Switch(
+                    checked = isRunning,
+                    onCheckedChange = onToggle,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.primary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
+                )
+            }
         }
     }
 }
