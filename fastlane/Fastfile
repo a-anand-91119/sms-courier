@@ -56,29 +56,53 @@ platform :android do
 
   # ==================== METADATA ====================
 
-  desc "Generate changelog from git commits"
+  desc "Read changelog from CHANGELOG.md for Play Store upload"
   lane :generate_changelog do |options|
     version_code = options[:version_code] || ENV["VERSION_CODE"] || "1"
 
-    # Ensure version_code is not empty
     if version_code.to_s.strip.empty?
-      UI.user_error!("version_code cannot be empty. Please provide version_code parameter or set VERSION_CODE environment variable.")
+      UI.user_error!("version_code cannot be empty")
     end
 
-    changelog = changelog_from_git_commits(
-      commits_count: 20,
-      pretty: "- %s",
-      merge_commit_filtering: "exclude_merges"
+    # Read the [Unreleased] section from CHANGELOG.md
+    changelog = read_changelog(
+      changelog_path: './CHANGELOG.md',
+      section_identifier: '[Unreleased]',
+      excluded_markdown_elements: ['###']  # Strip subsection headers for Play Store
     )
 
-    # Write changelog for specific version
-    changelogs_dir = "fastlane/metadata/android/en-US/changelogs"
+    # Fallback if [Unreleased] is empty - find and read most recent version
+    if changelog.strip.empty?
+      UI.important("No unreleased changes, reading most recent version section")
+      # Parse CHANGELOG.md to find most recent version section
+      # Use absolute path from project root (fastlane runs from fastlane/ dir)
+      project_root = File.expand_path('..', Dir.pwd)
+      changelog_file = File.join(project_root, 'CHANGELOG.md')
+      changelog_content = File.read(changelog_file)
+      version_match = changelog_content.match(/## \[(\d+\.\d+\.\d+)\]/)
+      if version_match
+        recent_version = "[#{version_match[1]}]"
+        UI.message("Reading section: #{recent_version}")
+        changelog = read_changelog(
+          changelog_path: './CHANGELOG.md',
+          section_identifier: recent_version,
+          excluded_markdown_elements: ['###']
+        )
+      else
+        UI.error("No version sections found in CHANGELOG.md")
+        changelog = "See CHANGELOG.md for details"
+      end
+    end
+
+    # Write to Play Store changelog format
+    # Path relative to fastlane/ directory where this runs
+    changelogs_dir = "metadata/android/en-US/changelogs"
     FileUtils.mkdir_p(changelogs_dir) unless Dir.exist?(changelogs_dir)
 
-    changelog_path = "#{changelogs_dir}/#{version_code}.txt"
-    File.write(changelog_path, changelog)
+    changelog_file = "#{changelogs_dir}/#{version_code}.txt"
+    File.write(changelog_file, changelog)
 
-    UI.success("Changelog written to #{changelog_path}")
+    UI.success("Changelog written to fastlane/#{changelog_file}")
   end
 
   desc "Upload only metadata (descriptions, changelogs) to Play Store"
