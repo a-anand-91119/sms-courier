@@ -26,10 +26,12 @@ enum class PairingStatus {
     REJECTED,
 }
 
-@Entity(tableName = "paired_devices")
+@Entity(
+    tableName = "paired_devices",
+    primaryKeys = ["phoneNumber", "device_role"]
+)
 data class PairedDevice(
     // Normalized E.164 format
-    @PrimaryKey
     val phoneNumber: String,
 
     // Optional user-assigned name
@@ -72,4 +74,11 @@ data class PairedDevice(
 
     @ColumnInfo(name = "last_activity_at")
     val lastActivityAt: Long = System.currentTimeMillis(),
+
+    // Rate limiting for resend pairing request
+    @ColumnInfo(name = "resend_attempt_count")
+    val resendAttemptCount: Int = 0,
+
+    @ColumnInfo(name = "last_resend_attempt_at")
+    val lastResendAttemptAt: Long? = null,
 )

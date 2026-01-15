@@ -14,7 +14,7 @@ import dev.notyouraverage.smscourier.data.entities.PairedDevice
 
 @Database(
     entities = [PairedDevice::class, ForwardingSession::class],
-    version = 3,
+    version = 5,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -46,6 +46,51 @@ abstract class SmsCourierDatabase : RoomDatabase() {
             }
         }
 
+        // Migration from version 3 to 4: Change to composite primary key (phoneNumber, role)
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Step 1: Create new table with composite primary key
+                db.execSQL("""
+                    CREATE TABLE paired_devices_new (
+                        phoneNumber TEXT NOT NULL,
+                        displayName TEXT,
+                        device_role TEXT NOT NULL,
+                        pairing_status TEXT NOT NULL,
+                        password_hash TEXT,
+                        password_salt TEXT,
+                        active_encryption_key TEXT,
+                        auth_key TEXT,
+                        max_forward_duration_minutes INTEGER NOT NULL DEFAULT 30,
+                        failed_attempts INTEGER NOT NULL DEFAULT 0,
+                        locked_until INTEGER,
+                        created_at INTEGER NOT NULL,
+                        last_activity_at INTEGER NOT NULL,
+                        PRIMARY KEY (phoneNumber, device_role)
+                    )
+                """)
+
+                // Step 2: Copy existing data from old table
+                db.execSQL("""
+                    INSERT INTO paired_devices_new
+                    SELECT * FROM paired_devices
+                """)
+
+                // Step 3: Drop old table
+                db.execSQL("DROP TABLE paired_devices")
+
+                // Step 4: Rename new table to original name
+                db.execSQL("ALTER TABLE paired_devices_new RENAME TO paired_devices")
+            }
+        }
+
+        // Migration from version 4 to 5: Add rate limiting fields for resend pairing request
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE paired_devices ADD COLUMN resend_attempt_count INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE paired_devices ADD COLUMN last_resend_attempt_at INTEGER")
+            }
+        }
+
         fun getDatabase(context: Context): SmsCourierDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -53,7 +98,7 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                     SmsCourierDatabase::class.java,
                     DATABASE_NAME,
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .build()
                 INSTANCE = instance
                 instance
