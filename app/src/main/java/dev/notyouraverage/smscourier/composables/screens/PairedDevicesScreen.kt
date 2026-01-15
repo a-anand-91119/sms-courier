@@ -175,7 +175,11 @@ fun PairedDevicesScreen(
                         )
                     },
                 ) {
-                    Text("Forward To Me (${sourceDevices.size})")
+                    Text(
+                        text = "Incoming (${sourceDevices.size})",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
                 SegmentedButton(
                     selected = selectedTab == 1,
@@ -189,7 +193,11 @@ fun PairedDevicesScreen(
                         )
                     },
                 ) {
-                    Text("I Forward To (${targetDevices.size})")
+                    Text(
+                        text = "Outgoing (${targetDevices.size})",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             }
 
