@@ -248,3 +248,56 @@ upload:metadata:
       when: manual
   environment:
     name: metadata
+
+# ====================
+# RELEASE STAGE
+# ====================
+
+release:gitlab:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: deploy:internal
+    - job: build
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    # Extract changelog for this version from CHANGELOG.md
+    # Look for the [Unreleased] section, or fall back to tag version
+    - |
+      VERSION=$(echo $CI_COMMIT_TAG | sed 's/^v//')
+      echo "Creating release for version $VERSION"
+
+      # Try to extract changelog section
+      # First try [Unreleased], then try [VERSION]
+      if grep -q "## \[Unreleased\]" CHANGELOG.md; then
+        # Extract content between [Unreleased] and next ## heading
+        RELEASE_NOTES=$(sed -n '/## \[Unreleased\]/,/^## \[/p' CHANGELOG.md | sed '1d;$d')
+      fi
+
+      # If empty, try to get the tagged version section
+      if [ -z "$RELEASE_NOTES" ]; then
+        RELEASE_NOTES=$(sed -n "/## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d')
+      fi
+
+      # Fallback message if still empty
+      if [ -z "$RELEASE_NOTES" ]; then
+        RELEASE_NOTES="Release $CI_COMMIT_TAG"
+      fi
+
+      # Write to file for release-cli
+      echo "$RELEASE_NOTES" > release_notes.md
+      cat release_notes.md
+  release:
+    name: 'SMS Courier $CI_COMMIT_TAG'
+    description: './release_notes.md'
+    tag_name: '$CI_COMMIT_TAG'
+    assets:
+      links:
+        - name: 'app-release.aab'
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/app/build/outputs/bundle/release/app-release.aab?job=build'
+          link_type: 'package'
+        - name: 'app-release.apk'
+          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/app/build/outputs/apk/release/app-release.apk?job=build'
+          link_type: 'package'
