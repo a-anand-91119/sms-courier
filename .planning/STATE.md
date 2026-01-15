@@ -1,0 +1,71 @@
+# Project State: SMS Courier
+
+## Current Position
+
+Phase: 1 of 4 (Play Store Submission Requirements)
+Plan: Not yet broken down
+Status: In Progress - completing permissions declarations and demo video
+Last activity: 2026-01-15 - Milestone v1.0 created, phases 1-3 in progress
+
+Progress: ██░░░░░░░░ 25%
+
+## Accumulated Context
+
+### Key Decisions
+
+**Architecture:**
+- SMS-based command protocol with `SMSC` prefix for device-to-device communication
+- Foreground service (MasterService) for reliable message forwarding
+- Room database for paired device management and session tracking
+- Jetpack Compose UI with Navigation Compose
+
+**Security:**
+- Bcrypt password hashing for device pairing
+- Failed attempt tracking and device lockout
+- Secure pairing workflow (request → approve → password)
+
+**CI/CD:**
+- GitLab CI/CD with Kubernetes runners
+- Semantic versioning with automatic version code calculation (v1.2.3 → 10203)
+- Automated deployment: tag → internal, manual promotions to alpha → beta → production
+- Fastlane for Play Store deployment automation
+
+**Play Store:**
+- Target API 35 (current requirement)
+- Native debug symbols enabled for crash analysis
+- Draft releases required (app not yet published)
+- Permissions: SMS (RECEIVE_SMS, SEND_SMS), FOREGROUND_SERVICE_REMOTE_MESSAGING
+
+### Technical Context
+
+**Current State:**
+- App functionally complete with pairing, forwarding, and session management
+- CI/CD pipeline built and configured
+- Play Store app created, internal testing track set up
+- Service account configured with Admin permissions
+
+**In Progress:**
+- SMS and foreground service permissions declarations (form submission)
+- Demo video for Play Store reviewers
+- Privacy policy finalization
+- Pipeline testing across all tracks
+
+### Blockers/Concerns Carried Forward
+
+None currently identified.
+
+## Roadmap Evolution
+
+- Milestone v1.0 Play Store Launch created: 4 phases (Phase 1-4)
+  - Focus: Complete Play Store requirements, refine CI/CD, test across tracks, launch publicly
+
+## Session Continuity
+
+Last session: 2026-01-15 20:30 UTC
+Stopped at: Milestone v1.0 initialization, Phase 1 (Play Store requirements) active
+Resume file: None
+
+**Context for next session:**
+- Phase 1: Complete permissions declarations, create demo video, finalize privacy policy
+- Phase 2: Test full CI/CD pipeline flow with actual tag deployment
+- Phase 3: Begin internal testing once app approved
