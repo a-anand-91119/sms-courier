@@ -54,6 +54,11 @@ Progress: ██░░░░░░░░ 25%
 
 None currently identified.
 
+### Pending Todos
+
+1 todo tracked in `.planning/todos/pending/`:
+- **security**: Encrypt activeEncryptionKey in database
+
 ## Roadmap Evolution
 
 - Milestone v1.0 Play Store Launch created: 4 phases (Phase 1-4)
