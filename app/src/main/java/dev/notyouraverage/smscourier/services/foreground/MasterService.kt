@@ -19,6 +19,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import dev.notyouraverage.smscourier.R
+import dev.notyouraverage.smscourier.activities.MainActivity
 import dev.notyouraverage.smscourier.constants.Constants.CODE_FOREGROUND_SERVICE
 import dev.notyouraverage.smscourier.constants.Constants.NOTIFICATION_CHANNEL_GENERAL
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
@@ -163,6 +164,17 @@ class MasterService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
+        // Create content intent to open app when notification is tapped
+        val contentIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val contentPendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            contentIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_GENERAL)
             .setTicker(null)
             .setContentTitle("SMS Courier")
@@ -172,6 +184,7 @@ class MasterService : Service() {
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setWhen(System.currentTimeMillis())
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentIntent(contentPendingIntent)
             .setDeleteIntent(deletePendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
