@@ -1,6 +1,6 @@
 # Project Milestones: SMS Courier
 
-## v1.1 Feature Improvements (Shipped: 2026-01-15)
+## v0.1 Feature Improvements (Shipped: 2026-01-15)
 
 **Delivered:** Bidirectional pairing architecture, improved pending state UX with rate limiting and contextual menus, and UI polish for production readiness.
 
@@ -22,8 +22,8 @@
 
 **Git range:** Phases 5-7 commits
 
-**What's next:** Continue with v1.0 Play Store Launch (Phases 1-4)
+**What's next:** Continue with v0.2 Play Store Launch (Phases 1-4)
 
 ---
 
-_See [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md) for full milestone archive._
+_See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for full milestone archive._

@@ -2,12 +2,12 @@
 
 ## Current Position
 
-Phase: 3 of 4 (Pre-Launch Testing) — v1.0 milestone
+Phase: 8 (CI/CD Pipeline Optimization) — v0.1.1 milestone
 Plan: Not started
-Status: Context gathered, ready to plan
-Last activity: 2026-01-15 - Phases 1-2 marked complete, Phase 3 context gathered
+Status: Milestone created, ready to plan
+Last activity: 2026-01-16 - Milestone v0.1.1 created with Phase 8
 
-Progress: █████████░ 100% of v1.1 | 50% of v1.0
+Progress: █████████░ 100% of v0.1 | 0% of v0.1.1 | 50% of v0.2
 
 ## Accumulated Context
 
@@ -18,7 +18,7 @@ Progress: █████████░ 100% of v1.1 | 50% of v1.0
 - Foreground service (MasterService) for reliable message forwarding
 - Room database for paired device management and session tracking
 - Jetpack Compose UI with Navigation Compose
-- Composite primary key `(phoneNumber, role)` for bidirectional pairing (v1.1)
+- Composite primary key `(phoneNumber, role)` for bidirectional pairing (v0.1)
 
 **Security:**
 - Bcrypt password hashing for device pairing
@@ -42,15 +42,16 @@ Progress: █████████░ 100% of v1.1 | 50% of v1.0
 
 **Current State:**
 - App functionally complete with pairing, forwarding, and session management
-- v1.1 shipped: Bidirectional pairing, pending state UX, UI polish
+- v0.1 shipped: Bidirectional pairing, pending state UX, UI polish
 - CI/CD pipeline built and configured
 - Play Store app created, internal testing track set up
 - Service account configured with Admin permissions
 - Database at version 5
 
 **Milestones:**
-- v1.1 Feature Improvements: ✅ SHIPPED 2026-01-15 (Phases 5-7)
-- v1.0 Play Store Launch: 🚧 In Progress (Phases 1-4)
+- v0.1 Feature Improvements: ✅ SHIPPED 2026-01-15 (Phases 5-7)
+- v0.1.1 CI/CD Optimizations: 🚧 In Progress (Phase 8)
+- v0.2 Play Store Launch: 🚧 In Progress (Phases 1-4)
 
 ### Blockers/Concerns Carried Forward
 
@@ -63,19 +64,21 @@ None currently identified.
 
 ## Roadmap Evolution
 
-- Milestone v1.1 Feature Improvements: SHIPPED (Phases 5-7)
+- Milestone v0.1 Feature Improvements: SHIPPED (Phases 5-7)
   - Bidirectional pairing, pending state UX, UI polish
-  - See `.planning/milestones/v1.1-ROADMAP.md` for archive
-- Milestone v1.0 Play Store Launch: IN PROGRESS (Phases 1-4)
+  - See `.planning/milestones/v0.1-ROADMAP.md` for archive
+- Milestone v0.1.1 CI/CD Optimizations: IN PROGRESS (Phase 8)
+  - Fix deploy job rebuild issue, integrate fastlane-plugin-changelog, add GitLab release automation
+- Milestone v0.2 Play Store Launch: IN PROGRESS (Phases 1-4)
   - Complete Play Store requirements, refine CI/CD, test across tracks, launch publicly
 
 ## Session Continuity
 
-Last session: 2026-01-15
-Stopped at: v1.1 milestone complete
+Last session: 2026-01-16
+Stopped at: v0.1.1 milestone created
 Resume file: None
 
 **Context for next session:**
-- v1.1 Feature Improvements shipped!
-- Continue with v1.0 Play Store Launch (Phases 1-4)
-- Next: `/gsd:plan-phase 1` to plan Play Store Submission Requirements
+- Milestone versioning updated: v1.1→v0.1, v1.0→v0.2
+- v0.1.1 CI/CD Optimizations milestone created (Phase 8)
+- Next: `/gsd:plan-phase 8` to plan CI/CD Pipeline Optimization
