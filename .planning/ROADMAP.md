@@ -115,7 +115,7 @@ Key deliverables:
 - Test edge cases (both devices initiate simultaneously, role conflicts)
 
 Plans:
-- [ ] 05-01: TBD (run /gsd:plan-phase 5 to break down)
+- [ ] 05-01: Bidirectional Pairing Architecture Implementation
 
 #### Phase 6: Pending State & Pairing UX
 
@@ -162,6 +162,6 @@ Plans:
 | 2. CI/CD Pipeline | v1.0 | 0/? | In Progress | - |
 | 3. Pre-Launch Testing | v1.0 | 0/? | In Progress | - |
 | 4. Public Release | v1.0 | 0/? | Not Started | - |
-| 5. Bidirectional Pairing | v1.1 | 0/? | Not Started | - |
+| 5. Bidirectional Pairing | v1.1 | 0/1 | Not Started | - |
 | 6. Pending State & Pairing UX | v1.1 | 0/? | Not Started | - |
 | 7. UI/UX Polish | v1.1 | 0/? | Not Started | - |
