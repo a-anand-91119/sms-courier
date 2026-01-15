@@ -40,7 +40,7 @@ object CommandPatterns {
     // UNPAIR [SOURCE|TARGET]
     // Group 1: optional role (SOURCE or TARGET)
     val UNPAIR = Regex(
-        """SMSC\s+UNPAIR(?:\s+(SOURCE|TARGET))?\s*$""",
+        """SMSC\s+UNPAIR(?:\s+(SOURCE|TARGET))?(?:\s|$)""",
         RegexOption.IGNORE_CASE,
     )
 
