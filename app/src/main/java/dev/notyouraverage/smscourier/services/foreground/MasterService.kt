@@ -290,10 +290,9 @@ class MasterService : Service() {
             Log.e(TAG, "handlePairingApproveRequested: Missing phone number")
             return
         }
-        // The actual approval with password will be handled from the UI
-        // This just indicates the user tapped approve from notification
+        // Note: Notification approve now launches MainActivity directly via PairingActionReceiver.
+        // This method is kept for potential programmatic approval requests.
         Log.i(TAG, "Pairing approve requested for: $phoneNumber")
-        // TODO: Launch password creation activity/dialog
     }
 
     private fun handlePairingRejectRequested(phoneNumber: String?) {
