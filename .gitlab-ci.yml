@@ -65,15 +65,15 @@ before_script:
       export VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
       export VERSION_NAME=$TAG_VERSION
 
-      echo "📦 Tag: $CI_COMMIT_TAG"
-      echo "🔢 VERSION_CODE: $VERSION_CODE"
-      echo "📝 VERSION_NAME: $VERSION_NAME"
+      echo "* Tag: $CI_COMMIT_TAG"
+      echo "* VERSION_CODE: $VERSION_CODE"
+      echo "* VERSION_NAME: $VERSION_NAME"
     else
       # Fallback for non-tag builds (feature branches)
       export VERSION_CODE="${CI_PIPELINE_IID}"
       export VERSION_NAME="0.0.1-dev"
-      echo "🔧 Development build"
-      echo "🔢 VERSION_CODE: $VERSION_CODE (pipeline ID)"
+      echo "* Development build"
+      echo "* VERSION_CODE: $VERSION_CODE (pipeline ID)"
     fi
   - bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs $(nproc)
 
