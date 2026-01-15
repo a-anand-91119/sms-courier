@@ -164,6 +164,30 @@ platform :android do
     )
   end
 
+  desc "Upload pre-built AAB to internal track (no gradle build)"
+  lane :upload_internal do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"] || "1"
+    aab_path = options[:aab_path] || "app/build/outputs/bundle/release/app-release.aab"
+
+    # Verify AAB exists
+    UI.user_error!("AAB not found at #{aab_path}") unless File.exist?(aab_path)
+
+    # Generate changelog
+    generate_changelog(version_code: version_code)
+
+    # Upload without building
+    upload_to_play_store(
+      track: "internal",
+      release_status: "draft",
+      aab: aab_path,
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
   # ==================== PROMOTIONS ====================
 
   desc "Promote Internal to Alpha"
