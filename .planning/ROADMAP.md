@@ -39,13 +39,13 @@ See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for full details.
 **Depends on**: Phase 7 (v0.1 complete)
 **Research**: Likely (fastlane-plugin-changelog integration)
 **Research topics**: fastlane-plugin-changelog setup, conventional commit parsing, GitLab release API
-**Status**: In Progress
-**Plans**: 2/3 complete
+**Status**: Complete
+**Plans**: 3/3 complete
 
 Plans:
 - [x] 08-01: Create upload-only Fastlane lanes (fix rebuild issue) — completed 2026-01-15
 - [x] 08-02: Integrate fastlane-plugin-changelog for proper changelog generation — completed 2026-01-16
-- [ ] 08-03: Add GitLab release job with artifact attachment
+- [x] 08-03: Add GitLab release job with artifact attachment — completed 2026-01-16
 
 **Key Changes Planned:**
 - New `upload_internal` lane that skips gradle build, uses existing artifacts
@@ -129,4 +129,4 @@ Plans:
 | 5. Bidirectional Pairing | v0.1 | 2/2 | Complete | 2026-01-15 |
 | 6. Pending State & Pairing UX | v0.1 | 3/3 | Complete | 2026-01-15 |
 | 7. UI/UX Polish | v0.1 | 2/2 | Complete | 2026-01-15 |
-| 8. CI/CD Pipeline Optimization | v0.1.1 | 2/3 | In Progress | - |
+| 8. CI/CD Pipeline Optimization | v0.1.1 | 3/3 | Complete | 2026-01-16 |
