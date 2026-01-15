@@ -36,8 +36,8 @@ class PairedDevicesViewModel(
             sessionRepository.endSessionForDevice(device.phoneNumber, "USER")
             // 2. Send UNPAIR SMS to notify the other device
             smsSender.sendUnpair(device.phoneNumber)
-            // 3. Delete from local database
-            deviceRepository.delete(device)
+            // 3. Delete only this specific role from local database (role-specific deletion)
+            deviceRepository.deleteByPhoneNumberAndRole(device.phoneNumber, device.role)
         }
     }
 
