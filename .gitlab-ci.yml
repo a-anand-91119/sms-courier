@@ -138,8 +138,7 @@ deploy:internal:
   script:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane generate_changelog version_code:$VERSION_CODE
-    - bundle exec fastlane internal_with_metadata version_code:$VERSION_CODE
+    - bundle exec fastlane upload_internal version_code:$VERSION_CODE aab_path:app/build/outputs/bundle/release/app-release.aab
   needs:
     - job: build
       artifacts: true
