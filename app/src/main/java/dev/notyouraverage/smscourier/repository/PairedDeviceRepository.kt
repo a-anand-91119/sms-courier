@@ -28,8 +28,12 @@ class PairedDeviceRepository(
     fun getDevicesByRoleAndStatus(role: DeviceRole, status: PairingStatus): Flow<List<PairedDevice>> =
         pairedDeviceDao.getDevicesByRoleAndStatus(role, status)
 
-    suspend fun getByPhoneNumber(phoneNumber: String): PairedDevice? = withContext(ioDispatcher) {
+    suspend fun getByPhoneNumber(phoneNumber: String): List<PairedDevice> = withContext(ioDispatcher) {
         pairedDeviceDao.getDeviceByPhoneNumber(normalizePhoneNumber(phoneNumber))
+    }
+
+    suspend fun getByPhoneNumberAndRole(phoneNumber: String, role: DeviceRole): PairedDevice? = withContext(ioDispatcher) {
+        pairedDeviceDao.getDeviceByPhoneNumberAndRole(normalizePhoneNumber(phoneNumber), role)
     }
 
     suspend fun getApprovedSourceDevice(phoneNumber: String): PairedDevice? = withContext(ioDispatcher) {
@@ -54,34 +58,48 @@ class PairedDeviceRepository(
         pairedDeviceDao.deleteByPhoneNumber(normalizePhoneNumber(phoneNumber))
     }
 
-    suspend fun updatePairingStatus(phoneNumber: String, status: PairingStatus) = withContext(ioDispatcher) {
-        pairedDeviceDao.updatePairingStatus(normalizePhoneNumber(phoneNumber), status)
+    suspend fun deleteByPhoneNumberAndRole(phoneNumber: String, role: DeviceRole) = withContext(ioDispatcher) {
+        pairedDeviceDao.deleteByPhoneNumberAndRole(normalizePhoneNumber(phoneNumber), role)
     }
 
-    suspend fun updatePassword(phoneNumber: String, passwordHash: String, passwordSalt: String) =
+    suspend fun updatePairingStatus(phoneNumber: String, role: DeviceRole, status: PairingStatus) = withContext(ioDispatcher) {
+        pairedDeviceDao.updatePairingStatus(normalizePhoneNumber(phoneNumber), role, status)
+    }
+
+    suspend fun updatePassword(phoneNumber: String, role: DeviceRole, passwordHash: String, passwordSalt: String) =
         withContext(ioDispatcher) {
-            pairedDeviceDao.updatePassword(normalizePhoneNumber(phoneNumber), passwordHash, passwordSalt)
+            pairedDeviceDao.updatePassword(normalizePhoneNumber(phoneNumber), role, passwordHash, passwordSalt)
         }
 
-    suspend fun updateFailedAttempts(phoneNumber: String, attempts: Int, lockedUntil: Long?) =
+    suspend fun updateFailedAttempts(phoneNumber: String, role: DeviceRole, attempts: Int, lockedUntil: Long?) =
         withContext(ioDispatcher) {
-            pairedDeviceDao.updateFailedAttempts(normalizePhoneNumber(phoneNumber), attempts, lockedUntil)
+            pairedDeviceDao.updateFailedAttempts(normalizePhoneNumber(phoneNumber), role, attempts, lockedUntil)
         }
 
-    suspend fun updateLastActivity(phoneNumber: String) = withContext(ioDispatcher) {
-        pairedDeviceDao.updateLastActivity(normalizePhoneNumber(phoneNumber))
+    suspend fun updateLastActivity(phoneNumber: String, role: DeviceRole) = withContext(ioDispatcher) {
+        pairedDeviceDao.updateLastActivity(normalizePhoneNumber(phoneNumber), role)
     }
 
-    suspend fun updateEncryptionKey(phoneNumber: String, encryptionKey: String?) = withContext(ioDispatcher) {
-        pairedDeviceDao.updateEncryptionKey(normalizePhoneNumber(phoneNumber), encryptionKey)
+    suspend fun updateEncryptionKey(phoneNumber: String, role: DeviceRole, encryptionKey: String?) = withContext(ioDispatcher) {
+        pairedDeviceDao.updateEncryptionKey(normalizePhoneNumber(phoneNumber), role, encryptionKey)
     }
 
-    suspend fun updateAuthKey(phoneNumber: String, authKey: String) = withContext(ioDispatcher) {
-        pairedDeviceDao.updateAuthKey(normalizePhoneNumber(phoneNumber), authKey)
+    suspend fun updateAuthKey(phoneNumber: String, role: DeviceRole, authKey: String) = withContext(ioDispatcher) {
+        pairedDeviceDao.updateAuthKey(normalizePhoneNumber(phoneNumber), role, authKey)
     }
 
     suspend fun deletePendingOlderThan(threshold: Long) = withContext(ioDispatcher) {
         pairedDeviceDao.deletePendingOlderThan(threshold)
+    }
+
+    suspend fun recordResendAttempt(phoneNumber: String, role: DeviceRole) = withContext(ioDispatcher) {
+        val device = getByPhoneNumberAndRole(phoneNumber, role) ?: return@withContext
+        pairedDeviceDao.updateResendAttempt(
+            normalizePhoneNumber(phoneNumber),
+            role,
+            device.resendAttemptCount + 1,
+            System.currentTimeMillis(),
+        )
     }
 
     private fun normalizePhoneNumber(phoneNumber: String): String {
