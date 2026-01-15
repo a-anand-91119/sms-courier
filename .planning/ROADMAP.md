@@ -136,7 +136,7 @@ Key deliverables:
 
 Plans:
 - [x] 06-01: Resend pairing request with rate limiting (database + ViewModel)
-- [ ] 06-02: UI for resend action
+- [x] 06-02: UI for resend action (dropdown menu and visual feedback)
 - [ ] 06-03: Unpair acknowledgment workflow
 
 #### Phase 7: UI/UX Polish
@@ -166,5 +166,5 @@ Plans:
 | 3. Pre-Launch Testing | v1.0 | 0/? | In Progress | - |
 | 4. Public Release | v1.0 | 0/? | Not Started | - |
 | 5. Bidirectional Pairing | v1.1 | 0/1 | Not Started | - |
-| 6. Pending State & Pairing UX | v1.1 | 1/3 | In Progress | - |
+| 6. Pending State & Pairing UX | v1.1 | 2/3 | In Progress | - |
 | 7. UI/UX Polish | v1.1 | 0/? | Not Started | - |
