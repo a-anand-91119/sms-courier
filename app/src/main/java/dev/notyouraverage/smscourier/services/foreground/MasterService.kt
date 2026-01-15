@@ -1,6 +1,7 @@
 package dev.notyouraverage.smscourier.services.foreground
 
 import android.app.Activity
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -131,6 +132,20 @@ class MasterService : Service() {
 
         // Create notification channels
         notificationManager.createNotificationChannels()
+        createForegroundServiceChannel()
+    }
+
+    private fun createForegroundServiceChannel() {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        val channel = NotificationChannel(
+            NOTIFICATION_CHANNEL_GENERAL,
+            "Service Status",
+            NotificationManager.IMPORTANCE_LOW,
+        ).apply {
+            description = "Shows when SMS Courier service is running"
+            setShowBadge(false)
+        }
+        notificationManager.createNotificationChannel(channel)
     }
 
     override fun onDestroy() {
@@ -471,9 +486,10 @@ class MasterService : Service() {
             setContentText("SMS Courier is running")
             setAutoCancel(false)
             setOngoing(true)
+            setCategory(NotificationCompat.CATEGORY_SERVICE)
             setWhen(System.currentTimeMillis())
             setSmallIcon(R.drawable.ic_launcher_foreground)
-            priority = NotificationManager.IMPORTANCE_HIGH
+            priority = NotificationCompat.PRIORITY_LOW
             startForeground(CODE_FOREGROUND_SERVICE, build())
         }
     }
