@@ -32,60 +32,44 @@ See [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md) for full details.
 
 **Milestone Goal:** Complete all Play Store requirements, test deployment pipeline, conduct multi-track testing, and successfully launch SMS Courier on Google Play Store.
 
-#### Phase 1: Play Store Submission Requirements
+#### Phase 1: Play Store Submission Requirements ✅
 
 **Goal**: Complete all Google Play Console requirements for app submission
 **Depends on**: Nothing (first phase)
-**Research**: Unlikely (established Play Store guidelines)
-**Status**: In Progress
-**Plans**: TBD
+**Status**: Complete (2026-01-15)
 
-Key deliverables:
-- Complete SMS and foreground service permissions declarations
-- Create and submit demonstration video for reviewers
-- Finalize and link privacy policy
-- Submit app for Play Store review
-- Address any reviewer feedback
+All submission requirements completed:
+- SMS and foreground service permissions declarations done
+- Demonstration video submitted
+- Privacy policy linked
+- App approved for closed testing
 
-Plans:
-- [ ] 01-01: TBD (run /gsd:plan-phase 1 to break down)
-
-#### Phase 2: CI/CD Pipeline Refinement
+#### Phase 2: CI/CD Pipeline Refinement ✅
 
 **Goal**: Validate and refine automated deployment pipeline from tag to production
-**Depends on**: Phase 1 (need app approved for testing tracks)
-**Research**: Unlikely (pipeline already built)
-**Status**: In Progress
-**Plans**: TBD
+**Depends on**: Phase 1
+**Status**: Complete (2026-01-15)
 
-Key deliverables:
-- Test full deployment flow: tag → internal → alpha → beta → production
-- Verify semantic version code extraction (v1.2.3 → 10203)
-- Validate draft release creation for unpublished app
-- Test manual promotion workflow between tracks
-- Document release process for future versions
-
-Plans:
-- [ ] 02-01: TBD
+Pipeline validated and working:
+- Full deployment flow: tag → internal → alpha working
+- Semantic version code extraction working
+- Manual promotion workflow tested
 
 #### Phase 3: Pre-Launch Testing
 
-**Goal**: Conduct thorough testing across all Play Store tracks before public release
-**Depends on**: Phase 2 (need working deployment pipeline)
-**Research**: Unlikely (standard testing practices)
+**Goal**: Dogfood the app daily while waiting for beta eligibility (12 testers + 14 days)
+**Depends on**: Phase 2 (complete)
 **Status**: In Progress
-**Plans**: TBD
+**Context**: [03-CONTEXT.md](phases/03-prelaunch-testing/03-CONTEXT.md)
 
-Key deliverables:
-- Internal testing validation (permissions, core features)
-- Alpha testing with closed test group
-- Beta testing with open testers
-- Incorporate feedback and fix critical issues
-- Performance and stability verification
-- Final QA before production
+Key focus:
+- Daily personal use of the app
+- Fix reliability issues — no missed messages
+- Polish UX rough edges
+- No new features or major refactors
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01: TBD (run /gsd:plan-phase 3 to break down)
 
 #### Phase 4: Public Release
 
@@ -109,8 +93,8 @@ Plans:
 
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
-| 1. Play Store Submission | v1.0 | 0/? | In Progress | - |
-| 2. CI/CD Pipeline | v1.0 | 0/? | In Progress | - |
+| 1. Play Store Submission | v1.0 | - | Complete | 2026-01-15 |
+| 2. CI/CD Pipeline | v1.0 | - | Complete | 2026-01-15 |
 | 3. Pre-Launch Testing | v1.0 | 0/? | In Progress | - |
 | 4. Public Release | v1.0 | 0/? | Not Started | - |
 | 5. Bidirectional Pairing | v1.1 | 2/2 | Complete | 2026-01-15 |
