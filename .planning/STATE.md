@@ -58,14 +58,17 @@ None currently identified.
 
 - Milestone v1.0 Play Store Launch created: 4 phases (Phase 1-4)
   - Focus: Complete Play Store requirements, refine CI/CD, test across tracks, launch publicly
+- Milestone v1.1 Feature Improvements created: 3 phases (Phase 5-7)
+  - Focus: Bidirectional pairing, pending state UX, UI polish
+  - Note: Can ship to internal/alpha/beta while v1.0 awaits production approval
 
 ## Session Continuity
 
-Last session: 2026-01-15 20:30 UTC
-Stopped at: Milestone v1.0 initialization, Phase 1 (Play Store requirements) active
+Last session: 2026-01-15 21:00 UTC
+Stopped at: v1.1 milestone created, Phase 1 (Play Store requirements) still active
 Resume file: None
 
 **Context for next session:**
-- Phase 1: Complete permissions declarations, create demo video, finalize privacy policy
-- Phase 2: Test full CI/CD pipeline flow with actual tag deployment
-- Phase 3: Begin internal testing once app approved
+- v1.0 Phase 1: Complete permissions declarations, create demo video, finalize privacy policy
+- v1.0 Phase 2: Test full CI/CD pipeline flow with actual tag deployment
+- v1.1 Phase 5-7: Ready to plan once starting v1.1 development (can start in parallel with v1.0)

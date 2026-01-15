@@ -11,6 +11,7 @@ None (Android app development patterns already established in codebase)
 ## Milestones
 
 - 🚧 **v1.0 Play Store Launch** - Phases 1-4 (in progress)
+- 📋 **v1.1 Feature Improvements** - Phases 5-7 (planned)
 
 ## Phases
 
@@ -91,6 +92,68 @@ Key deliverables:
 Plans:
 - [ ] 04-01: TBD
 
+### 📋 v1.1 Feature Improvements (Planned)
+
+**Milestone Goal:** Address critical bugs and add key features discovered during development - bidirectional pairing, improved pending state management, and UI polish for production readiness.
+
+**Note:** v1.1 features can ship to internal/alpha/beta tracks while v1.0 awaits Play Store production approval.
+
+#### Phase 5: Bidirectional Pairing Architecture
+
+**Goal**: Enable same phone number to exist in both "Forwarded to me" and "I forward to" sections simultaneously
+**Depends on**: Phase 1 (basic app functionality must be stable)
+**Research**: Likely (database schema changes, architectural implications)
+**Research topics**: Database migration strategy, relationship modeling for bidirectional pairs, UI state management for dual roles
+**Plans**: TBD
+
+Key deliverables:
+- Analyze current database schema and constraints preventing bidirectional pairing
+- Design new relationship model supporting dual roles
+- Implement database migration for bidirectional support
+- Update PairedDeviceRepository to handle bidirectional relationships
+- Modify UI to display and manage bidirectional pairs
+- Test edge cases (both devices initiate simultaneously, role conflicts)
+
+Plans:
+- [ ] 05-01: TBD (run /gsd:plan-phase 5 to break down)
+
+#### Phase 6: Pending State & Pairing UX
+
+**Goal**: Improve pairing workflow with resend capability, unpair acknowledgment, and abuse prevention
+**Depends on**: Phase 5 (bidirectional architecture changes may affect this)
+**Research**: Likely (UI patterns for multi-action gestures, abuse prevention strategies)
+**Research topics**: Material Design patterns for contextual actions, rate limiting for resend requests, unpair workflow best practices
+**Plans**: TBD
+
+Key deliverables:
+- Resend pairing request from pending state with abuse prevention (rate limiting, max attempts)
+- Research and implement UI pattern for multiple actions on long-press (resend + delete)
+- Interview stakeholder on unpair acknowledgment requirements (needed? optional? always?)
+- Implement chosen unpair acknowledgment workflow
+- Add visual feedback for pending operations
+- Test scenarios: rapid resend attempts, network failures, stale pending states
+
+Plans:
+- [ ] 06-01: TBD
+
+#### Phase 7: UI/UX Polish
+
+**Goal**: Fix UI bugs and improve user experience for production quality
+**Depends on**: Phase 6 (all functional changes complete)
+**Research**: Unlikely (standard Android UI fixes)
+**Plans**: TBD
+
+Key deliverables:
+- Fix button text overflow on smaller devices (Samsung S25 and similar)
+- Improve service toggle UX with loading states during foreground service startup
+- Add visual feedback/spinner while service is starting
+- Ensure all UI elements are responsive across device sizes
+- Polish animations and transitions
+- Accessibility audit and fixes
+
+Plans:
+- [ ] 07-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans | Status | Completed |
@@ -99,3 +162,6 @@ Plans:
 | 2. CI/CD Pipeline | v1.0 | 0/? | In Progress | - |
 | 3. Pre-Launch Testing | v1.0 | 0/? | In Progress | - |
 | 4. Public Release | v1.0 | 0/? | Not Started | - |
+| 5. Bidirectional Pairing | v1.1 | 0/? | Not Started | - |
+| 6. Pending State & Pairing UX | v1.1 | 0/? | Not Started | - |
+| 7. UI/UX Polish | v1.1 | 0/? | Not Started | - |
