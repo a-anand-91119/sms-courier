@@ -256,6 +256,7 @@ upload:metadata:
 release:gitlab:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
+  before_script: []  # Override global before_script (no Ruby/bundle in this image)
   needs:
     - job: deploy:internal
     - job: build
