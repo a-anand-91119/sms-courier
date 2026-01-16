@@ -160,7 +160,7 @@ deploy:alpha:
   script:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_internal_to_alpha
+    - bundle exec fastlane promote_internal_to_alpha version_code:$VERSION_CODE
   needs:
     - job: deploy:internal
   rules:
@@ -181,7 +181,7 @@ deploy:beta:
   script:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_alpha_to_beta
+    - bundle exec fastlane promote_alpha_to_beta version_code:$VERSION_CODE
   needs:
     - job: deploy:alpha
   rules:
@@ -202,7 +202,7 @@ deploy:production:
   script:
     - apt update -y && apt install -y curl
     - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_beta_to_production
+    - bundle exec fastlane promote_beta_to_production version_code:$VERSION_CODE
   needs:
     - job: deploy:beta
   rules:

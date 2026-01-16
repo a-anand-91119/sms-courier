@@ -236,18 +236,39 @@ platform :android do
   # ==================== PROMOTIONS ====================
 
   desc "Promote Internal to Alpha"
-  lane :promote_internal_to_alpha do
-    upload_to_play_store(track: "internal", track_promote_to: "alpha")
+  lane :promote_internal_to_alpha do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"]
+    UI.user_error!("version_code is required") if version_code.to_s.strip.empty?
+
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "alpha",
+      version_code: version_code.to_i
+    )
   end
 
   desc "Promote Alpha to Beta"
-  lane :promote_alpha_to_beta do
-    upload_to_play_store(track: "alpha", track_promote_to: "beta")
+  lane :promote_alpha_to_beta do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"]
+    UI.user_error!("version_code is required") if version_code.to_s.strip.empty?
+
+    upload_to_play_store(
+      track: "alpha",
+      track_promote_to: "beta",
+      version_code: version_code.to_i
+    )
   end
 
   desc "Promote Beta to Production"
-  lane :promote_beta_to_production do
-    upload_to_play_store(track: "beta", track_promote_to: "production")
+  lane :promote_beta_to_production do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"]
+    UI.user_error!("version_code is required") if version_code.to_s.strip.empty?
+
+    upload_to_play_store(
+      track: "beta",
+      track_promote_to: "production",
+      version_code: version_code.to_i
+    )
   end
 
   # ==================== FULL PIPELINES ====================
