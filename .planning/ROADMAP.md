@@ -88,7 +88,7 @@ Pipeline validated and working:
 
 **Goal**: Dogfood the app daily while waiting for beta eligibility (12 testers + 14 days)
 **Depends on**: Phase 2 (complete)
-**Status**: In Progress
+**Status**: Ongoing monitoring (no structured plans)
 **Context**: [03-CONTEXT.md](phases/03-prelaunch-testing/03-CONTEXT.md)
 
 Key focus:
@@ -97,8 +97,7 @@ Key focus:
 - Polish UX rough edges
 - No new features or major refactors
 
-Plans:
-- [ ] 03-01: TBD (run /gsd:plan-phase 3 to break down)
+**Approach**: Ad-hoc issue-driven. This phase uses reactive fixes rather than predefined plans. Issues discovered during dogfooding get addressed directly without formal PLAN.md files.
 
 #### Phase 4: Public Release
 
@@ -124,7 +123,7 @@ Plans:
 |-------|-----------|-------|--------|-----------|
 | 1. Play Store Submission | v0.2 | - | Complete | 2026-01-15 |
 | 2. CI/CD Pipeline | v0.2 | - | Complete | 2026-01-15 |
-| 3. Pre-Launch Testing | v0.2 | 0/? | In Progress | - |
+| 3. Pre-Launch Testing | v0.2 | ad-hoc | Ongoing | - |
 | 4. Public Release | v0.2 | 0/? | Not Started | - |
 | 5. Bidirectional Pairing | v0.1 | 2/2 | Complete | 2026-01-15 |
 | 6. Pending State & Pairing UX | v0.1 | 3/3 | Complete | 2026-01-15 |
