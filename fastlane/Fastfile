@@ -114,9 +114,13 @@ platform :android do
   end
 
   desc "Upload only metadata (descriptions, changelogs) to Play Store"
-  lane :upload_metadata do
+  lane :upload_metadata do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"]
+    UI.user_error!("version_code is required") if version_code.to_s.strip.empty?
+
     upload_to_play_store(
       track: "internal",
+      version_code: version_code.to_i,
       skip_upload_apk: true,
       skip_upload_aab: true,
       skip_upload_metadata: false,
@@ -127,9 +131,13 @@ platform :android do
   end
 
   desc "Upload only screenshots to Play Store"
-  lane :upload_screenshots do
+  lane :upload_screenshots do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"]
+    UI.user_error!("version_code is required") if version_code.to_s.strip.empty?
+
     upload_to_play_store(
       track: "internal",
+      version_code: version_code.to_i,
       skip_upload_apk: true,
       skip_upload_aab: true,
       skip_upload_metadata: true,
@@ -140,9 +148,13 @@ platform :android do
   end
 
   desc "Upload all store assets (metadata + screenshots) to Play Store"
-  lane :upload_store_assets do
+  lane :upload_store_assets do |options|
+    version_code = options[:version_code] || ENV["VERSION_CODE"]
+    UI.user_error!("version_code is required") if version_code.to_s.strip.empty?
+
     upload_to_play_store(
       track: "internal",
+      version_code: version_code.to_i,
       skip_upload_apk: false,
       skip_upload_aab: true,
       skip_upload_metadata: false,
