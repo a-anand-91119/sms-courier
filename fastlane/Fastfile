@@ -100,6 +100,14 @@ platform :android do
     FileUtils.mkdir_p(changelogs_dir) unless Dir.exist?(changelogs_dir)
 
     changelog_file = "#{changelogs_dir}/#{version_code}.txt"
+
+    # Truncate to Play Store limit (500 characters)
+    max_length = 500
+    if changelog.length > max_length
+      changelog = changelog[0, max_length - 3] + "..."
+      UI.important("Changelog truncated to #{max_length} characters for Play Store")
+    end
+
     File.write(changelog_file, changelog)
 
     UI.success("Changelog written to fastlane/#{changelog_file}")
