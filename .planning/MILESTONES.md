@@ -1,6 +1,6 @@
 # Project Milestones: SMS Courier
 
-## v0.1 Feature Improvements (Shipped: 2026-01-15)
+## v0.0.7–v0.0.10 Feature Improvements (Shipped: 2026-01-15)
 
 **Delivered:** Bidirectional pairing architecture, improved pending state UX with rate limiting and contextual menus, and UI polish for production readiness.
 
@@ -20,10 +20,38 @@
 - 228 unit tests passing
 - 1 day from start to ship
 
-**Git range:** Phases 5-7 commits
-
-**What's next:** Continue with v0.2 Play Store Launch (Phases 1-4)
+**Git range:** v0.0.7 to v0.0.10
 
 ---
 
-_See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for full milestone archive._
+## v0.0.60–v0.0.61 CI/CD Optimizations (Complete: 2026-01-16)
+
+**Delivered:** Optimized CI/CD pipeline with upload-only lanes, proper changelog generation, and GitLab release automation.
+
+**Phases completed:** 8 (3 plans)
+
+**Key accomplishments:**
+- Upload-only Fastlane lanes that skip unnecessary rebuilds
+- Integrated fastlane-plugin-changelog for proper changelog generation
+- GitLab release automation with APK/AAB artifact attachment
+
+**Git range:** v0.0.60 to v0.0.61
+
+---
+
+## v0.0.62 Testing (In Progress)
+
+**Goal:** Establish comprehensive automated testing, focusing on the critical SmsReceiver component and integration test infrastructure.
+
+**Phases:** 9-11
+
+**Planned accomplishments:**
+- Phase 9: SmsReceiver unit tests with Robolectric
+- Phase 10: Integration test infrastructure (Room test helpers, mock services)
+- Phase 11: End-to-end flow tests (pairing, forwarding, session management)
+
+**Git range:** v0.0.62 (planned)
+
+---
+
+_See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for archived milestone details._

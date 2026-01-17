@@ -2,7 +2,7 @@
 
 ## Overview
 
-SMS Courier is an Android app for forwarding SMS messages between two paired devices using secure SMS-based commands. The v1.0 milestone focuses on completing Play Store requirements, finalizing the automated CI/CD deployment pipeline, conducting thorough testing across internal/alpha/beta tracks, and ultimately launching publicly on Google Play Store.
+SMS Courier is an Android app for forwarding SMS messages between two paired devices using secure SMS-based commands. The roadmap focuses on completing Play Store requirements, finalizing the automated CI/CD deployment pipeline, conducting thorough testing, and launching publicly on Google Play Store.
 
 ## Domain Expertise
 
@@ -10,14 +10,15 @@ None (Android app development patterns already established in codebase)
 
 ## Milestones
 
-- ✅ [**v0.1 Feature Improvements**](milestones/v0.1-ROADMAP.md) - Phases 5-7 (shipped 2026-01-15)
-- 🚧 **v0.1.1 CI/CD Optimizations** - Phase 8 (in progress)
-- 🚧 **v0.2 Play Store Launch** - Phases 1-4 (in progress)
+- ✅ [**v0.0.7–v0.0.10 Feature Improvements**](milestones/v0.1-ROADMAP.md) - Phases 5-7 (shipped 2026-01-15)
+- ✅ **v0.0.60–v0.0.61 CI/CD Optimizations** - Phase 8 (complete)
+- 🚧 **v0.0.62 Testing** - Phases 9-11 (in progress)
+- 🔜 **Play Store Launch** - Phases 1-4 (blocked on testing)
 
 ## Completed Milestones
 
 <details>
-<summary>✅ v0.1 Feature Improvements (Phases 5-7) — SHIPPED 2026-01-15</summary>
+<summary>✅ v0.0.7–v0.0.10 Feature Improvements (Phases 5-7) — SHIPPED 2026-01-15</summary>
 
 - [x] Phase 5: Bidirectional Pairing Architecture — completed 2026-01-15
 - [x] Phase 6: Pending State & Pairing UX (3/3 plans) — completed 2026-01-15
@@ -27,37 +28,79 @@ See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for full details.
 
 </details>
 
+<details>
+<summary>✅ v0.0.60–v0.0.61 CI/CD Optimizations (Phase 8) — COMPLETE 2026-01-16</summary>
+
+- [x] Phase 8: CI/CD Pipeline Optimization (3/3 plans) — completed 2026-01-16
+
+**Key accomplishments:**
+- Upload-only Fastlane lanes (fix rebuild issue)
+- Integrated fastlane-plugin-changelog for proper changelog generation
+- GitLab release automation with artifact attachment
+
+</details>
+
 ## Phases
 
-### 🚧 v0.1.1 CI/CD Optimizations (In Progress)
+### 🚧 v0.0.62 Testing (In Progress)
 
-**Milestone Goal:** Optimize the CI/CD pipeline to eliminate unnecessary rebuilds, improve changelog generation, and automate GitLab release creation with artifact attachment.
+**Milestone Goal:** Establish comprehensive automated testing, focusing on the critical SmsReceiver component and integration test infrastructure.
 
-#### Phase 8: CI/CD Pipeline Optimization
+#### Phase 9: SmsReceiver Unit Testing
 
-**Goal**: Fix rebuild inefficiency, integrate proper changelog generation, and add GitLab release automation
-**Depends on**: Phase 7 (v0.1 complete)
-**Research**: Likely (fastlane-plugin-changelog integration)
-**Research topics**: fastlane-plugin-changelog setup, conventional commit parsing, GitLab release API
-**Status**: Complete
-**Plans**: 3/3 complete
+**Goal**: Create comprehensive unit tests for SmsReceiver, the critical untested component
+**Depends on**: None (standalone testing work)
+**Research**: Unlikely (testing patterns established in codebase)
+**Status**: Not Started
+**Plans**: 0/? TBD
+
+Key deliverables:
+- SmsReceiver unit tests with Robolectric
+- SMS intent simulation for command routing
+- Coverage for SMSC command interception
+- Coverage for regular SMS forwarding logic
 
 Plans:
-- [x] 08-01: Create upload-only Fastlane lanes (fix rebuild issue) — completed 2026-01-15
-- [x] 08-02: Integrate fastlane-plugin-changelog for proper changelog generation — completed 2026-01-16
-- [x] 08-03: Add GitLab release job with artifact attachment — completed 2026-01-16
+- [ ] 09-01: TBD
 
-**Key Changes Planned:**
-- New `upload_internal` lane that skips gradle build, uses existing artifacts
-- Replace `changelog_from_git_commits(commits_count: 20)` with proper changelog plugin
-- Auto-generate changelog from conventional commits in Keep a Changelog format
-- New CI job to create draft GitLab release after Play Store upload
-- Attach APK + AAB + changelog to GitLab release
-- Release naming: "SMS Courier vX.Y.Z"
+#### Phase 10: Integration Test Infrastructure
+
+**Goal**: Set up infrastructure for integration testing of multi-component flows
+**Depends on**: Phase 9
+**Research**: Likely (Android testing infrastructure patterns)
+**Research topics**: Robolectric service testing, Room test helpers, mock SMS system
+**Status**: Not Started
+**Plans**: 0/? TBD
+
+Key deliverables:
+- Test database setup with in-memory Room
+- Mock MasterService for controlled testing
+- Test fixtures for pairing/forwarding flows
+- CI integration for instrumented tests
+
+Plans:
+- [ ] 10-01: TBD
+
+#### Phase 11: End-to-End Flow Tests
+
+**Goal**: Create integration tests for complete pairing and forwarding flows
+**Depends on**: Phase 10
+**Research**: Unlikely (infrastructure from Phase 10)
+**Status**: Not Started
+**Plans**: 0/? TBD
+
+Key deliverables:
+- Full pairing flow test (request → approve → password)
+- Full forwarding flow test (auth → start → forward → stop)
+- Session expiry and timeout tests
+- Error scenario coverage
+
+Plans:
+- [ ] 11-01: TBD
 
 ---
 
-### 🚧 v0.2 Play Store Launch (In Progress)
+### 🔜 Play Store Launch (Blocked on Testing)
 
 **Milestone Goal:** Complete all Play Store requirements, test deployment pipeline, conduct multi-track testing, and successfully launch SMS Courier on Google Play Store.
 
@@ -121,11 +164,14 @@ Plans:
 
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
-| 1. Play Store Submission | v0.2 | - | Complete | 2026-01-15 |
-| 2. CI/CD Pipeline | v0.2 | - | Complete | 2026-01-15 |
-| 3. Pre-Launch Testing | v0.2 | ad-hoc | Ongoing | - |
-| 4. Public Release | v0.2 | 0/? | Not Started | - |
-| 5. Bidirectional Pairing | v0.1 | 2/2 | Complete | 2026-01-15 |
-| 6. Pending State & Pairing UX | v0.1 | 3/3 | Complete | 2026-01-15 |
-| 7. UI/UX Polish | v0.1 | 2/2 | Complete | 2026-01-15 |
-| 8. CI/CD Pipeline Optimization | v0.1.1 | 3/3 | Complete | 2026-01-16 |
+| 1. Play Store Submission | Play Store Launch | - | Complete | 2026-01-15 |
+| 2. CI/CD Pipeline | Play Store Launch | - | Complete | 2026-01-15 |
+| 3. Pre-Launch Testing | Play Store Launch | ad-hoc | Blocked | - |
+| 4. Public Release | Play Store Launch | 0/? | Not Started | - |
+| 5. Bidirectional Pairing | v0.0.7–v0.0.10 | 2/2 | Complete | 2026-01-15 |
+| 6. Pending State & Pairing UX | v0.0.7–v0.0.10 | 3/3 | Complete | 2026-01-15 |
+| 7. UI/UX Polish | v0.0.7–v0.0.10 | 2/2 | Complete | 2026-01-15 |
+| 8. CI/CD Pipeline Optimization | v0.0.60–v0.0.61 | 3/3 | Complete | 2026-01-16 |
+| 9. SmsReceiver Unit Testing | v0.0.62 | 0/? | Not Started | - |
+| 10. Integration Test Infrastructure | v0.0.62 | 0/? | Not Started | - |
+| 11. End-to-End Flow Tests | v0.0.62 | 0/? | Not Started | - |
