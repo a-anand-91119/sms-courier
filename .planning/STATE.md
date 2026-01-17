@@ -59,8 +59,7 @@ None currently identified.
 
 ### Pending Todos
 
-1 todo tracked in `.planning/todos/pending/`:
-- **security**: Encrypt activeEncryptionKey in database
+0 todos tracked in `.planning/todos/pending/`
 
 ## Roadmap Evolution
 
