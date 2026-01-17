@@ -1,9 +1,11 @@
 package dev.notyouraverage.smscourier.repository
 
+import android.util.Log
 import dev.notyouraverage.smscourier.data.dao.PairedDeviceDao
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.security.KeystoreEncryptionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -12,6 +14,10 @@ class PairedDeviceRepository(
     private val pairedDeviceDao: PairedDeviceDao,
 ) {
     private val ioDispatcher = Dispatchers.IO
+
+    companion object {
+        private const val TAG = "SMSC:DeviceRepository"
+    }
 
     fun getSourceDevices(): Flow<List<PairedDevice>> =
         pairedDeviceDao.getDevicesByRole(DeviceRole.SOURCE)
@@ -80,8 +86,33 @@ class PairedDeviceRepository(
         pairedDeviceDao.updateLastActivity(normalizePhoneNumber(phoneNumber), role)
     }
 
+    /**
+     * Stores the encryption key after encrypting it with Android Keystore.
+     * The key is encrypted at rest in the database.
+     */
     suspend fun updateEncryptionKey(phoneNumber: String, role: DeviceRole, encryptionKey: String?) = withContext(ioDispatcher) {
-        pairedDeviceDao.updateEncryptionKey(normalizePhoneNumber(phoneNumber), role, encryptionKey)
+        val encryptedKey = encryptionKey?.let { key ->
+            KeystoreEncryptionManager.encrypt(key).also { encrypted ->
+                if (encrypted == null) {
+                    Log.e(TAG, "Failed to encrypt encryption key for $phoneNumber")
+                }
+            }
+        }
+        pairedDeviceDao.updateEncryptionKey(normalizePhoneNumber(phoneNumber), role, encryptedKey)
+    }
+
+    /**
+     * Retrieves and decrypts the encryption key for a device.
+     * Returns null if no key is stored or decryption fails.
+     */
+    suspend fun getDecryptedEncryptionKey(phoneNumber: String, role: DeviceRole): String? = withContext(ioDispatcher) {
+        val device = pairedDeviceDao.getDeviceByPhoneNumberAndRole(normalizePhoneNumber(phoneNumber), role)
+        val encryptedKey = device?.activeEncryptionKey ?: return@withContext null
+        KeystoreEncryptionManager.decrypt(encryptedKey).also { decrypted ->
+            if (decrypted == null) {
+                Log.e(TAG, "Failed to decrypt encryption key for $phoneNumber")
+            }
+        }
     }
 
     suspend fun updateAuthKey(phoneNumber: String, role: DeviceRole, authKey: String) = withContext(ioDispatcher) {

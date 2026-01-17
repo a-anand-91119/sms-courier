@@ -81,7 +81,7 @@ class SmsCommandHandler(
         // Check if TARGET role already exists (this device forwards TO sender)
         val existingTarget = deviceRepository.getByPhoneNumberAndRole(
             senderPhone,
-            DeviceRole.TARGET
+            DeviceRole.TARGET,
         )
 
         when (existingTarget?.status) {
@@ -105,7 +105,7 @@ class SmsCommandHandler(
                 // Check if SOURCE role exists (bidirectional scenario)
                 val existingSource = deviceRepository.getByPhoneNumberAndRole(
                     senderPhone,
-                    DeviceRole.SOURCE
+                    DeviceRole.SOURCE,
                 )
                 if (existingSource != null) {
                     Log.d(TAG, "SOURCE pairing exists for $senderPhone - creating bidirectional pair")
@@ -310,14 +310,8 @@ class SmsCommandHandler(
     suspend fun handleForwardedDataEncrypted(senderPhone: String, encryptedContent: String) {
         Log.i(TAG, "Received encrypted forwarded data from $senderPhone")
 
-        // We are SOURCE, they are TARGET - check our SOURCE record
-        val device = deviceRepository.getByPhoneNumberAndRole(senderPhone, DeviceRole.SOURCE)
-        if (device == null) {
-            Log.w(TAG, "Received encrypted data from unknown device: $senderPhone")
-            return
-        }
-
-        val encryptionKey = device.activeEncryptionKey
+        // We are SOURCE, they are TARGET - get decrypted encryption key from repository
+        val encryptionKey = deviceRepository.getDecryptedEncryptionKey(senderPhone, DeviceRole.SOURCE)
         if (encryptionKey.isNullOrBlank()) {
             Log.w(TAG, "No encryption key stored for device: $senderPhone")
             // Try to show as-is (won't make sense but at least visible)
@@ -377,7 +371,7 @@ class SmsCommandHandler(
         // Check if SOURCE role already exists for this phone number
         val existingSource = deviceRepository.getByPhoneNumberAndRole(
             targetPhoneNumber,
-            DeviceRole.SOURCE
+            DeviceRole.SOURCE,
         )
 
         if (existingSource != null) {
@@ -388,7 +382,7 @@ class SmsCommandHandler(
         // It's OK if TARGET role exists - bidirectional pairing is allowed
         val existingTarget = deviceRepository.getByPhoneNumberAndRole(
             targetPhoneNumber,
-            DeviceRole.TARGET
+            DeviceRole.TARGET,
         )
         if (existingTarget != null) {
             Log.d(TAG, "TARGET pairing exists for $targetPhoneNumber - creating bidirectional pair")

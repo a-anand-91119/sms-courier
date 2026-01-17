@@ -356,22 +356,23 @@ class SmsCommandHandlerTest {
     // ==================== handleForwardedDataEncrypted ====================
 
     @Test
-    fun `handleForwardedDataEncrypted shows notification on decryption failure`() = runTest {
-        val device = createTestDevice(activeEncryptionKey = null, role = DeviceRole.SOURCE)
-        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns device
+    fun `handleForwardedDataEncrypted shows notification when no encryption key stored`() = runTest {
+        val phone = "+1234567890"
+        coEvery { deviceRepository.getDecryptedEncryptionKey(phone, DeviceRole.SOURCE) } returns null
 
-        handler.handleForwardedDataEncrypted(device.phoneNumber, "encryptedContent")
+        handler.handleForwardedDataEncrypted(phone, "encryptedContent")
 
-        verify { notificationManager.showForwardedMessageNotification("Unknown", any(), device.phoneNumber) }
+        verify { notificationManager.showForwardedMessageNotification("Unknown", "[Encrypted message - no key]", phone) }
     }
 
     @Test
-    fun `handleForwardedDataEncrypted handles unknown device`() = runTest {
-        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.SOURCE) } returns null
+    fun `handleForwardedDataEncrypted shows notification on decryption failure with invalid content`() = runTest {
+        val phone = "+1234567890"
+        coEvery { deviceRepository.getDecryptedEncryptionKey(phone, DeviceRole.SOURCE) } returns "someKey"
 
-        handler.handleForwardedDataEncrypted("+1234567890", "encryptedContent")
+        handler.handleForwardedDataEncrypted(phone, "invalidEncryptedContent")
 
-        verify(exactly = 0) { notificationManager.showForwardedMessageNotification(any(), any(), any()) }
+        verify { notificationManager.showForwardedMessageNotification("Unknown", "[Decryption failed]", phone) }
     }
 
     // ==================== handleIncomingSms ====================
