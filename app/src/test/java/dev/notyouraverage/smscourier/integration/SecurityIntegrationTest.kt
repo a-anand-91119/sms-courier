@@ -196,4 +196,171 @@ class SecurityIntegrationTest : IntegrationTestBase() {
 
         // Verify: No exception was thrown (test completes successfully)
     }
+
+    // ==================== Idempotency Tests ====================
+
+    @Test
+    fun `given approved device, when duplicate PAIR_REQUEST received, then idempotent`() = runTest {
+        // Setup: Create approved TARGET device (they are SOURCE, we forward to them)
+        val phoneNumber = "+1234567890"
+        setupApprovedTargetDevice(phoneNumber, "password123")
+
+        // Action: Handle PAIR_REQUEST twice (simulating duplicate command)
+        commandHandler.handlePairRequest(phoneNumber)
+        waitForAsync()
+        commandHandler.handlePairRequest(phoneNumber)
+        waitForAsync()
+
+        // Verify: Still one TARGET device with APPROVED status
+        val device = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertNotNull("Device should exist", device)
+        assertEquals("Status should still be APPROVED", PairingStatus.APPROVED, device!!.status)
+
+        // Verify: No duplicate entries (check SOURCE role doesn't exist)
+        val allDevices = deviceRepository.getByPhoneNumber(phoneNumber)
+        assertEquals("Should have only one device entry", 1, allDevices.size)
+    }
+
+    @Test
+    fun `given active session, when duplicate STOP_FORWARD received, then idempotent`() = runTest {
+        // Setup: Create active forwarding session
+        val phoneNumber = "+1234567890"
+        setupActiveForwardingSession(phoneNumber, 30)
+
+        // Verify session is active
+        val initialSessions = sessionRepository.getActiveSessionsList()
+        assertEquals("Should have one active session", 1, initialSessions.size)
+
+        // Action: Stop forwarding twice
+        commandHandler.handleStopForward(phoneNumber)
+        waitForAsync()
+        commandHandler.handleStopForward(phoneNumber)
+        waitForAsync()
+
+        // Verify: Session ended once, no error on second call
+        val finalSessions = sessionRepository.getActiveSessionsList()
+        assertTrue("All sessions should be ended", finalSessions.isEmpty())
+    }
+
+    @Test
+    fun `given pending received, when duplicate approval received, then idempotent`() = runTest {
+        // Setup: Create pending pairing request
+        val phoneNumber = "+1234567890"
+        setupPendingPairingRequest(phoneNumber)
+
+        // Action: Approve pairing twice
+        commandHandler.approvePairing(phoneNumber, "password123")
+        waitForAsync()
+        capturingSmsSender.clear()
+
+        commandHandler.approvePairing(phoneNumber, "password123")
+        waitForAsync()
+
+        // Verify: Device approved, second approval is idempotent
+        val device = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertNotNull("Device should exist", device)
+        assertEquals("Status should be APPROVED", PairingStatus.APPROVED, device!!.status)
+    }
+
+    // ==================== Invalid State Transition Tests ====================
+
+    @Test
+    fun `given no device, when approval attempted, then no error`() = runTest {
+        // No setup (no pending device)
+
+        // Action: Try to approve non-existent device
+        commandHandler.approvePairing("+9999999999", "password")
+        waitForAsync()
+
+        // Verify: No exception thrown, graceful handling
+        // PAIR_APPROVED will still be sent (current behavior)
+        // but no device created
+        val device = deviceRepository.getByPhoneNumberAndRole("+9999999999", DeviceRole.TARGET)
+        // Device may or may not be created depending on implementation
+        // The key is no exception was thrown
+    }
+
+    @Test
+    fun `given approved device, when approval attempted, then status unchanged`() = runTest {
+        // Setup: Create approved device
+        val phoneNumber = "+1234567890"
+        val originalPassword = "originalPassword"
+        setupApprovedTargetDevice(phoneNumber, originalPassword)
+
+        // Capture original auth key for comparison
+        val originalDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        val originalAuthKey = originalDevice?.authKey
+
+        // Action: Try to approve again with different password
+        commandHandler.approvePairing(phoneNumber, "newPassword")
+        waitForAsync()
+
+        // Verify: Status still APPROVED
+        val device = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertNotNull("Device should exist", device)
+        assertEquals("Status should still be APPROVED", PairingStatus.APPROVED, device!!.status)
+    }
+
+    @Test
+    fun `given rejected device, when PAIR_REQUEST received, then can re-request`() = runTest {
+        // Setup: Create rejected device
+        val phoneNumber = "+1234567890"
+        val device = createTestDevice(
+            phoneNumber = phoneNumber,
+            role = DeviceRole.TARGET,
+            status = PairingStatus.REJECTED,
+        )
+        deviceRepository.insert(device)
+
+        // Action: Send new PAIR_REQUEST
+        commandHandler.handlePairRequest(phoneNumber)
+        waitForAsync()
+
+        // Verify: Status changed to PENDING_RECEIVED (re-request allowed)
+        val updatedDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertNotNull("Device should exist", updatedDevice)
+        assertEquals(
+            "Status should be PENDING_RECEIVED",
+            PairingStatus.PENDING_RECEIVED,
+            updatedDevice!!.status,
+        )
+    }
+
+    // ==================== Rapid Command Tests ====================
+
+    @Test
+    fun `given approved device, when rapid AUTH_REQUESTS, then last challenge valid`() = runTest {
+        // Setup: Create approved TARGET device
+        val phoneNumber = "+1234567890"
+        val password = "password123"
+        setupApprovedTargetDevice(phoneNumber, password)
+
+        // Action: Send 3 AUTH_REQUESTS rapidly (without waiting between)
+        commandHandler.handleAuthRequest(phoneNumber)
+        commandHandler.handleAuthRequest(phoneNumber)
+        commandHandler.handleAuthRequest(phoneNumber)
+        waitForAsync()
+
+        // Extract nonce from last AUTH_CHALLENGE
+        val challenges = capturingSmsSender.findByPrefix("SMSC AUTH_CHALLENGE")
+        assertTrue("Should have sent AUTH_CHALLENGE(s)", challenges.isNotEmpty())
+
+        val lastChallenge = challenges.last().message
+        val nonce = lastChallenge.removePrefix("SMSC AUTH_CHALLENGE ")
+
+        // Compute correct HMAC with the last nonce
+        val authKey = SecurityManager.deriveAuthKey(password)
+        val correctResponse = SecurityManager.computeHmac(authKey, nonce)
+
+        capturingSmsSender.clear()
+
+        // Action: Send START_FORWARD with correct HMAC
+        commandHandler.handleStartForward(phoneNumber, correctResponse, 30)
+        waitForAsync()
+
+        // Verify: Session created (last challenge is valid)
+        val sessions = sessionRepository.getActiveSessionsList()
+        assertEquals("Session should be created", 1, sessions.size)
+        assertEquals("Session for correct phone", phoneNumber, sessions[0].devicePhoneNumber)
+    }
 }
