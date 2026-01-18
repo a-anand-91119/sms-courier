@@ -3,9 +3,14 @@ package dev.notyouraverage.smscourier.receivers
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
+import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
+import dev.notyouraverage.smscourier.TestFixtures.createTestSession
 import dev.notyouraverage.smscourier.commands.ParsedCommand
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
+import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.enums.SmsCommand
+import dev.notyouraverage.smscourier.models.SmsMessageData
 import dev.notyouraverage.smscourier.services.foreground.MasterService
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -21,13 +26,29 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
+/**
+ * Unit tests for SmsReceiver.
+ *
+ * Coverage:
+ * - Input validation (null context/intent, wrong action, empty messages)
+ * - SMSC command routing to MasterService (all 12 command types + legacy)
+ * - Regular SMS forwarding to active sessions (database lookup, device approval, encryption)
+ *
+ * Limitations:
+ * - SMS PDU construction is complex in unit tests; uses reflection to test private methods directly
+ * - Multipart SMS concatenation tested indirectly through command routing
+ * - Database exception handling tested via edge cases (no device, no session)
+ *
+ * See Phase 10/11 for integration tests with actual SMS intents and end-to-end flows.
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class SmsReceiverTest {
 
     companion object {
-        private const val TAG = "SMSC:SmsReceiverTest"
         private const val TEST_SENDER = "+1234567890"
     }
 
@@ -421,21 +442,6 @@ class SmsReceiverTest {
         assertNull("Non-SMSC message should not be parsed as command", result)
     }
 
-    // ==================== Multipart SMS Tests ====================
-    // Note: The multipart SMS concatenation logic (groupBy sender, joinToString for parts)
-    // cannot be easily unit tested because constructing valid SMS PDUs in tests is complex.
-    // Robolectric's ShadowSmsManager has limited PDU support.
-    //
-    // The logic being tested is:
-    //   val messagesBySender = messages.groupBy { it.originatingAddress ?: "Unknown" }
-    //   val fullMessage = parts.joinToString("") { it.messageBody ?: "" }
-    //
-    // This is standard Kotlin standard library code that is well-tested.
-    // Full end-to-end multipart SMS testing should be done in Phase 10/11 integration tests
-    // with actual device or Android emulator SMS broadcasts.
-    //
-    // Tracking: Phase 10 integration test candidate
-
     // ==================== Legacy Command Tests ====================
 
     @Test
@@ -480,6 +486,291 @@ class SmsReceiverTest {
         assertEquals(password, startedService.getStringExtra(MasterService.EXTRA_PASSWORD))
     }
 
+    // ==================== Forwarding Logic Tests ====================
+    // These tests verify handleRegularSms correctly forwards SMS to active sessions.
+    // Uses Robolectric with Room database via SmsCourierDatabase singleton.
+
+    @Test
+    fun `handleRegularSms forwards to active session`() = runBlocking {
+        // Given: an active session with approved SOURCE device
+        val sourceDevice = createTestDevice(
+            phoneNumber = "+1234567890",
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.APPROVED,
+        )
+        database.pairedDeviceDao().insertDevice(sourceDevice)
+
+        val session = createTestSession(
+            id = 0L,
+            devicePhoneNumber = "+1234567890",
+            isActive = true,
+        )
+        database.forwardingSessionDao().insertSession(session)
+
+        // Clear any services started during setup
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called
+        invokeHandleRegularSms("+9876543210", "Hello from sender")
+
+        // Wait for async coroutine to complete
+        waitForAsync()
+
+        // Then: FORWARD_SMS intent should be sent to MasterService
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        val startedService = shadowApplication.nextStartedService
+
+        assertNotNull("Service should be started for forwarding", startedService)
+        assertEquals(MasterService.FORWARD_SMS, startedService?.action)
+
+        val smsData = startedService?.getParcelableExtra(
+            MasterService.SMS_DATA,
+            SmsMessageData::class.java,
+        )
+        assertNotNull("SMS data should be present", smsData)
+        assertEquals("+9876543210", smsData?.sender)
+        assertEquals("Hello from sender", smsData?.rawMessage)
+        assertEquals(SmsCommand.FORWARD_SMS.toString(), smsData?.command)
+        assertEquals("+1234567890", smsData?.targetPhoneNumber)
+    }
+
+    @Test
+    fun `handleRegularSms does nothing with no active sessions`() = runBlocking {
+        // Given: no sessions in database (clean state after tearDown)
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called
+        invokeHandleRegularSms("+9876543210", "Hello message")
+
+        // Wait for async coroutine
+        waitForAsync()
+
+        // Then: no service should be started
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        assertNull(
+            "No service should be started without active sessions",
+            shadowApplication.peekNextStartedService(),
+        )
+    }
+
+    @Test
+    fun `handleRegularSms does nothing when device not approved`() = runBlocking {
+        // Given: an active session but device is PENDING, not APPROVED
+        val sourceDevice = createTestDevice(
+            phoneNumber = "+1234567890",
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.PENDING_SENT,
+        )
+        database.pairedDeviceDao().insertDevice(sourceDevice)
+
+        val session = createTestSession(
+            id = 0L,
+            devicePhoneNumber = "+1234567890",
+            isActive = true,
+        )
+        database.forwardingSessionDao().insertSession(session)
+
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called
+        invokeHandleRegularSms("+9876543210", "Hello message")
+
+        // Wait for async coroutine
+        waitForAsync()
+
+        // Then: no service should be started (device not approved)
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        assertNull(
+            "No service should be started for unapproved device",
+            shadowApplication.peekNextStartedService(),
+        )
+    }
+
+    @Test
+    fun `handleRegularSms forwards to multiple active sessions`() = runBlocking {
+        // Given: multiple active sessions with approved SOURCE devices
+        val sourceDevice1 = createTestDevice(
+            phoneNumber = "+1111111111",
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.APPROVED,
+        )
+        val sourceDevice2 = createTestDevice(
+            phoneNumber = "+2222222222",
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.APPROVED,
+        )
+        database.pairedDeviceDao().insertDevice(sourceDevice1)
+        database.pairedDeviceDao().insertDevice(sourceDevice2)
+
+        val session1 = createTestSession(
+            id = 0L,
+            devicePhoneNumber = "+1111111111",
+            isActive = true,
+        )
+        val session2 = createTestSession(
+            id = 0L,
+            devicePhoneNumber = "+2222222222",
+            isActive = true,
+        )
+        database.forwardingSessionDao().insertSession(session1)
+        database.forwardingSessionDao().insertSession(session2)
+
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called
+        invokeHandleRegularSms("+9876543210", "Hello both")
+
+        // Wait for async coroutine
+        waitForAsync()
+
+        // Then: service should be started for each session
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        val firstService = shadowApplication.nextStartedService
+        val secondService = shadowApplication.nextStartedService
+
+        assertNotNull("First forward service should be started", firstService)
+        assertNotNull("Second forward service should be started", secondService)
+
+        assertEquals(MasterService.FORWARD_SMS, firstService?.action)
+        assertEquals(MasterService.FORWARD_SMS, secondService?.action)
+
+        // Verify different targets
+        val smsData1 = firstService?.getParcelableExtra(
+            MasterService.SMS_DATA,
+            SmsMessageData::class.java,
+        )
+        val smsData2 = secondService?.getParcelableExtra(
+            MasterService.SMS_DATA,
+            SmsMessageData::class.java,
+        )
+
+        val targets = listOf(smsData1?.targetPhoneNumber, smsData2?.targetPhoneNumber)
+        assertTrue("Should forward to +1111111111", targets.contains("+1111111111"))
+        assertTrue("Should forward to +2222222222", targets.contains("+2222222222"))
+    }
+
+    @Test
+    fun `handleRegularSms includes encryption key when session has one`() = runBlocking {
+        // Given: an active session with encryption key
+        val sourceDevice = createTestDevice(
+            phoneNumber = "+1234567890",
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.APPROVED,
+        )
+        database.pairedDeviceDao().insertDevice(sourceDevice)
+
+        val encryptionKey = "secretEncryptionKey123"
+        val session = createTestSession(
+            id = 0L,
+            devicePhoneNumber = "+1234567890",
+            isActive = true,
+            encryptionKey = encryptionKey,
+        )
+        database.forwardingSessionDao().insertSession(session)
+
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called
+        invokeHandleRegularSms("+9876543210", "Encrypted message")
+
+        // Wait for async coroutine
+        waitForAsync()
+
+        // Then: SMS data should include encryption key
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        val startedService = shadowApplication.nextStartedService
+
+        assertNotNull("Service should be started", startedService)
+
+        val smsData = startedService?.getParcelableExtra(
+            MasterService.SMS_DATA,
+            SmsMessageData::class.java,
+        )
+        assertNotNull("SMS data should be present", smsData)
+        assertEquals(encryptionKey, smsData?.encryptionKey)
+    }
+
+    // ==================== Error Handling and Edge Case Tests ====================
+
+    @Test
+    fun `non-command SMS from unknown sender is not forwarded`() = runBlocking {
+        // Given: no active sessions (unknown sender scenario)
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called for an unknown sender
+        invokeHandleRegularSms("+5555555555", "Unknown sender message")
+
+        // Wait for async coroutine
+        waitForAsync()
+
+        // Then: no service should be started
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        assertNull(
+            "No service should be started for unknown sender",
+            shadowApplication.peekNextStartedService(),
+        )
+    }
+
+    @Test
+    fun `handleRegularSms handles inactive session correctly`() = runBlocking {
+        // Given: a session that is marked inactive
+        val sourceDevice = createTestDevice(
+            phoneNumber = "+1234567890",
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.APPROVED,
+        )
+        database.pairedDeviceDao().insertDevice(sourceDevice)
+
+        val session = createTestSession(
+            id = 0L,
+            devicePhoneNumber = "+1234567890",
+            isActive = false,
+        )
+        database.forwardingSessionDao().insertSession(session)
+
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called
+        invokeHandleRegularSms("+9876543210", "Hello message")
+
+        // Wait for async coroutine
+        waitForAsync()
+
+        // Then: no service should be started (session inactive)
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        assertNull(
+            "No service should be started for inactive session",
+            shadowApplication.peekNextStartedService(),
+        )
+    }
+
+    @Test
+    fun `handleRegularSms does nothing when session has no matching device`() = runBlocking {
+        // Given: an active session but no matching SOURCE device in database
+        val session = createTestSession(
+            id = 0L,
+            devicePhoneNumber = "+1234567890",
+            isActive = true,
+        )
+        database.forwardingSessionDao().insertSession(session)
+        // Note: No device inserted!
+
+        shadowOf(RuntimeEnvironment.getApplication()).clearStartedServices()
+
+        // When: handleRegularSms is called
+        invokeHandleRegularSms("+9876543210", "Hello message")
+
+        // Wait for async coroutine
+        waitForAsync()
+
+        // Then: no service should be started (no matching device)
+        val shadowApplication = shadowOf(RuntimeEnvironment.getApplication())
+        assertNull(
+            "No service should be started without matching device",
+            shadowApplication.peekNextStartedService(),
+        )
+    }
+
     // ==================== Helper Methods ====================
 
     /**
@@ -496,6 +787,30 @@ class SmsReceiverTest {
         )
         method.isAccessible = true
         method.invoke(receiver, context, command, sender, rawMessage)
+    }
+
+    /**
+     * Invokes the private handleRegularSms method via reflection.
+     * This allows testing forwarding logic directly.
+     */
+    private fun invokeHandleRegularSms(sender: String, message: String) {
+        val method = SmsReceiver::class.java.getDeclaredMethod(
+            "handleRegularSms",
+            Context::class.java,
+            String::class.java,
+            String::class.java,
+        )
+        method.isAccessible = true
+        method.invoke(receiver, context, sender, message)
+    }
+
+    /**
+     * Waits for async coroutines to complete.
+     * handleRegularSms launches a coroutine on Dispatchers.IO.
+     */
+    private fun waitForAsync() {
+        val latch = CountDownLatch(1)
+        latch.await(500, TimeUnit.MILLISECONDS)
     }
 
     /**
