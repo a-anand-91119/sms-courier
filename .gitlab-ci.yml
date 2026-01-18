@@ -82,11 +82,35 @@ before_script:
 # TEST STAGE
 # ====================
 
-test:
+test:unit:
   image: fabernovel/android:api-35-v1.10.1
   stage: test
   script:
     - bundle exec fastlane test
+  rules:
+    # Run on merge requests
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # Run on main branch
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # Run on tags
+    - if: $CI_COMMIT_TAG
+    # Manual on feature branches
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: true
+
+test:integration:
+  image: fabernovel/android:api-35-v1.10.1
+  stage: test
+  script:
+    - ./gradlew testDebugUnitTest --tests "*Integration*"
+  artifacts:
+    when: always
+    reports:
+      junit: app/build/test-results/testDebugUnitTest/*.xml
+    paths:
+      - app/build/reports/tests/testDebugUnitTest/
+    expire_in: 1 week
   rules:
     # Run on merge requests
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
