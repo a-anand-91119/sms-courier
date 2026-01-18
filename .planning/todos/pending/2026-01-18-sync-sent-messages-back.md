@@ -4,6 +4,7 @@ title: Sync sent messages back to original device
 area: feature-backlog
 files: []
 priority: backlog
+jira: SC-18
 ---
 
 ## Problem

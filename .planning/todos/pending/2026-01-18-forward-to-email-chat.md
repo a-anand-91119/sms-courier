@@ -4,6 +4,7 @@ title: Forward to email or chat apps
 area: feature-backlog
 files: []
 priority: backlog
+jira: SC-16
 ---
 
 ## Problem

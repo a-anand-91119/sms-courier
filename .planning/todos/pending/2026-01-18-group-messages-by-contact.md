@@ -4,6 +4,7 @@ title: Group messages by contact type
 area: feature-backlog
 files: []
 priority: backlog
+jira: SC-17
 ---
 
 ## Problem

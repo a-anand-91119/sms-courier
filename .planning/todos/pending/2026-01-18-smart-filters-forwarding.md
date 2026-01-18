@@ -4,6 +4,7 @@ title: Smart filters for selective forwarding
 area: feature-backlog
 files: []
 priority: backlog
+jira: SC-19
 ---
 
 ## Problem
