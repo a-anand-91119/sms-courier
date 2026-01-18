@@ -81,7 +81,13 @@ None currently identified.
 
 ### Pending Todos
 
-0 todos tracked in `.planning/todos/pending/`
+4 todos tracked in `.planning/todos/pending/`
+
+**Feature Backlog:**
+- Forward to email or chat apps
+- Group messages by contact type
+- Sync sent messages back to original device
+- Smart filters for selective forwarding
 
 ## Roadmap Evolution
 
