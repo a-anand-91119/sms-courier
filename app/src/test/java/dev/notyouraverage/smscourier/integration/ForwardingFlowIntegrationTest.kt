@@ -2,7 +2,6 @@ package dev.notyouraverage.smscourier.integration
 
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupActiveForwardingSession
-import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupApprovedSourceDevice
 import dev.notyouraverage.smscourier.security.SecurityManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -163,6 +162,162 @@ class ForwardingFlowIntegrationTest : IntegrationTestBase() {
         // Verify: No session created (challenge required)
         val activeSessions = sessionRepository.getActiveSessionsList()
         assertTrue("Should have no active sessions", activeSessions.isEmpty())
+    }
+
+    // ==================== Message Forwarding Tests ====================
+
+    @Test
+    fun `givenActiveSession_whenIncomingSmsReceived_thenMessageForwarded`() = runTest {
+        // Setup: Active forwarding session
+        setupActiveForwardingSession("+1234567890", 30)
+
+        // Action: Receive incoming SMS from third party
+        commandHandler.handleIncomingSms("+5555555555", "Your OTP is 123456")
+        waitForAsync()
+
+        // Verify: Message forwarded to session device
+        assertEquals("Should have 1 forwarded message", 1, capturingSmsSender.sentMessages.size)
+        val sent = capturingSmsSender.sentMessages[0]
+        assertEquals("+1234567890", sent.phoneNumber)
+        assertTrue(
+            "Should be forward command (FWD or FWDE)",
+            sent.message.startsWith("SMSC FWD") || sent.message.startsWith("SMSC FWDE"),
+        )
+    }
+
+    @Test
+    fun `givenActiveSession_whenMultipleMessagesReceived_thenMessageCountIncremented`() = runTest {
+        // Setup: Active forwarding session
+        val (_, session) = setupActiveForwardingSession("+1234567890", 30)
+
+        // Action: Receive multiple SMS messages
+        commandHandler.handleIncomingSms("+5555555555", "Message 1")
+        waitForAsync()
+        commandHandler.handleIncomingSms("+6666666666", "Message 2")
+        waitForAsync()
+
+        // Verify: Both messages forwarded
+        assertEquals("Should have 2 forwarded messages", 2, capturingSmsSender.sentMessages.size)
+
+        // Verify: Session message count incremented
+        val updatedSession = sessionRepository.getSessionById(session.id)
+        assertNotNull(updatedSession)
+        assertEquals("Session should have 2 messages forwarded", 2, updatedSession!!.messagesForwarded)
+    }
+
+    @Test
+    fun `givenNoActiveSession_whenIncomingSmsReceived_thenNoForwarding`() = runTest {
+        // Setup: Approved device but no active session
+        setupApprovedTargetDevice("+1234567890", "password123")
+
+        // Action: Receive incoming SMS
+        commandHandler.handleIncomingSms("+5555555555", "Test message")
+        waitForAsync()
+
+        // Verify: No message forwarded
+        capturingSmsSender.assertNothingSent()
+    }
+
+    @Test
+    fun `givenMultipleActiveSessions_whenIncomingSmsReceived_thenForwardedToAll`() = runTest {
+        // Setup: Two active forwarding sessions
+        setupActiveForwardingSession("+1111111111", 30)
+        setupActiveForwardingSession("+2222222222", 30)
+
+        // Action: Receive incoming SMS
+        commandHandler.handleIncomingSms("+5555555555", "Broadcast message")
+        waitForAsync()
+
+        // Verify: Message forwarded to both devices
+        assertEquals("Should forward to both sessions", 2, capturingSmsSender.sentMessages.size)
+        val recipients = capturingSmsSender.sentMessages.map { it.phoneNumber }
+        assertTrue("Should include first device", recipients.contains("+1111111111"))
+        assertTrue("Should include second device", recipients.contains("+2222222222"))
+    }
+
+    // ==================== Session Stop Tests ====================
+
+    @Test
+    fun `givenActiveSession_whenStopForwardReceived_thenSessionEnded`() = runTest {
+        // Setup: Active forwarding session
+        val (_, session) = setupActiveForwardingSession("+1234567890", 30)
+
+        // Verify: Session is active before stop
+        val beforeStop = sessionRepository.getSessionById(session.id)
+        assertTrue("Session should be active before stop", beforeStop!!.isActive)
+
+        // Action: Receive STOP_FORWARD
+        commandHandler.handleStopForward("+1234567890")
+        waitForAsync()
+
+        // Verify: Session ended
+        val afterStop = sessionRepository.getSessionById(session.id)
+        assertNotNull(afterStop)
+        assertFalse("Session should be inactive after stop", afterStop!!.isActive)
+        assertEquals("Session should be stopped by REMOTE", "REMOTE", afterStop.stoppedBy)
+    }
+
+    @Test
+    fun `givenNoActiveSession_whenStopForwardReceived_thenNoError`() = runTest {
+        // Setup: Approved device but no active session
+        setupApprovedTargetDevice("+1234567890", "password123")
+
+        // Action: Receive STOP_FORWARD (should not throw)
+        commandHandler.handleStopForward("+1234567890")
+        waitForAsync()
+
+        // Verify: No error, graceful handling (nothing to verify other than no exception)
+        assertTrue("Should handle gracefully", true)
+    }
+
+    // ==================== Full Forwarding Flow Tests ====================
+
+    @Test
+    fun `fullForwardingFlow_authThenForwardThenStop`() = runTest {
+        // Setup: Approved TARGET device
+        val password = "password123"
+        setupApprovedTargetDevice("+1234567890", password)
+
+        // Step 1: AUTH_REQUEST
+        commandHandler.handleAuthRequest("+1234567890")
+        waitForAsync()
+
+        // Extract nonce and compute HMAC
+        val challengeMsg = capturingSmsSender.sentMessages.first()
+        val nonce = challengeMsg.message.removePrefix("SMSC AUTH_CHALLENGE ")
+        val authKey = SecurityManager.deriveAuthKey(password)
+        val hmacResponse = SecurityManager.computeHmac(authKey, nonce)
+
+        capturingSmsSender.clear()
+
+        // Step 2: START_FORWARD with valid response
+        commandHandler.handleStartForward("+1234567890", hmacResponse, 30)
+        waitForAsync()
+
+        // Checkpoint: Session active
+        val activeSessions = sessionRepository.getActiveSessionsList()
+        assertEquals("Should have 1 active session", 1, activeSessions.size)
+        val session = activeSessions[0]
+        assertTrue("Session should be active", session.isActive)
+
+        // Step 3: Receive incoming SMS
+        commandHandler.handleIncomingSms("+5555555555", "Test OTP: 789012")
+        waitForAsync()
+
+        // Checkpoint: Message forwarded, count incremented
+        assertEquals("Should have 1 forwarded message", 1, capturingSmsSender.sentMessages.size)
+        val updatedSession = sessionRepository.getSessionById(session.id)
+        assertEquals("Message count should be 1", 1, updatedSession!!.messagesForwarded)
+
+        // Step 4: STOP_FORWARD
+        commandHandler.handleStopForward("+1234567890")
+        waitForAsync()
+
+        // Verify: Session ended, stoppedBy set
+        val finalSession = sessionRepository.getSessionById(session.id)
+        assertNotNull(finalSession)
+        assertFalse("Session should be inactive", finalSession!!.isActive)
+        assertEquals("Should be stopped by REMOTE", "REMOTE", finalSession.stoppedBy)
     }
 
     // ==================== Helper for TARGET device setup ====================
