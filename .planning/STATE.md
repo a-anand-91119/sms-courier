@@ -2,12 +2,12 @@
 
 ## Current Position
 
-Phase: 9 (SmsReceiver Unit Testing) - v0.0.62 Testing milestone - COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase 9 complete, ready for Phase 10
-Last activity: 2026-01-18 - Completed 09-02-PLAN.md (SmsReceiver forwarding tests)
+Phase: 10 (Integration Test Infrastructure) - v0.0.62 Testing milestone - IN PROGRESS
+Plan: 1 of 3 in current phase
+Status: Plan 10-01 complete, ready for Plan 10-02
+Last activity: 2026-01-18 - Completed 10-01-PLAN.md (core integration test infrastructure)
 
-Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 33% of v0.0.62
+Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 50% of v0.0.62
 
 ## Accumulated Context
 
@@ -45,6 +45,11 @@ Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - Robolectric with Room in-memory database for forwarding logic tests
 - CountDownLatch for async coroutine waiting in tests
 
+**Testing (Phase 10):**
+- SmsSender made `open` class to enable test subclassing
+- CapturingSmsSender extends SmsSender for simpler integration
+- IntegrationTestBase pattern: abstract base with full dependency injection
+
 ### Technical Context
 
 **Current State:**
@@ -55,13 +60,14 @@ Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - Service account configured with Admin permissions
 - Database at version 5
 - SmsReceiverTest.kt complete with 28 unit tests (validation, command routing, forwarding)
+- Integration test infrastructure: IntegrationTestBase, CapturingSmsSender, IntegrationTest annotation
 
 **Milestones:**
 - v0.0.7-v0.0.10 Feature Improvements: SHIPPED 2026-01-15 (Phases 5-7)
 - v0.0.60-v0.0.61 CI/CD Optimizations: COMPLETE 2026-01-16 (Phase 8)
 - v0.0.62 Testing: IN PROGRESS (Phases 9-11)
   - Phase 9: COMPLETE - 28 unit tests for SmsReceiver (validation, routing, forwarding)
-  - Phase 10: PENDING - Integration test infrastructure
+  - Phase 10: IN PROGRESS - Integration test infrastructure (Plan 01 complete)
   - Phase 11: PENDING - E2E flow tests
 - Play Store Launch: BLOCKED on Testing (Phases 1-4)
 
@@ -88,17 +94,13 @@ None currently identified.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 09-02-PLAN.md (SmsReceiver forwarding tests)
+Stopped at: Completed 10-01-PLAN.md (core integration test infrastructure)
 Resume file: None
 
 **Context for next session:**
-- Phase 9 complete: 28 unit tests for SmsReceiver
-  - 4 validation tests (null context/intent, wrong action, empty messages)
-  - 16 command routing tests (all 12 ParsedCommand types + 2 legacy)
-  - 5 forwarding logic tests (active session, multi-session, encryption key)
-  - 3 edge case tests (no session, unapproved device, inactive session)
-- Testing patterns established:
-  - Reflection for private methods (invokeHandleCommand, invokeHandleRegularSms)
-  - Robolectric with Room in-memory database
-  - CountDownLatch for async coroutine waiting
-- Next: Plan Phase 10 integration test infrastructure
+- Phase 10 Plan 01 complete: Core integration test infrastructure
+  - IntegrationTestBase abstract class with Robolectric, Room in-memory DB, repositories
+  - CapturingSmsSender mock for SMS verification without transmission
+  - IntegrationTest marker annotation for CI filtering
+- SmsSender modified to be `open` class for test subclassing
+- Next: Plan 10-02 (scenario builders) or Plan 10-03 (validation test)
