@@ -46,13 +46,13 @@ See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for full details.
 
 **Milestone Goal:** Establish comprehensive automated testing, focusing on the critical SmsReceiver component and integration test infrastructure.
 
-#### Phase 9: SmsReceiver Unit Testing
+#### Phase 9: SmsReceiver Unit Testing ✅
 
 **Goal**: Create comprehensive unit tests for SmsReceiver, the critical untested component
 **Depends on**: None (standalone testing work)
 **Research**: Unlikely (testing patterns established in codebase)
-**Status**: In Progress
-**Plans**: 0/2
+**Status**: Complete (2026-01-18)
+**Plans**: 2/2
 
 Key deliverables:
 - SmsReceiver unit tests with Robolectric
@@ -61,8 +61,8 @@ Key deliverables:
 - Coverage for regular SMS forwarding logic
 
 Plans:
-- [ ] 09-01: Input validation and SMSC command routing tests
-- [ ] 09-02: Regular SMS forwarding logic tests
+- [x] 09-01: Input validation and SMSC command routing tests
+- [x] 09-02: Regular SMS forwarding logic tests
 
 #### Phase 10: Integration Test Infrastructure
 
@@ -173,6 +173,6 @@ Plans:
 | 6. Pending State & Pairing UX | v0.0.7–v0.0.10 | 3/3 | Complete | 2026-01-15 |
 | 7. UI/UX Polish | v0.0.7–v0.0.10 | 2/2 | Complete | 2026-01-15 |
 | 8. CI/CD Pipeline Optimization | v0.0.60–v0.0.61 | 3/3 | Complete | 2026-01-16 |
-| 9. SmsReceiver Unit Testing | v0.0.62 | 0/2 | In Progress | - |
+| 9. SmsReceiver Unit Testing | v0.0.62 | 2/2 | Complete | 2026-01-18 |
 | 10. Integration Test Infrastructure | v0.0.62 | 0/? | Not Started | - |
 | 11. End-to-End Flow Tests | v0.0.62 | 0/? | Not Started | - |
