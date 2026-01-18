@@ -4,7 +4,6 @@ import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupActiveForwardingSession
-import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupApprovedSourceDevice
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupApprovedTargetDevice
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupLockedDevice
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupPendingPairingRequest
