@@ -13,7 +13,8 @@ None (Android app development patterns already established in codebase)
 - [**v0.0.7-v0.0.10 Feature Improvements**](milestones/v0.1-ROADMAP.md) - Phases 5-7 (shipped 2026-01-15)
 - **v0.0.60-v0.0.61 CI/CD Optimizations** - Phase 8 (shipped 2026-01-16)
 - [**v0.0.62 Testing**](milestones/v0.0.62-ROADMAP.md) - Phases 9-11 (shipped 2026-01-18)
-- **Play Store Launch** - Phases 1-4 (in progress)
+- [**v0.0.63 Settings**](milestones/v0.0.63-settings/ROADMAP.md) - Phases 12-14 (in progress)
+- **Play Store Launch** - Phases 1-4 (parallel)
 
 ## Completed Milestones
 
@@ -59,7 +60,47 @@ See [milestones/v0.0.62-ROADMAP.md](milestones/v0.0.62-ROADMAP.md) for full deta
 
 ## Phases
 
-### Play Store Launch (In Progress)
+### v0.0.63 Settings (In Progress)
+
+**Milestone Goal:** Add settings screen with user-configurable preferences for notifications, service behavior, security, and app appearance.
+
+See [milestones/v0.0.63-settings/ROADMAP.md](milestones/v0.0.63-settings/ROADMAP.md) for full phase details.
+
+#### Phase 12: Settings Data Layer
+
+**Goal**: Settings persist reliably and are accessible via typed Flows throughout the app
+**Depends on**: Nothing (first phase of milestone)
+**Requirements**: INFRA-01, INFRA-02
+**Status**: Not Started
+
+Plans:
+- [ ] 12-01: DataStore setup and SettingsRepository implementation
+
+#### Phase 13: Settings Screen & Main Settings
+
+**Goal**: Users can access and modify main settings and view app information
+**Depends on**: Phase 12
+**Requirements**: MAIN-01, MAIN-02, MAIN-03, MAIN-04, INFO-01, INFO-02
+**Status**: Not Started
+
+Plans:
+- [ ] 13-01: Settings screen navigation and layout
+- [ ] 13-02: Main settings preferences (notification, duration, theme)
+- [ ] 13-03: Information sections (permissions, about)
+
+#### Phase 14: Advanced Settings & Service Integration
+
+**Goal**: Users can configure security parameters and services react to settings changes
+**Depends on**: Phase 13
+**Requirements**: ADV-01, ADV-02, ADV-03, ADV-04, ADV-05, ADV-06, INFRA-03, INFRA-04
+**Status**: Not Started
+
+Plans:
+- [ ] 14-01: Advanced settings UI (security configuration)
+- [ ] 14-02: Service integration (MasterService observes settings)
+- [ ] 14-03: SecurityManager refactor (inject settings, remove hardcoded constants)
+
+### Play Store Launch (Parallel)
 
 **Milestone Goal:** Complete all Play Store requirements, test deployment pipeline, conduct multi-track testing, and successfully launch SMS Courier on Google Play Store.
 
@@ -93,10 +134,10 @@ Pipeline validated and working:
 **Status**: In Progress (12 testers enrolled, waiting 14 days)
 
 **Play Store Status (as of 2026-01-18):**
-- ✓ App approved for closed testing
-- ✓ 12 testers enrolled (requirement met)
-- ⏳ 14-day waiting period in progress
-- → After 14 days: Open testing (beta) access granted
+- App approved for closed testing
+- 12 testers enrolled (requirement met)
+- 14-day waiting period in progress
+- After 14 days: Open testing (beta) access granted
 
 Key focus:
 - Daily personal use of the app
@@ -114,9 +155,9 @@ Key focus:
 **Plans**: TBD
 
 **Play Store Progression:**
-1. Closed testing (current) → 14 days + 12 testers
-2. Open testing (beta) → broader audience, public opt-in
-3. Production → full public release
+1. Closed testing (current) -> 14 days + 12 testers
+2. Open testing (beta) -> broader audience, public opt-in
+3. Production -> full public release
 
 Key deliverables:
 - Promote from closed to open testing (beta)
@@ -144,3 +185,6 @@ Plans:
 | 9. SmsReceiver Unit Testing | v0.0.62 | 2/2 | Complete | 2026-01-18 |
 | 10. Integration Test Infrastructure | v0.0.62 | 3/3 | Complete | 2026-01-18 |
 | 11. End-to-End Flow Tests | v0.0.62 | 3/3 | Complete | 2026-01-18 |
+| 12. Settings Data Layer | v0.0.63 | 0/1 | Not Started | - |
+| 13. Settings Screen & Main Settings | v0.0.63 | 0/3 | Not Started | - |
+| 14. Advanced Settings & Service Integration | v0.0.63 | 0/3 | Not Started | - |
