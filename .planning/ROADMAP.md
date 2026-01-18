@@ -10,28 +10,28 @@ None (Android app development patterns already established in codebase)
 
 ## Milestones
 
-- ✅ [**v0.0.7–v0.0.10 Feature Improvements**](milestones/v0.1-ROADMAP.md) - Phases 5-7 (shipped 2026-01-15)
-- ✅ **v0.0.60–v0.0.61 CI/CD Optimizations** - Phase 8 (complete)
-- 🚧 **v0.0.62 Testing** - Phases 9-11 (in progress)
-- 🔜 **Play Store Launch** - Phases 1-4 (blocked on testing)
+- [**v0.0.7-v0.0.10 Feature Improvements**](milestones/v0.1-ROADMAP.md) - Phases 5-7 (shipped 2026-01-15)
+- **v0.0.60-v0.0.61 CI/CD Optimizations** - Phase 8 (complete)
+- **v0.0.62 Testing** - Phases 9-11 (in progress)
+- **Play Store Launch** - Phases 1-4 (blocked on testing)
 
 ## Completed Milestones
 
 <details>
-<summary>✅ v0.0.7–v0.0.10 Feature Improvements (Phases 5-7) — SHIPPED 2026-01-15</summary>
+<summary>v0.0.7-v0.0.10 Feature Improvements (Phases 5-7) - SHIPPED 2026-01-15</summary>
 
-- [x] Phase 5: Bidirectional Pairing Architecture — completed 2026-01-15
-- [x] Phase 6: Pending State & Pairing UX (3/3 plans) — completed 2026-01-15
-- [x] Phase 7: UI/UX Polish (1/1 plan + fix) — completed 2026-01-15
+- [x] Phase 5: Bidirectional Pairing Architecture - completed 2026-01-15
+- [x] Phase 6: Pending State & Pairing UX (3/3 plans) - completed 2026-01-15
+- [x] Phase 7: UI/UX Polish (1/1 plan + fix) - completed 2026-01-15
 
 See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for full details.
 
 </details>
 
 <details>
-<summary>✅ v0.0.60–v0.0.61 CI/CD Optimizations (Phase 8) — COMPLETE 2026-01-16</summary>
+<summary>v0.0.60-v0.0.61 CI/CD Optimizations (Phase 8) - COMPLETE 2026-01-16</summary>
 
-- [x] Phase 8: CI/CD Pipeline Optimization (3/3 plans) — completed 2026-01-16
+- [x] Phase 8: CI/CD Pipeline Optimization (3/3 plans) - completed 2026-01-16
 
 **Key accomplishments:**
 - Upload-only Fastlane lanes (fix rebuild issue)
@@ -42,11 +42,11 @@ See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for full details.
 
 ## Phases
 
-### 🚧 v0.0.62 Testing (In Progress)
+### v0.0.62 Testing (In Progress)
 
 **Milestone Goal:** Establish comprehensive automated testing, focusing on the critical SmsReceiver component and integration test infrastructure.
 
-#### Phase 9: SmsReceiver Unit Testing ✅
+#### Phase 9: SmsReceiver Unit Testing
 
 **Goal**: Create comprehensive unit tests for SmsReceiver, the critical untested component
 **Depends on**: None (standalone testing work)
@@ -68,19 +68,20 @@ Plans:
 
 **Goal**: Set up infrastructure for integration testing of multi-component flows
 **Depends on**: Phase 9
-**Research**: Likely (Android testing infrastructure patterns)
-**Research topics**: Robolectric service testing, Room test helpers, mock SMS system
-**Status**: Not Started
-**Plans**: 0/? TBD
+**Research**: Complete (10-RESEARCH.md)
+**Status**: Planning Complete
+**Plans**: 3 plans
 
 Key deliverables:
 - Test database setup with in-memory Room
-- Mock MasterService for controlled testing
-- Test fixtures for pairing/forwarding flows
-- CI integration for instrumented tests
+- CapturingSmsSender for controlled testing (mock SMS output)
+- Test fixtures and scenario builders for pairing/forwarding flows
+- CI integration for integration test stage
 
 Plans:
-- [ ] 10-01: TBD
+- [ ] 10-01-PLAN.md - Core infrastructure (IntegrationTestBase, CapturingSmsSender, annotation)
+- [ ] 10-02-PLAN.md - Scenario builders for test states
+- [ ] 10-03-PLAN.md - Infrastructure validation test and CI configuration
 
 #### Phase 11: End-to-End Flow Tests
 
@@ -91,8 +92,8 @@ Plans:
 **Plans**: 0/? TBD
 
 Key deliverables:
-- Full pairing flow test (request → approve → password)
-- Full forwarding flow test (auth → start → forward → stop)
+- Full pairing flow test (request -> approve -> password)
+- Full forwarding flow test (auth -> start -> forward -> stop)
 - Session expiry and timeout tests
 - Error scenario coverage
 
@@ -101,11 +102,11 @@ Plans:
 
 ---
 
-### 🔜 Play Store Launch (Blocked on Testing)
+### Play Store Launch (Blocked on Testing)
 
 **Milestone Goal:** Complete all Play Store requirements, test deployment pipeline, conduct multi-track testing, and successfully launch SMS Courier on Google Play Store.
 
-#### Phase 1: Play Store Submission Requirements ✅
+#### Phase 1: Play Store Submission Requirements
 
 **Goal**: Complete all Google Play Console requirements for app submission
 **Depends on**: Nothing (first phase)
@@ -117,14 +118,14 @@ All submission requirements completed:
 - Privacy policy linked
 - App approved for closed testing
 
-#### Phase 2: CI/CD Pipeline Refinement ✅
+#### Phase 2: CI/CD Pipeline Refinement
 
 **Goal**: Validate and refine automated deployment pipeline from tag to production
 **Depends on**: Phase 1
 **Status**: Complete (2026-01-15)
 
 Pipeline validated and working:
-- Full deployment flow: tag → internal → alpha working
+- Full deployment flow: tag -> internal -> alpha working
 - Semantic version code extraction working
 - Manual promotion workflow tested
 
@@ -137,7 +138,7 @@ Pipeline validated and working:
 
 Key focus:
 - Daily personal use of the app
-- Fix reliability issues — no missed messages
+- Fix reliability issues - no missed messages
 - Polish UX rough edges
 - No new features or major refactors
 
@@ -169,10 +170,10 @@ Plans:
 | 2. CI/CD Pipeline | Play Store Launch | - | Complete | 2026-01-15 |
 | 3. Pre-Launch Testing | Play Store Launch | ad-hoc | Blocked | - |
 | 4. Public Release | Play Store Launch | 0/? | Not Started | - |
-| 5. Bidirectional Pairing | v0.0.7–v0.0.10 | 2/2 | Complete | 2026-01-15 |
-| 6. Pending State & Pairing UX | v0.0.7–v0.0.10 | 3/3 | Complete | 2026-01-15 |
-| 7. UI/UX Polish | v0.0.7–v0.0.10 | 2/2 | Complete | 2026-01-15 |
-| 8. CI/CD Pipeline Optimization | v0.0.60–v0.0.61 | 3/3 | Complete | 2026-01-16 |
+| 5. Bidirectional Pairing | v0.0.7-v0.0.10 | 2/2 | Complete | 2026-01-15 |
+| 6. Pending State & Pairing UX | v0.0.7-v0.0.10 | 3/3 | Complete | 2026-01-15 |
+| 7. UI/UX Polish | v0.0.7-v0.0.10 | 2/2 | Complete | 2026-01-15 |
+| 8. CI/CD Pipeline Optimization | v0.0.60-v0.0.61 | 3/3 | Complete | 2026-01-16 |
 | 9. SmsReceiver Unit Testing | v0.0.62 | 2/2 | Complete | 2026-01-18 |
-| 10. Integration Test Infrastructure | v0.0.62 | 0/? | Not Started | - |
+| 10. Integration Test Infrastructure | v0.0.62 | 3/3 | Planning Complete | - |
 | 11. End-to-End Flow Tests | v0.0.62 | 0/? | Not Started | - |
