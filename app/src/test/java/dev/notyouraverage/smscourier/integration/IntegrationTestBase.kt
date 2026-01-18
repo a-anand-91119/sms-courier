@@ -44,8 +44,8 @@ abstract class IntegrationTestBase {
 
     protected lateinit var context: Context
     protected lateinit var database: SmsCourierDatabase
-    protected lateinit var deviceRepository: PairedDeviceRepository
-    protected lateinit var sessionRepository: ForwardingSessionRepository
+    internal lateinit var deviceRepository: PairedDeviceRepository
+    internal lateinit var sessionRepository: ForwardingSessionRepository
     protected lateinit var capturingSmsSender: CapturingSmsSender
     protected lateinit var securityManager: SecurityManager
     protected lateinit var notificationManager: PairingNotificationManager
