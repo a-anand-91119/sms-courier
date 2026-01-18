@@ -9,8 +9,8 @@ Requirements for v0.0.63 Settings milestone.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Settings persist across app restarts using DataStore
-- [ ] **INFRA-02**: SettingsRepository exposes typed Flows for each setting
+- [x] **INFRA-01**: Settings persist across app restarts using DataStore
+- [x] **INFRA-02**: SettingsRepository exposes typed Flows for each setting
 - [ ] **INFRA-03**: MasterService observes settings changes via Flow
 - [ ] **INFRA-04**: SecurityManager uses injected settings instead of hardcoded constants
 
@@ -70,8 +70,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 12 | Pending |
-| INFRA-02 | Phase 12 | Pending |
+| INFRA-01 | Phase 12 | Complete |
+| INFRA-02 | Phase 12 | Complete |
 | INFRA-03 | Phase 14 | Pending |
 | INFRA-04 | Phase 14 | Pending |
 | MAIN-01 | Phase 13 | Pending |
@@ -94,4 +94,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after roadmap creation*
+*Last updated: 2026-01-18 after Phase 12 completion*
