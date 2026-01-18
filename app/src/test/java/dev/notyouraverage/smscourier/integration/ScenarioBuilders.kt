@@ -1,12 +1,12 @@
 package dev.notyouraverage.smscourier.integration
 
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.security.SecurityManager
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /**
  * Pre-built test scenarios for integration tests.
@@ -78,7 +78,8 @@ object ScenarioBuilders {
             passwordHash = passwordHash.hash,
             passwordSalt = passwordHash.salt,
             authKey = authKey,
-            activeEncryptionKey = authKey, // For decrypting FWDE messages
+            // For decrypting FWDE messages
+            activeEncryptionKey = authKey,
         )
         deviceRepository.insert(device)
         return device
@@ -151,7 +152,8 @@ object ScenarioBuilders {
     suspend fun IntegrationTestBase.setupLockedDevice(
         phoneNumber: String = "+1234567890",
         password: String = "testPassword123",
-        lockDurationMs: Long = 5 * 60 * 1000, // 5 minutes default
+        // 5 minutes default
+        lockDurationMs: Long = 5 * 60 * 1000,
     ): PairedDevice {
         val passwordHash = SecurityManager.hashPassword(password)
         val authKey = SecurityManager.deriveAuthKey(password)
