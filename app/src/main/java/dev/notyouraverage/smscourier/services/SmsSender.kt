@@ -7,7 +7,7 @@ import android.telephony.SmsManager
 import android.util.Log
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 
-class SmsSender(private val context: Context) {
+open class SmsSender(private val context: Context) {
 
     companion object {
         private const val TAG = "SMSC:SmsSender"
@@ -15,7 +15,7 @@ class SmsSender(private val context: Context) {
         const val EXTRA_PHONE_NUMBER = "phone_number"
     }
 
-    fun send(phoneNumber: String, message: String) {
+    open fun send(phoneNumber: String, message: String) {
         try {
             val smsManager = context.getSystemService(SmsManager::class.java)
 
