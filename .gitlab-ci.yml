@@ -1,304 +1,240 @@
-# ====================
-# CI/CD PIPELINE
-# ====================
-#
-# Tag Format: v<MAJOR>.<MINOR>.<PATCH>
-# Examples: v1.0.0, v1.2.3, v2.0.0
-#
-# Version Code Calculation:
-# v1.2.3 → VERSION_CODE = 10203 (1*10000 + 2*100 + 3)
-# v2.0.0 → VERSION_CODE = 20000 (2*10000 + 0*100 + 0)
-#
-# Deployment Flow:
-# 1. Tag (v*) → Automatic: Build + Deploy to Internal Testing
-# 2. Manual: Internal → Alpha (Closed Testing)
-# 3. Manual: Alpha → Beta (Open Testing)
-# 4. Manual: Beta → Production
-#
-# Feature/Main branches: Build only (no deployment)
-# ====================
-
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/user/application_security/secret_detection/pipeline/configure
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
-  - test
-  - build
-  - deploy
-  - release
-
+- test
+- secret-detection
 workflow:
   rules:
-    - if: $CI_SERVER_URL == "https://gitlab.notyouraverage.dev"
-      when: always
-    - when: never
-
-# ====================
-# GLOBAL CONFIGURATION
-# ====================
-
+  - if: $CI_SERVER_URL == "https://gitlab.notyouraverage.dev"
+    when: always
+  - when: never
 variables:
   KUBERNETES_MEMORY_REQUEST: 4Gi
   KUBERNETES_MEMORY_LIMIT: 4Gi
-  ANDROID_COMPILE_SDK: "35"
-  ANDROID_BUILD_TOOLS: "35.0.0"
-  ANDROID_SDK_TOOLS: "9477386"
-
+  ANDROID_COMPILE_SDK: '35'
+  ANDROID_BUILD_TOOLS: 35.0.0
+  ANDROID_SDK_TOOLS: '9477386'
 cache:
   key:
     files:
-      - Gemfile.lock
+    - Gemfile.lock
   paths:
-    - vendor/bundle
-    - .gradle/
-
+  - vendor/bundle
+  - ".gradle/"
 before_script:
-  # Calculate VERSION_CODE from tag or use pipeline IID
-  - |
-    if [ -n "$CI_COMMIT_TAG" ]; then
-      # Extract version from tag (e.g., v1.2.3 or 1.2.3)
-      TAG_VERSION=$(echo $CI_COMMIT_TAG | sed 's/^v//')
+- |
+  if [ -n "$CI_COMMIT_TAG" ]; then
+    # Extract version from tag (e.g., v1.2.3 or 1.2.3)
+    TAG_VERSION=$(echo $CI_COMMIT_TAG | sed 's/^v//')
 
-      # Split into major.minor.patch
-      MAJOR=$(echo $TAG_VERSION | cut -d. -f1)
-      MINOR=$(echo $TAG_VERSION | cut -d. -f2)
-      PATCH=$(echo $TAG_VERSION | cut -d. -f3)
+    # Split into major.minor.patch
+    MAJOR=$(echo $TAG_VERSION | cut -d. -f1)
+    MINOR=$(echo $TAG_VERSION | cut -d. -f2)
+    PATCH=$(echo $TAG_VERSION | cut -d. -f3)
 
-      # Calculate version code: MAJOR * 10000 + MINOR * 100 + PATCH
-      # v1.2.3 -> 10203, v2.0.0 -> 20000
-      export VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
-      export VERSION_NAME=$TAG_VERSION
+    # Calculate version code: MAJOR * 10000 + MINOR * 100 + PATCH
+    # v1.2.3 -> 10203, v2.0.0 -> 20000
+    export VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+    export VERSION_NAME=$TAG_VERSION
 
-      echo "* Tag: $CI_COMMIT_TAG"
-      echo "* VERSION_CODE: $VERSION_CODE"
-      echo "* VERSION_NAME: $VERSION_NAME"
-    else
-      # Fallback for non-tag builds (feature branches)
-      export VERSION_CODE="${CI_PIPELINE_IID}"
-      export VERSION_NAME="0.0.1-dev"
-      echo "* Development build"
-      echo "* VERSION_CODE: $VERSION_CODE (pipeline ID)"
-    fi
-  - bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs $(nproc)
-
-# ====================
-# TEST STAGE
-# ====================
-
+    echo "* Tag: $CI_COMMIT_TAG"
+    echo "* VERSION_CODE: $VERSION_CODE"
+    echo "* VERSION_NAME: $VERSION_NAME"
+  else
+    # Fallback for non-tag builds (feature branches)
+    export VERSION_CODE="${CI_PIPELINE_IID}"
+    export VERSION_NAME="0.0.1-dev"
+    echo "* Development build"
+    echo "* VERSION_CODE: $VERSION_CODE (pipeline ID)"
+  fi
+- bundle check --path vendor/bundle || bundle install --path vendor/bundle --jobs
+  $(nproc)
 test:
   image: fabernovel/android:api-35-v1.10.1
   stage: test
   script:
-    - bundle exec fastlane test
+  - bundle exec fastlane test
   rules:
-    # Run on merge requests
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    # Run on main branch
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # Run on tags
-    - if: $CI_COMMIT_TAG
-    # Manual on feature branches
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
-      when: manual
-      allow_failure: true
-
-# ====================
-# BUILD STAGE
-# ====================
-
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  - if: "$CI_COMMIT_TAG"
+  - if: "$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH"
+    when: manual
+    allow_failure: true
 build:
   image: fabernovel/android:api-35-v1.10.1
   stage: build
   variables:
     SECURE_FILES_DOWNLOAD_PATH: "./"
   script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane build
+  - apt update -y && apt install -y curl
+  - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer
+    | bash
+  - bundle exec fastlane build
   artifacts:
     paths:
-      - app/build/outputs/bundle/release/app-release.aab
-      - app/build/outputs/apk/release/app-release.apk
+    - app/build/outputs/bundle/release/app-release.aab
+    - app/build/outputs/apk/release/app-release.apk
     expire_in: 1 week
   rules:
-    # Build on main branch
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # Build on tags
-    - if: $CI_COMMIT_TAG
-    # Build on feature branches
-    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
-
-# ====================
-# DEPLOY STAGE
-# ====================
-
-# ===== INTERNAL TESTING (Auto on Tags) =====
-
+  - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+  - if: "$CI_COMMIT_TAG"
+  - if: "$CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH"
 deploy:internal:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
     SECURE_FILES_DOWNLOAD_PATH: "./"
   script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane upload_internal version_code:$VERSION_CODE aab_path:app/build/outputs/bundle/release/app-release.aab
+  - apt update -y && apt install -y curl
+  - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer
+    | bash
+  - bundle exec fastlane upload_internal version_code:$VERSION_CODE aab_path:app/build/outputs/bundle/release/app-release.aab
   needs:
-    - job: build
-      artifacts: true
+  - job: build
+    artifacts: true
   rules:
-    # Automatic deployment on tags
-    - if: $CI_COMMIT_TAG
+  - if: "$CI_COMMIT_TAG"
   environment:
     name: internal
     url: https://play.google.com/console
-
-# ===== ALPHA (CLOSED TESTING) - Manual Promotion =====
-
 deploy:alpha:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
     SECURE_FILES_DOWNLOAD_PATH: "./"
   script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_internal_to_alpha version_code:$VERSION_CODE
+  - apt update -y && apt install -y curl
+  - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer
+    | bash
+  - bundle exec fastlane promote_internal_to_alpha version_code:$VERSION_CODE
   needs:
-    - job: deploy:internal
+  - job: deploy:internal
   rules:
-    # Manual promotion from internal to alpha (only on tags)
-    - if: $CI_COMMIT_TAG
-      when: manual
+  - if: "$CI_COMMIT_TAG"
+    when: manual
   environment:
     name: alpha
     url: https://play.google.com/console
-
-# ===== BETA (OPEN TESTING) - Manual Promotion =====
-
 deploy:beta:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
     SECURE_FILES_DOWNLOAD_PATH: "./"
   script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_alpha_to_beta version_code:$VERSION_CODE
+  - apt update -y && apt install -y curl
+  - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer
+    | bash
+  - bundle exec fastlane promote_alpha_to_beta version_code:$VERSION_CODE
   needs:
-    - job: deploy:alpha
+  - job: deploy:alpha
   rules:
-    # Manual promotion from alpha to beta (only on tags)
-    - if: $CI_COMMIT_TAG
-      when: manual
+  - if: "$CI_COMMIT_TAG"
+    when: manual
   environment:
     name: beta
     url: https://play.google.com/console
-
-# ===== PRODUCTION - Manual Promotion =====
-
 deploy:production:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
     SECURE_FILES_DOWNLOAD_PATH: "./"
   script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane promote_beta_to_production version_code:$VERSION_CODE
+  - apt update -y && apt install -y curl
+  - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer
+    | bash
+  - bundle exec fastlane promote_beta_to_production version_code:$VERSION_CODE
   needs:
-    - job: deploy:beta
+  - job: deploy:beta
   rules:
-    # Manual promotion from beta to production (only on tags)
-    - if: $CI_COMMIT_TAG
-      when: manual
+  - if: "$CI_COMMIT_TAG"
+    when: manual
   environment:
     name: production
     url: https://play.google.com/console
-
-# ====================
-# UTILITY JOBS (Manual)
-# ====================
-
-# Upload screenshots separately (rarely needed)
 upload:screenshots:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
     SECURE_FILES_DOWNLOAD_PATH: "./"
   script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane upload_screenshots version_code:$VERSION_CODE
+  - apt update -y && apt install -y curl
+  - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer
+    | bash
+  - bundle exec fastlane upload_screenshots version_code:$VERSION_CODE
   rules:
-    - if: $CI_COMMIT_TAG
-      when: manual
+  - if: "$CI_COMMIT_TAG"
+    when: manual
   environment:
     name: screenshots
-
-# Upload metadata separately (rarely needed)
 upload:metadata:
   image: fabernovel/android:api-35-v1.10.1
   stage: deploy
   variables:
     SECURE_FILES_DOWNLOAD_PATH: "./"
   script:
-    - apt update -y && apt install -y curl
-    - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer | bash
-    - bundle exec fastlane upload_metadata version_code:$VERSION_CODE
+  - apt update -y && apt install -y curl
+  - curl -s https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer
+    | bash
+  - bundle exec fastlane upload_metadata version_code:$VERSION_CODE
   rules:
-    - if: $CI_COMMIT_TAG
-      when: manual
+  - if: "$CI_COMMIT_TAG"
+    when: manual
   environment:
     name: metadata
-
-# ====================
-# RELEASE STAGE
-# ====================
-
 release:gitlab:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
-  before_script: []  # Override global before_script (no Ruby/bundle in this image)
+  before_script: []
   needs:
-    - job: deploy:internal
-    - job: build
-      artifacts: true
+  - job: deploy:internal
+  - job: build
+    artifacts: true
   rules:
-    - if: $CI_COMMIT_TAG
+  - if: "$CI_COMMIT_TAG"
   script:
-    # Extract changelog for this version from CHANGELOG.md
-    # Look for the [Unreleased] section, or fall back to tag version
-    - |
-      VERSION=$(echo $CI_COMMIT_TAG | sed 's/^v//')
-      echo "Creating release for version $VERSION"
+  - |
+    VERSION=$(echo $CI_COMMIT_TAG | sed 's/^v//')
+    echo "Creating release for version $VERSION"
 
-      # Try to extract changelog section
-      # First try [Unreleased], then try [VERSION]
-      if grep -q "## \[Unreleased\]" CHANGELOG.md; then
-        # Extract content between [Unreleased] and next ## heading
-        RELEASE_NOTES=$(sed -n '/## \[Unreleased\]/,/^## \[/p' CHANGELOG.md | sed '1d;$d')
-      fi
+    # Try to extract changelog section
+    # First try [Unreleased], then try [VERSION]
+    if grep -q "## \[Unreleased\]" CHANGELOG.md; then
+      # Extract content between [Unreleased] and next ## heading
+      RELEASE_NOTES=$(sed -n '/## \[Unreleased\]/,/^## \[/p' CHANGELOG.md | sed '1d;$d')
+    fi
 
-      # If empty, try to get the tagged version section
-      if [ -z "$RELEASE_NOTES" ]; then
-        RELEASE_NOTES=$(sed -n "/## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d')
-      fi
+    # If empty, try to get the tagged version section
+    if [ -z "$RELEASE_NOTES" ]; then
+      RELEASE_NOTES=$(sed -n "/## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d')
+    fi
 
-      # Fallback message if still empty
-      if [ -z "$RELEASE_NOTES" ]; then
-        RELEASE_NOTES="Release $CI_COMMIT_TAG"
-      fi
+    # Fallback message if still empty
+    if [ -z "$RELEASE_NOTES" ]; then
+      RELEASE_NOTES="Release $CI_COMMIT_TAG"
+    fi
 
-      # Write to file for release-cli
-      echo "$RELEASE_NOTES" > release_notes.md
-      cat release_notes.md
+    # Write to file for release-cli
+    echo "$RELEASE_NOTES" > release_notes.md
+    cat release_notes.md
   release:
-    name: 'SMS Courier $CI_COMMIT_TAG'
-    description: './release_notes.md'
-    tag_name: '$CI_COMMIT_TAG'
+    name: SMS Courier $CI_COMMIT_TAG
+    description: "./release_notes.md"
+    tag_name: "$CI_COMMIT_TAG"
     assets:
       links:
-        - name: 'app-release.aab'
-          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/app/build/outputs/bundle/release/app-release.aab?job=build'
-          link_type: 'package'
-        - name: 'app-release.apk'
-          url: '${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/app/build/outputs/apk/release/app-release.apk?job=build'
-          link_type: 'package'
+      - name: app-release.aab
+        url: "${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/app/build/outputs/bundle/release/app-release.aab?job=build"
+        link_type: package
+      - name: app-release.apk
+        url: "${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/app/build/outputs/apk/release/app-release.apk?job=build"
+        link_type: package
+secret_detection:
+  stage: secret-detection
+include:
+- template: Security/Secret-Detection.gitlab-ci.yml
