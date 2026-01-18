@@ -34,7 +34,7 @@ class SmsReceiver : BroadcastReceiver() {
         if (context == null || intent?.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
 
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
-        if (messages.isEmpty()) return
+        if (messages.isNullOrEmpty()) return
 
         // Group message parts by sender (for multipart SMS)
         val messagesBySender = messages.groupBy { it.originatingAddress ?: "Unknown" }
@@ -143,7 +143,7 @@ class SmsReceiver : BroadcastReceiver() {
                         // Get the source device that requested forwarding (we are TARGET, they are SOURCE)
                         val sourceDevice = deviceDao.getDeviceByPhoneNumberAndRole(
                             session.devicePhoneNumber,
-                            DeviceRole.SOURCE
+                            DeviceRole.SOURCE,
                         )
 
                         if (sourceDevice != null && sourceDevice.status == PairingStatus.APPROVED) {
