@@ -2,12 +2,12 @@
 
 ## Current Position
 
-Phase: 10 (Integration Test Infrastructure) - v0.0.62 Testing milestone - COMPLETE
-Plan: 3 of 3 in current phase
-Status: Phase 10 complete, ready for Phase 11
-Last activity: 2026-01-18 - Completed 10-03-PLAN.md (infrastructure validation test)
+Phase: 11 (E2E Flow Tests) - v0.0.62 Testing milestone - IN PROGRESS
+Plan: 1 of 3 in current phase
+Status: Plan 01 complete (Pairing Flow Tests), continuing Phase 11
+Last activity: 2026-01-18 - Completed 11-01-PLAN.md (pairing flow integration tests)
 
-Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 67% of v0.0.62
+Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 78% of v0.0.62
 
 ## Accumulated Context
 
@@ -55,6 +55,11 @@ Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - Infrastructure validation test pattern: prove infrastructure works before writing actual flow tests
 - CI integration tests use `--tests "*Integration*"` gradle filter
 
+**Testing (Phase 11):**
+- Comment-based test grouping (no @Nested for JUnit 4 compatibility)
+- Given-When-Then test naming for self-documenting failures
+- Role-specific unpair test patterns for bidirectional pairing
+
 ### Technical Context
 
 **Current State:**
@@ -66,7 +71,8 @@ Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - Database at version 5
 - SmsReceiverTest.kt complete with 28 unit tests (validation, command routing, forwarding)
 - Integration test infrastructure COMPLETE: IntegrationTestBase, CapturingSmsSender, IntegrationTest annotation, ScenarioBuilders, InfrastructureValidationTest (7 tests)
-- Full test suite: 261 tests passing
+- PairingFlowIntegrationTest.kt COMPLETE with 12 integration tests (pairing request, approval, rejection, unpair, bidirectional)
+- Full test suite: 273+ tests passing
 
 **Milestones:**
 - v0.0.7-v0.0.10 Feature Improvements: SHIPPED 2026-01-15 (Phases 5-7)
@@ -74,7 +80,10 @@ Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - v0.0.62 Testing: IN PROGRESS (Phases 9-11)
   - Phase 9: COMPLETE - 28 unit tests for SmsReceiver (validation, routing, forwarding)
   - Phase 10: COMPLETE - Integration test infrastructure (IntegrationTestBase, ScenarioBuilders, InfrastructureValidationTest)
-  - Phase 11: PENDING - E2E flow tests
+  - Phase 11: IN PROGRESS - E2E flow tests
+    - Plan 01: COMPLETE - 12 pairing flow integration tests
+    - Plan 02: PENDING - Forwarding flow tests
+    - Plan 03: PENDING - Security and error handling tests
 - Play Store Launch: BLOCKED on Testing (Phases 1-4)
 
 ### Blockers/Concerns Carried Forward
@@ -100,15 +109,15 @@ None currently identified.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 10-03-PLAN.md (infrastructure validation test)
+Stopped at: Completed 11-01-PLAN.md (pairing flow integration tests)
 Resume file: None
 
 **Context for next session:**
-- Phase 10 COMPLETE - Integration test infrastructure ready for Phase 11:
-  - IntegrationTestBase abstract class with Robolectric, Room in-memory DB, repositories
-  - CapturingSmsSender mock for SMS verification without transmission
-  - IntegrationTest marker annotation for CI filtering
-  - ScenarioBuilders with 7 extension functions for test state setup
-  - InfrastructureValidationTest with 7 tests proving infrastructure works
-  - CI pipeline with test:unit and test:integration jobs in parallel
-- Next: Phase 11 (E2E flow tests)
+- Phase 11 Plan 01 COMPLETE - PairingFlowIntegrationTest with 12 tests:
+  - Pairing request tests (unknown device, duplicate, bidirectional)
+  - Pairing approval tests (status update, bcrypt password hashing)
+  - Pairing rejection tests (status update, SMS verification)
+  - Unpair tests (role-specific deletion, unknown device handling)
+  - Bidirectional unpair tests (preserves other role)
+  - Full flow test (request -> approve -> unpair)
+- Next: Phase 11 Plan 02 (Forwarding flow tests)
