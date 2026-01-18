@@ -3,15 +3,9 @@ package dev.notyouraverage.smscourier.receivers
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
-import androidx.room.Room
-import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
-import dev.notyouraverage.smscourier.TestFixtures.createTestSession
 import dev.notyouraverage.smscourier.commands.ParsedCommand
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
-import dev.notyouraverage.smscourier.data.entities.PairingStatus
-import dev.notyouraverage.smscourier.enums.SmsCommand
-import dev.notyouraverage.smscourier.models.SmsMessageData
 import dev.notyouraverage.smscourier.services.foreground.MasterService
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -27,8 +21,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -428,6 +420,21 @@ class SmsReceiverTest {
         )
         assertNull("Non-SMSC message should not be parsed as command", result)
     }
+
+    // ==================== Multipart SMS Tests ====================
+    // Note: The multipart SMS concatenation logic (groupBy sender, joinToString for parts)
+    // cannot be easily unit tested because constructing valid SMS PDUs in tests is complex.
+    // Robolectric's ShadowSmsManager has limited PDU support.
+    //
+    // The logic being tested is:
+    //   val messagesBySender = messages.groupBy { it.originatingAddress ?: "Unknown" }
+    //   val fullMessage = parts.joinToString("") { it.messageBody ?: "" }
+    //
+    // This is standard Kotlin standard library code that is well-tested.
+    // Full end-to-end multipart SMS testing should be done in Phase 10/11 integration tests
+    // with actual device or Android emulator SMS broadcasts.
+    //
+    // Tracking: Phase 10 integration test candidate
 
     // ==================== Legacy Command Tests ====================
 
