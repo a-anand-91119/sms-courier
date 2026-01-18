@@ -142,4 +142,14 @@ class SettingsRepository(
             preferences[PreferenceKeys.AUTH_REQUEST_TIMEOUT] = minutes
         }
     }
+
+    /**
+     * Clears all settings, resetting them to defaults.
+     * Useful for testing and "Reset to defaults" functionality.
+     */
+    suspend fun clearAllSettings() {
+        dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }
