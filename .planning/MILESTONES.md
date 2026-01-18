@@ -39,19 +39,29 @@
 
 ---
 
-## v0.0.62 Testing (In Progress)
+## v0.0.62 Testing (Shipped: 2026-01-18)
 
-**Goal:** Establish comprehensive automated testing, focusing on the critical SmsReceiver component and integration test infrastructure.
+**Delivered:** Comprehensive automated testing infrastructure with SmsReceiver unit tests, integration test framework, and end-to-end flow tests for pairing, forwarding, and security scenarios.
 
-**Phases:** 9-11
+**Phases completed:** 9-11 (8 plans)
 
-**Planned accomplishments:**
-- Phase 9: SmsReceiver unit tests with Robolectric
-- Phase 10: Integration test infrastructure (Room test helpers, mock services)
-- Phase 11: End-to-end flow tests (pairing, forwarding, session management)
+**Key accomplishments:**
+- SmsReceiver unit tests (28 tests) with Robolectric covering validation, command routing, and forwarding logic
+- Integration test infrastructure: IntegrationTestBase, CapturingSmsSender, ScenarioBuilders
+- Pairing flow integration tests (12 tests) covering request/approve/reject/unpair/bidirectional
+- Forwarding flow integration tests (13 tests) covering auth/start/forward/stop
+- Security integration tests (15 tests) covering lockout, failed auth, idempotency, error handling
+- Bug discovered and fixed during testing: NPE in SmsReceiver.kt
 
-**Git range:** v0.0.62 (planned)
+**Stats:**
+- 37 files created/modified
+- ~2,400 lines of test code added
+- 75 new tests (28 unit + 47 integration)
+- 301 total tests passing
+- 1 day from start to ship
+
+**Git range:** v0.0.62
 
 ---
 
-_See [milestones/v0.1-ROADMAP.md](milestones/v0.1-ROADMAP.md) for archived milestone details._
+_See [milestones/](milestones/) for archived milestone details._
