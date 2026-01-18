@@ -71,10 +71,11 @@ See [milestones/v0.0.63-settings/ROADMAP.md](milestones/v0.0.63-settings/ROADMAP
 **Goal**: Settings persist reliably and are accessible via typed Flows throughout the app
 **Depends on**: Nothing (first phase of milestone)
 **Requirements**: INFRA-01, INFRA-02
-**Status**: Not Started
+**Plans:** 1 plan
+**Status**: Planned
 
 Plans:
-- [ ] 12-01: DataStore setup and SettingsRepository implementation
+- [ ] 12-01-PLAN.md — DataStore setup and SettingsRepository implementation
 
 #### Phase 13: Settings Screen & Main Settings
 
@@ -185,6 +186,6 @@ Plans:
 | 9. SmsReceiver Unit Testing | v0.0.62 | 2/2 | Complete | 2026-01-18 |
 | 10. Integration Test Infrastructure | v0.0.62 | 3/3 | Complete | 2026-01-18 |
 | 11. End-to-End Flow Tests | v0.0.62 | 3/3 | Complete | 2026-01-18 |
-| 12. Settings Data Layer | v0.0.63 | 0/1 | Not Started | - |
+| 12. Settings Data Layer | v0.0.63 | 1/1 | Planned | - |
 | 13. Settings Screen & Main Settings | v0.0.63 | 0/3 | Not Started | - |
 | 14. Advanced Settings & Service Integration | v0.0.63 | 0/3 | Not Started | - |
