@@ -88,17 +88,18 @@ Plans:
 **Goal**: Create integration tests for complete pairing and forwarding flows
 **Depends on**: Phase 10
 **Research**: Unlikely (infrastructure from Phase 10)
-**Status**: Not Started
-**Plans**: 0/? TBD
+**Status**: Planned
+**Plans**: 3 plans
 
 Key deliverables:
-- Full pairing flow test (request -> approve -> password)
+- Full pairing flow test (request -> approve -> reject -> unpair)
 - Full forwarding flow test (auth -> start -> forward -> stop)
-- Session expiry and timeout tests
-- Error scenario coverage
+- Security and error scenario coverage (lockout, malformed commands, idempotency)
 
 Plans:
-- [ ] 11-01: TBD
+- [ ] 11-01-PLAN.md — Pairing flow integration tests (request, approve, reject, unpair)
+- [ ] 11-02-PLAN.md — Forwarding flow integration tests (auth, session, forwarding)
+- [ ] 11-03-PLAN.md — Security and error handling tests (lockout, unknown devices, malformed commands)
 
 ---
 
@@ -176,4 +177,4 @@ Plans:
 | 8. CI/CD Pipeline Optimization | v0.0.60-v0.0.61 | 3/3 | Complete | 2026-01-16 |
 | 9. SmsReceiver Unit Testing | v0.0.62 | 2/2 | Complete | 2026-01-18 |
 | 10. Integration Test Infrastructure | v0.0.62 | 3/3 | Complete | 2026-01-18 |
-| 11. End-to-End Flow Tests | v0.0.62 | 0/? | Not Started | - |
+| 11. End-to-End Flow Tests | v0.0.62 | 0/3 | Planned | - |
