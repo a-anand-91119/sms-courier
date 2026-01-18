@@ -103,7 +103,7 @@ test:integration:
   image: fabernovel/android:api-35-v1.10.1
   stage: test
   script:
-    - ./gradlew testDebugUnitTest --tests "*Integration*"
+    - ./gradlew testDebugUnitTest --tests "dev.notyouraverage.smscourier.integration.*"
   artifacts:
     when: always
     reports:
