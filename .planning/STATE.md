@@ -3,11 +3,11 @@
 ## Current Position
 
 Phase: 10 (Integration Test Infrastructure) - v0.0.62 Testing milestone - IN PROGRESS
-Plan: 1 of 3 in current phase
-Status: Plan 10-01 complete, ready for Plan 10-02
-Last activity: 2026-01-18 - Completed 10-01-PLAN.md (core integration test infrastructure)
+Plan: 2 of 3 in current phase
+Status: Plan 10-02 complete, ready for Plan 10-03
+Last activity: 2026-01-18 - Completed 10-02-PLAN.md (scenario builders)
 
-Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 50% of v0.0.62
+Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 58% of v0.0.62
 
 ## Accumulated Context
 
@@ -49,6 +49,8 @@ Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - SmsSender made `open` class to enable test subclassing
 - CapturingSmsSender extends SmsSender for simpler integration
 - IntegrationTestBase pattern: abstract base with full dependency injection
+- ScenarioBuilders: extension functions for one-call test state setup
+- Repositories use `internal` access for extension function compatibility
 
 ### Technical Context
 
@@ -60,14 +62,14 @@ Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - Service account configured with Admin permissions
 - Database at version 5
 - SmsReceiverTest.kt complete with 28 unit tests (validation, command routing, forwarding)
-- Integration test infrastructure: IntegrationTestBase, CapturingSmsSender, IntegrationTest annotation
+- Integration test infrastructure: IntegrationTestBase, CapturingSmsSender, IntegrationTest annotation, ScenarioBuilders
 
 **Milestones:**
 - v0.0.7-v0.0.10 Feature Improvements: SHIPPED 2026-01-15 (Phases 5-7)
 - v0.0.60-v0.0.61 CI/CD Optimizations: COMPLETE 2026-01-16 (Phase 8)
 - v0.0.62 Testing: IN PROGRESS (Phases 9-11)
   - Phase 9: COMPLETE - 28 unit tests for SmsReceiver (validation, routing, forwarding)
-  - Phase 10: IN PROGRESS - Integration test infrastructure (Plan 01 complete)
+  - Phase 10: IN PROGRESS - Integration test infrastructure (Plans 01, 02 complete)
   - Phase 11: PENDING - E2E flow tests
 - Play Store Launch: BLOCKED on Testing (Phases 1-4)
 
@@ -94,13 +96,15 @@ None currently identified.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Completed 10-01-PLAN.md (core integration test infrastructure)
+Stopped at: Completed 10-02-PLAN.md (scenario builders)
 Resume file: None
 
 **Context for next session:**
-- Phase 10 Plan 01 complete: Core integration test infrastructure
+- Phase 10 Plans 01 and 02 complete:
   - IntegrationTestBase abstract class with Robolectric, Room in-memory DB, repositories
   - CapturingSmsSender mock for SMS verification without transmission
   - IntegrationTest marker annotation for CI filtering
-- SmsSender modified to be `open` class for test subclassing
-- Next: Plan 10-02 (scenario builders) or Plan 10-03 (validation test)
+  - ScenarioBuilders with 7 extension functions for test state setup
+- SmsSender made `open` class for test subclassing
+- deviceRepository and sessionRepository use `internal` access for extension functions
+- Next: Plan 10-03 (infrastructure validation test)
