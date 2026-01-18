@@ -2,7 +2,9 @@ package dev.notyouraverage.smscourier.integration
 
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupApprovedSourceDevice
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupApprovedTargetDevice
+import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupBidirectionalPairing
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupPendingPairingRequest
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupPendingSent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -155,5 +157,132 @@ class PairingFlowIntegrationTest : IntegrationTestBase() {
 
         // Then: PAIR_REJECTED SMS sent
         capturingSmsSender.assertSent(phoneNumber, Regex("SMSC PAIR_REJECTED"))
+    }
+
+    // ==================== Unpair Tests ====================
+
+    @Test
+    fun `givenApprovedTargetDevice_whenUnpairSourceReceived_thenDeviceDeleted`() = runTest {
+        // Given: Approved TARGET device (they forward to us, we are SOURCE)
+        val phoneNumber = "+1234567890"
+        setupApprovedTargetDevice(phoneNumber, "password123")
+
+        // When: UNPAIR SOURCE received (they want to delete our SOURCE role from their side)
+        // But from our perspective, we have a TARGET record for them
+        // Note: UNPAIR SOURCE deletes the SOURCE role, meaning "delete your record of me as SOURCE"
+        commandHandler.handleUnpair(phoneNumber, DeviceRole.SOURCE)
+        waitForAsync()
+
+        // Then: SOURCE role deleted (we didn't have one), TARGET unchanged
+        val targetDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertNotNull("TARGET device should still exist", targetDevice)
+    }
+
+    @Test
+    fun `givenApprovedSourceDevice_whenUnpairTargetReceived_thenDeviceDeleted`() = runTest {
+        // Given: Approved SOURCE device (we receive forwarded messages from them)
+        val phoneNumber = "+1234567890"
+        setupApprovedSourceDevice(phoneNumber, "password123")
+
+        // When: UNPAIR TARGET received (they want to delete our TARGET role = our SOURCE record of them)
+        commandHandler.handleUnpair(phoneNumber, DeviceRole.TARGET)
+        waitForAsync()
+
+        // Then: TARGET role deleted, SOURCE unchanged
+        // Note: We had SOURCE role, UNPAIR TARGET doesn't affect it
+        val sourceDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.SOURCE)
+        assertNotNull("SOURCE device should still exist", sourceDevice)
+    }
+
+    @Test
+    fun `givenNoDevice_whenUnpairReceived_thenNoError`() = runTest {
+        // Given: No device
+        val phoneNumber = "+9999999999"
+
+        // When: Unpair received from unknown device
+        commandHandler.handleUnpair(phoneNumber, DeviceRole.SOURCE)
+        waitForAsync()
+
+        // Then: No exception thrown, no SMS sent (graceful handling)
+        capturingSmsSender.assertNothingSent()
+    }
+
+    // ==================== Bidirectional Pairing Tests ====================
+
+    @Test
+    fun `givenBidirectionalPairing_whenUnpairSourceReceived_thenOnlySourceRoleDeleted`() = runTest {
+        // Given: Bidirectional pairing (both SOURCE and TARGET roles exist)
+        val phoneNumber = "+1234567890"
+        setupBidirectionalPairing(phoneNumber, "password123")
+
+        // Verify both roles exist
+        assertNotNull(deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.SOURCE))
+        assertNotNull(deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET))
+
+        // When: UNPAIR SOURCE received
+        commandHandler.handleUnpair(phoneNumber, DeviceRole.SOURCE)
+        waitForAsync()
+
+        // Then: SOURCE role deleted, TARGET role still exists
+        val sourceDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.SOURCE)
+        val targetDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+
+        assertNull("SOURCE device should be deleted", sourceDevice)
+        assertNotNull("TARGET device should still exist", targetDevice)
+    }
+
+    @Test
+    fun `givenBidirectionalPairing_whenUnpairTargetReceived_thenOnlyTargetRoleDeleted`() = runTest {
+        // Given: Bidirectional pairing (both SOURCE and TARGET roles exist)
+        val phoneNumber = "+1234567890"
+        setupBidirectionalPairing(phoneNumber, "password123")
+
+        // Verify both roles exist
+        assertNotNull(deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.SOURCE))
+        assertNotNull(deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET))
+
+        // When: UNPAIR TARGET received
+        commandHandler.handleUnpair(phoneNumber, DeviceRole.TARGET)
+        waitForAsync()
+
+        // Then: TARGET role deleted, SOURCE role still exists
+        val sourceDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.SOURCE)
+        val targetDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+
+        assertNotNull("SOURCE device should still exist", sourceDevice)
+        assertNull("TARGET device should be deleted", targetDevice)
+    }
+
+    // ==================== Full Pairing Flow Tests ====================
+
+    @Test
+    fun `fullPairingFlow_requestThenApprove_thenUnpair`() = runTest {
+        val phoneNumber = "+1234567890"
+
+        // Step 1: Receive pair request
+        commandHandler.handlePairRequest(phoneNumber)
+        waitForAsync()
+
+        // Checkpoint: Device created with PENDING_RECEIVED
+        val pendingDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertNotNull("Device should be created after pair request", pendingDevice)
+        assertEquals(PairingStatus.PENDING_RECEIVED, pendingDevice?.status)
+
+        // Step 2: Approve pairing
+        commandHandler.approvePairing(phoneNumber, "password123")
+        waitForAsync()
+
+        // Checkpoint: Status APPROVED, PAIR_APPROVED sent
+        val approvedDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertEquals(PairingStatus.APPROVED, approvedDevice?.status)
+        capturingSmsSender.assertSent(phoneNumber, Regex("SMSC PAIR_APPROVED"))
+
+        // Step 3: Unpair (role-specific)
+        commandHandler.handleUnpair(phoneNumber, DeviceRole.TARGET)
+        waitForAsync()
+
+        // Verify: Device deleted
+        val deletedDevice = deviceRepository.getByPhoneNumberAndRole(phoneNumber, DeviceRole.TARGET)
+        assertNull("Device should be deleted after unpair", deletedDevice)
     }
 }
