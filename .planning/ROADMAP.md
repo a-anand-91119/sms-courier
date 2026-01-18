@@ -86,12 +86,17 @@ Pipeline validated and working:
 - Semantic version code extraction working
 - Manual promotion workflow tested
 
-#### Phase 3: Pre-Launch Testing
+#### Phase 3: Closed Testing Period
 
-**Goal**: Dogfood the app daily while waiting for beta eligibility (12 testers + 14 days)
+**Goal**: Complete 14-day closed testing period with 12+ testers to unlock open testing
 **Depends on**: Phase 2 (complete)
-**Status**: Ongoing monitoring (no structured plans)
-**Context**: [03-CONTEXT.md](phases/03-prelaunch-testing/03-CONTEXT.md)
+**Status**: In Progress (12 testers enrolled, waiting 14 days)
+
+**Play Store Status (as of 2026-01-18):**
+- ✓ App approved for closed testing
+- ✓ 12 testers enrolled (requirement met)
+- ⏳ 14-day waiting period in progress
+- → After 14 days: Open testing (beta) access granted
 
 Key focus:
 - Daily personal use of the app
@@ -99,25 +104,30 @@ Key focus:
 - Polish UX rough edges
 - No new features or major refactors
 
-**Approach**: Ad-hoc issue-driven. This phase uses reactive fixes rather than predefined plans. Issues discovered during dogfooding get addressed directly without formal PLAN.md files.
+**Approach**: Ad-hoc issue-driven. Issues discovered during dogfooding get addressed directly without formal PLAN.md files.
 
-#### Phase 4: Public Release
+#### Phase 4: Open Testing & Production Release
 
-**Goal**: Launch SMS Courier publicly on Google Play Store
-**Depends on**: Phase 3 (testing complete)
-**Research**: Unlikely (standard release process)
+**Goal**: Promote to open testing (beta), then to production
+**Depends on**: Phase 3 (14-day closed testing complete)
 **Status**: Not Started
 **Plans**: TBD
 
+**Play Store Progression:**
+1. Closed testing (current) → 14 days + 12 testers
+2. Open testing (beta) → broader audience, public opt-in
+3. Production → full public release
+
 Key deliverables:
-- Promote from beta to production track
-- Monitor crash reports and analytics
+- Promote from closed to open testing (beta)
+- Monitor crash reports and beta feedback
+- Promote from beta to production
 - Respond to user reviews
 - Prepare user documentation and FAQs
-- Plan v1.2 improvements based on initial feedback
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01: TBD (promote to open testing)
+- [ ] 04-02: TBD (promote to production)
 
 ## Progress
 
@@ -125,8 +135,8 @@ Plans:
 |-------|-----------|-------|--------|-----------|
 | 1. Play Store Submission | Play Store Launch | - | Complete | 2026-01-15 |
 | 2. CI/CD Pipeline | Play Store Launch | - | Complete | 2026-01-15 |
-| 3. Pre-Launch Testing | Play Store Launch | ad-hoc | In Progress | - |
-| 4. Public Release | Play Store Launch | 0/? | Not Started | - |
+| 3. Closed Testing Period | Play Store Launch | ad-hoc | In Progress | - |
+| 4. Open Testing & Production | Play Store Launch | 0/2 | Not Started | - |
 | 5. Bidirectional Pairing | v0.0.7-v0.0.10 | 2/2 | Complete | 2026-01-15 |
 | 6. Pending State & Pairing UX | v0.0.7-v0.0.10 | 3/3 | Complete | 2026-01-15 |
 | 7. UI/UX Polish | v0.0.7-v0.0.10 | 2/2 | Complete | 2026-01-15 |
