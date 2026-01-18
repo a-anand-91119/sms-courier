@@ -69,8 +69,8 @@ Plans:
 **Goal**: Set up infrastructure for integration testing of multi-component flows
 **Depends on**: Phase 9
 **Research**: Complete (10-RESEARCH.md)
-**Status**: Planning Complete
-**Plans**: 3 plans
+**Status**: Complete (2026-01-18)
+**Plans**: 3/3
 
 Key deliverables:
 - Test database setup with in-memory Room
@@ -79,9 +79,9 @@ Key deliverables:
 - CI integration for integration test stage
 
 Plans:
-- [ ] 10-01-PLAN.md - Core infrastructure (IntegrationTestBase, CapturingSmsSender, annotation)
-- [ ] 10-02-PLAN.md - Scenario builders for test states
-- [ ] 10-03-PLAN.md - Infrastructure validation test and CI configuration
+- [x] 10-01: Core infrastructure (IntegrationTestBase, CapturingSmsSender, annotation)
+- [x] 10-02: Scenario builders for test states
+- [x] 10-03: Infrastructure validation test and CI configuration
 
 #### Phase 11: End-to-End Flow Tests
 
@@ -175,5 +175,5 @@ Plans:
 | 7. UI/UX Polish | v0.0.7-v0.0.10 | 2/2 | Complete | 2026-01-15 |
 | 8. CI/CD Pipeline Optimization | v0.0.60-v0.0.61 | 3/3 | Complete | 2026-01-16 |
 | 9. SmsReceiver Unit Testing | v0.0.62 | 2/2 | Complete | 2026-01-18 |
-| 10. Integration Test Infrastructure | v0.0.62 | 3/3 | Planning Complete | - |
+| 10. Integration Test Infrastructure | v0.0.62 | 3/3 | Complete | 2026-01-18 |
 | 11. End-to-End Flow Tests | v0.0.62 | 0/? | Not Started | - |
