@@ -2,12 +2,12 @@
 
 ## Current Position
 
-Phase: 9 (SmsReceiver Unit Testing) — v0.0.62 Testing milestone
-Plan: 0 of 2 in current phase
-Status: Plans created, ready for execution
-Last activity: 2026-01-17 - Created 09-01-PLAN.md and 09-02-PLAN.md
+Phase: 9 (SmsReceiver Unit Testing) - v0.0.62 Testing milestone
+Plan: 1 of 2 in current phase
+Status: Plan 09-01 complete, ready for 09-02
+Last activity: 2026-01-18 - Completed 09-01-PLAN.md (SmsReceiver command routing tests)
 
-Progress: █████████░ 100% of v0.0.7–v0.0.10 | 100% of v0.0.60–v0.0.61 | 0% of v0.0.62
+Progress: █████████░ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 50% of v0.0.62
 
 ## Accumulated Context
 
@@ -23,13 +23,13 @@ Progress: █████████░ 100% of v0.0.7–v0.0.10 | 100% of v0.0
 **Security:**
 - Bcrypt password hashing for device pairing
 - Failed attempt tracking and device lockout
-- Secure pairing workflow (request → approve → password)
+- Secure pairing workflow (request -> approve -> password)
 - Role-specific UNPAIR command: `SMSC UNPAIR SOURCE` / `SMSC UNPAIR TARGET`
 
 **CI/CD:**
 - GitLab CI/CD with Kubernetes runners
-- Semantic versioning with automatic version code calculation (v1.2.3 → 10203)
-- Automated deployment: tag → internal, manual promotions to alpha → beta → production
+- Semantic versioning with automatic version code calculation (v1.2.3 -> 10203)
+- Automated deployment: tag -> internal, manual promotions to alpha -> beta -> production
 - Fastlane for Play Store deployment automation
 
 **Play Store:**
@@ -37,6 +37,11 @@ Progress: █████████░ 100% of v0.0.7–v0.0.10 | 100% of v0.0
 - Native debug symbols enabled for crash analysis
 - Draft releases required (app not yet published)
 - Permissions: SMS (RECEIVE_SMS, SEND_SMS), FOREGROUND_SERVICE_REMOTE_MESSAGING
+
+**Testing (Phase 9):**
+- Reflection-based testing for private methods when PDU construction is impractical
+- Multipart SMS testing deferred to Phase 10 integration tests
+- Fixed NPE bug in SmsReceiver during test development
 
 ### Technical Context
 
@@ -47,12 +52,15 @@ Progress: █████████░ 100% of v0.0.7–v0.0.10 | 100% of v0.0
 - Play Store app created, internal testing track set up
 - Service account configured with Admin permissions
 - Database at version 5
+- SmsReceiverTest.kt created with 20 unit tests (validation + command routing)
 
 **Milestones:**
-- v0.0.7–v0.0.10 Feature Improvements: ✅ SHIPPED 2026-01-15 (Phases 5-7)
-- v0.0.60–v0.0.61 CI/CD Optimizations: ✅ COMPLETE 2026-01-16 (Phase 8)
-- v0.0.62 Testing: 🚧 In Progress (Phases 9-11)
-- Play Store Launch: 🔜 Blocked on Testing (Phases 1-4)
+- v0.0.7-v0.0.10 Feature Improvements: SHIPPED 2026-01-15 (Phases 5-7)
+- v0.0.60-v0.0.61 CI/CD Optimizations: COMPLETE 2026-01-16 (Phase 8)
+- v0.0.62 Testing: IN PROGRESS (Phases 9-11)
+  - Plan 09-01: COMPLETE - 20 unit tests for SmsReceiver
+  - Plan 09-02: PENDING - Forwarding logic tests
+- Play Store Launch: BLOCKED on Testing (Phases 1-4)
 
 ### Blockers/Concerns Carried Forward
 
@@ -64,10 +72,10 @@ None currently identified.
 
 ## Roadmap Evolution
 
-- Milestone v0.0.7–v0.0.10 Feature Improvements: SHIPPED (Phases 5-7)
+- Milestone v0.0.7-v0.0.10 Feature Improvements: SHIPPED (Phases 5-7)
   - Bidirectional pairing, pending state UX, UI polish
   - See `.planning/milestones/v0.1-ROADMAP.md` for archive
-- Milestone v0.0.60–v0.0.61 CI/CD Optimizations: COMPLETE (Phase 8)
+- Milestone v0.0.60-v0.0.61 CI/CD Optimizations: COMPLETE (Phase 8)
   - Upload-only lanes, fastlane-plugin-changelog, GitLab release automation
 - Milestone v0.0.62 Testing: IN PROGRESS (Phases 9-11)
   - SmsReceiver unit tests, integration test infrastructure, E2E flow tests
@@ -76,13 +84,17 @@ None currently identified.
 
 ## Session Continuity
 
-Last session: 2026-01-17
-Stopped at: Created Phase 9 plans (09-01-PLAN.md, 09-02-PLAN.md)
+Last session: 2026-01-18
+Stopped at: Completed 09-01-PLAN.md (SmsReceiver command routing tests)
 Resume file: None
 
 **Context for next session:**
-- Phase 9 plans created:
-  - 09-01: Input validation + SMSC command routing tests (3 tasks)
-  - 09-02: Regular SMS forwarding logic tests (3 tasks)
-- Testing approach: Robolectric with in-memory Room database
-- Next: Run /gsd:execute-plan .planning/phases/09-smsreceiver-testing/09-01-PLAN.md
+- Plan 09-01 complete: 20 unit tests created
+  - 4 validation tests
+  - 14 command routing tests (all 12 ParsedCommand types)
+  - 2 legacy command tests
+  - Bug fix: NPE when messages array is null
+- Plan 09-02 ready: Forwarding logic tests (handleRegularSms)
+  - Database setup already in test file
+  - TestFixtures available for test data
+- Next: Run /gsd:execute-plan .planning/phases/09-smsreceiver-testing/09-02-PLAN.md
