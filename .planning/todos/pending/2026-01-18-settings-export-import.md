@@ -3,6 +3,7 @@
 **Created:** 2026-01-18
 **Source:** Phase 12 discussion (deferred)
 **Priority:** Low
+**Jira:** [SC-49](https://etcapp.atlassian.net/browse/SC-49)
 
 ## Description
 

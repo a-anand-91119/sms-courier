@@ -4,6 +4,7 @@ title: Implement proper permission management flow
 area: feature-backlog
 files: []
 priority: backlog
+jira: SC-36
 ---
 
 ## Problem

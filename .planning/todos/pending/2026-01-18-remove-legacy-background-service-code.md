@@ -4,6 +4,7 @@ title: Remove legacy unused background service code
 area: tech-debt
 files: [app/src/main/java/dev/notyouraverage/smscourier/services/foreground/MasterService.kt]
 priority: low
+jira: SC-37
 ---
 
 ## Problem

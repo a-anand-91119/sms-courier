@@ -31,6 +31,8 @@ import dev.notyouraverage.smscourier.receivers.ServiceNotificationReceiver
 import dev.notyouraverage.smscourier.receivers.SmsReceiver
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.repository.SettingsRepository
+import kotlinx.coroutines.flow.first
 import dev.notyouraverage.smscourier.security.SecurityManager
 import dev.notyouraverage.smscourier.services.SmsSender
 import dev.notyouraverage.smscourier.services.background.SmsService
@@ -56,6 +58,7 @@ class MasterService : Service() {
     private lateinit var database: SmsCourierDatabase
     private lateinit var deviceRepository: PairedDeviceRepository
     private lateinit var sessionRepository: ForwardingSessionRepository
+    private lateinit var settingsRepository: SettingsRepository
     private lateinit var smsSender: SmsSender
     private lateinit var notificationManager: PairingNotificationManager
     private lateinit var securityManager: SecurityManager
@@ -124,6 +127,7 @@ class MasterService : Service() {
         database = SmsCourierDatabase.getDatabase(this)
         deviceRepository = PairedDeviceRepository(database.pairedDeviceDao())
         sessionRepository = ForwardingSessionRepository(database.forwardingSessionDao())
+        settingsRepository = SettingsRepository(this)
         smsSender = SmsSender(this)
         notificationManager = PairingNotificationManager(this)
         securityManager = SecurityManager(deviceRepository)
@@ -192,6 +196,17 @@ class MasterService : Service() {
             .build()
     }
 
+    private fun handleRecreateNotification() {
+        serviceScope.launch {
+            val shouldPersist = settingsRepository.notificationPersistence.first()
+            if (shouldPersist) {
+                recreateForegroundNotification()
+            } else {
+                Log.i(TAG, "Notification persistence disabled, not recreating")
+            }
+        }
+    }
+
     private fun recreateForegroundNotification() {
         if (!isRunning) return
         Log.i(TAG, "Recreating foreground notification")
@@ -249,7 +264,7 @@ class MasterService : Service() {
                 intent.getStringExtra(EXTRA_PASSWORD),
                 intent.getIntExtra(EXTRA_DURATION, 30),
             )
-            RECREATE_NOTIFICATION -> recreateForegroundNotification()
+            RECREATE_NOTIFICATION -> handleRecreateNotification()
         }
         return START_STICKY
     }

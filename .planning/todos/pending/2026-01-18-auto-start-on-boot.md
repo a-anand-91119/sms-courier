@@ -4,6 +4,7 @@ title: Auto-start app on device boot
 area: feature-backlog
 files: []
 priority: backlog
+jira: SC-35
 ---
 
 ## Problem
