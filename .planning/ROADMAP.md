@@ -95,12 +95,13 @@ Plans:
 **Goal**: Users can configure security parameters and services react to settings changes
 **Depends on**: Phase 13
 **Requirements**: ADV-01, ADV-02, ADV-03, ADV-04, ADV-05, ADV-06, INFRA-03, INFRA-04
+**Plans:** 3 plans
 **Status**: Not Started
 
 Plans:
-- [ ] 14-01: Advanced settings UI (security configuration)
-- [ ] 14-02: Service integration (MasterService observes settings)
-- [ ] 14-03: SecurityManager refactor (inject settings, remove hardcoded constants)
+- [ ] 14-01-PLAN.md — Advanced settings UI (collapsible section with 6 security settings)
+- [ ] 14-02-PLAN.md — SecurityManager refactor (inject SettingsRepository, remove hardcoded constants)
+- [ ] 14-03-PLAN.md — Service integration (MasterService auth timeout, PairedDevicesViewModel pairing limits)
 
 ### Play Store Launch (Parallel)
 
