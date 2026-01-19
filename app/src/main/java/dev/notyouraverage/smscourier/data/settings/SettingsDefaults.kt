@@ -2,7 +2,7 @@ package dev.notyouraverage.smscourier.data.settings
 
 object SettingsDefaults {
     // Main Settings
-    const val NOTIFICATION_PERSISTENCE = false
+    const val NOTIFICATION_PERSISTENCE = true
     const val DEFAULT_FORWARDING_DURATION = 15 // minutes
     val THEME = AppTheme.SYSTEM
 
