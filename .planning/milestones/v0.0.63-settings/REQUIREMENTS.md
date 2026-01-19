@@ -16,15 +16,15 @@ Requirements for v0.0.63 Settings milestone.
 
 ### Main Settings
 
-- [ ] **MAIN-01**: User can access Settings screen from home navigation
-- [ ] **MAIN-02**: User can toggle notification persistence (recreate on dismiss vs stay dismissed)
-- [ ] **MAIN-03**: User can select default forwarding duration (15min, 30min, 1hr, 2hr)
-- [ ] **MAIN-04**: User can select theme (Light, Dark, System)
+- [x] **MAIN-01**: User can access Settings screen from home navigation
+- [x] **MAIN-02**: User can toggle notification persistence (recreate on dismiss vs stay dismissed)
+- [x] **MAIN-03**: User can select default forwarding duration (15min, 30min, 1hr, 2hr)
+- [x] **MAIN-04**: User can select theme (Light, Dark, System)
 
 ### Information
 
-- [ ] **INFO-01**: User can view permission status with links to system settings to fix
-- [ ] **INFO-02**: User can view About section with app version, privacy policy link, support contact
+- [x] **INFO-01**: User can view permission status with links to system settings to fix
+- [x] **INFO-02**: User can view About section with app version, privacy policy link, support contact
 
 ### Advanced Settings
 
@@ -74,12 +74,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-02 | Phase 12 | Complete |
 | INFRA-03 | Phase 14 | Pending |
 | INFRA-04 | Phase 14 | Pending |
-| MAIN-01 | Phase 13 | Pending |
-| MAIN-02 | Phase 13 | Pending |
-| MAIN-03 | Phase 13 | Pending |
-| MAIN-04 | Phase 13 | Pending |
-| INFO-01 | Phase 13 | Pending |
-| INFO-02 | Phase 13 | Pending |
+| MAIN-01 | Phase 13 | Complete |
+| MAIN-02 | Phase 13 | Complete |
+| MAIN-03 | Phase 13 | Complete |
+| MAIN-04 | Phase 13 | Complete |
+| INFO-01 | Phase 13 | Complete |
+| INFO-02 | Phase 13 | Complete |
 | ADV-01 | Phase 14 | Pending |
 | ADV-02 | Phase 14 | Pending |
 | ADV-03 | Phase 14 | Pending |
@@ -94,4 +94,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-18 after Phase 12 completion*
+*Last updated: 2026-01-19 after Phase 13 completion*
