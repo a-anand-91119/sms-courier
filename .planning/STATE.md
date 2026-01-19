@@ -3,11 +3,11 @@
 ## Current Position
 
 Phase: 14 of 14 (Advanced Settings & Service Integration)
-Plan: 1 of 3 in current phase
-Status: In progress
-Last activity: 2026-01-19 - Completed 14-01-PLAN.md (Advanced Settings UI)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-01-19 - Completed 14-03-PLAN.md (Service Integration)
 
-Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 100% of v0.0.62 | 78% of v0.0.63
+Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 100% of v0.0.62 | 100% of v0.0.63
 
 ## Accumulated Context
 
@@ -54,18 +54,23 @@ Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - Collapsible Advanced section with warning header for security emphasis
 - SettingsNumberInputItem shows range in supporting text with helper text below
 - Error handling via snackbar with LaunchedEffect trigger
+- Cached settings with Flow collection pattern for MasterService auth timeout
+- StateFlow.stateIn() pattern for PairedDevicesViewModel reactive settings
+- SecurityManager receives settingsRepository in constructor with startObservingSettings() for lifecycle-managed collection
 
 ### Technical Context
 
 **Current State:**
 - App functionally complete with pairing, forwarding, and session management
-- Settings data layer complete: SettingsRepository with 9 typed Flows
-- Settings screen complete: preferences, advanced, and information sections
-- Advanced section with 6 security settings (lockout, attempts, challenge, pairing, cooldown, timeout)
-- Permission status display with Fix action opening app settings
-- About section with version, privacy policy, and support links
+- Settings fully integrated: data layer, UI, and service/ViewModel consumption
+- All 9 settings from SettingsRepository wired to consumers:
+  - Main: notification persistence, default forwarding duration, theme
+  - Advanced: lockout duration, max failed attempts, challenge expiry, max pairing resend attempts, pairing resend cooldown, auth request timeout
+- MasterService uses configurable auth request timeout
+- PairedDevicesViewModel uses configurable pairing resend limits
+- SecurityManager uses configurable lockout, attempts, and challenge expiry settings
 - Theme observation wired at app level - theme changes apply immediately
-- Comprehensive test coverage: 342 tests passing
+- Comprehensive test coverage: 342+ tests
 - CI/CD pipeline fully configured with parallel test jobs
 - Play Store app in closed testing (12 testers, 14-day wait)
 - Database at version 5
@@ -74,12 +79,7 @@ Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - v0.0.7-v0.0.10 Feature Improvements: SHIPPED 2026-01-15 (Phases 5-7)
 - v0.0.60-v0.0.61 CI/CD Optimizations: SHIPPED 2026-01-16 (Phase 8)
 - v0.0.62 Testing: SHIPPED 2026-01-18 (Phases 9-11)
-
-**Current Milestone:**
-- v0.0.63 Settings (Phases 12-14)
-  - Phase 12: Settings Data Layer - COMPLETE
-  - Phase 13: Settings Screen & Main Settings - COMPLETE
-  - Phase 14: Advanced Settings & Service Integration - In Progress (Plan 1/3 complete)
+- v0.0.63 Settings: COMPLETE 2026-01-19 (Phases 12-14)
 
 **Parallel Milestone:**
 - Play Store Launch (Phases 1-4)
@@ -103,14 +103,14 @@ None currently identified.
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 14-01-PLAN.md (Advanced Settings UI)
+Stopped at: Completed 14-03-PLAN.md (Service Integration)
 Resume file: None
 
 **Context for next session:**
-- Plan 14-01 complete - Advanced settings UI fully functional
-- SettingsViewModel has 6 new security StateFlows with validation-aware setters
-- SettingsScreen has collapsible Advanced section with warning header
-- SettingsNumberInputItem composable available for numeric inputs
-- Error snackbar displays validation errors
-- All 342 tests passing
-- Next action: Execute 14-02-PLAN.md (Service Integration)
+- Phase 14 complete - Settings fully integrated with services and ViewModels
+- All 9 settings are now reactive via Flow/StateFlow collection
+- MasterService: auth request timeout configurable (default 5 min)
+- PairedDevicesViewModel: pairing resend limits configurable (default 5 attempts, 1 min cooldown)
+- SecurityManager: lockout, attempts, challenge expiry all configurable
+- v0.0.63 Settings milestone complete - ready for release
+- Next action: Tag v0.0.63 and deploy, or continue with Play Store launch phase 4
