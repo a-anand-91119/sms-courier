@@ -5,8 +5,10 @@ import dev.notyouraverage.smscourier.MainCoroutineRule
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.services.SmsSender
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
@@ -18,6 +20,7 @@ import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
@@ -39,6 +42,9 @@ class PairedDevicesViewModelTest {
     @MockK
     private lateinit var smsSender: SmsSender
 
+    @MockK
+    private lateinit var settingsRepository: SettingsRepository
+
     private val sourceDevicesFlow = MutableStateFlow(emptyList<PairedDevice>())
     private val targetDevicesFlow = MutableStateFlow(emptyList<PairedDevice>())
 
@@ -49,8 +55,10 @@ class PairedDevicesViewModelTest {
         MockKAnnotations.init(this, relaxed = true)
         every { deviceRepository.getSourceDevices() } returns sourceDevicesFlow
         every { deviceRepository.getTargetDevices() } returns targetDevicesFlow
+        every { settingsRepository.maxPairingResendAttempts } returns flowOf(SettingsDefaults.MAX_PAIRING_RESEND_ATTEMPTS)
+        every { settingsRepository.pairingResendCooldownMinutes } returns flowOf(SettingsDefaults.PAIRING_RESEND_COOLDOWN)
 
-        viewModel = PairedDevicesViewModel(deviceRepository, sessionRepository, smsSender)
+        viewModel = PairedDevicesViewModel(deviceRepository, sessionRepository, smsSender, settingsRepository)
     }
 
     @Test

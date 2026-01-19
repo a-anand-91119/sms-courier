@@ -5,6 +5,7 @@ import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.security.SecurityManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -165,7 +166,7 @@ object ScenarioBuilders {
             passwordHash = passwordHash.hash,
             passwordSalt = passwordHash.salt,
             authKey = authKey,
-            failedAttempts = SecurityManager.MAX_FAILED_ATTEMPTS,
+            failedAttempts = SettingsDefaults.MAX_FAILED_ATTEMPTS,
             lockedUntil = System.currentTimeMillis() + lockDurationMs,
         )
         deviceRepository.insert(device)

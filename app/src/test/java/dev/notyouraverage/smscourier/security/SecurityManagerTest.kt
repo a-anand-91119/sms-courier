@@ -1,14 +1,19 @@
 package dev.notyouraverage.smscourier.security
 
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.repository.SettingsRepository
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.runs
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
@@ -25,12 +30,21 @@ class SecurityManagerTest {
     @MockK
     private lateinit var deviceRepository: PairedDeviceRepository
 
+    @MockK
+    private lateinit var settingsRepository: SettingsRepository
+
     private lateinit var securityManager: SecurityManager
 
     @Before
     fun setup() {
         MockKAnnotations.init(this, relaxed = true)
-        securityManager = SecurityManager(deviceRepository)
+
+        // Mock settings Flows to return defaults
+        every { settingsRepository.maxFailedAttempts } returns flowOf(SettingsDefaults.MAX_FAILED_ATTEMPTS)
+        every { settingsRepository.lockoutDurationMinutes } returns flowOf(SettingsDefaults.LOCKOUT_DURATION)
+        every { settingsRepository.challengeExpiryMinutes } returns flowOf(SettingsDefaults.CHALLENGE_EXPIRY)
+
+        securityManager = SecurityManager(deviceRepository, settingsRepository)
     }
 
     // ==================== verifyPassword ====================
@@ -146,6 +160,32 @@ class SecurityManagerTest {
         securityManager.recordFailedAttempt(device)
 
         coVerify { deviceRepository.updateFailedAttempts(device.phoneNumber, device.role, 4, null) }
+    }
+
+    @Test
+    fun `recordFailedAttempt uses configured maxFailedAttempts`() = runTest {
+        // Override default with custom value (3 attempts)
+        every { settingsRepository.maxFailedAttempts } returns flowOf(3)
+
+        val customSecurityManager = SecurityManager(deviceRepository, settingsRepository)
+        // Start observation to apply custom value
+        customSecurityManager.startObservingSettings(this)
+        // Allow coroutines to process and collect flow values
+        advanceUntilIdle()
+
+        val device = createTestDevice(failedAttempts = 2) // One more triggers lockout at 3
+        coEvery { deviceRepository.updateFailedAttempts(any(), any(), any(), any()) } just runs
+
+        customSecurityManager.recordFailedAttempt(device)
+
+        coVerify {
+            deviceRepository.updateFailedAttempts(
+                device.phoneNumber,
+                device.role,
+                3,
+                match { it != null && it > System.currentTimeMillis() },
+            )
+        }
     }
 
     // ==================== resetFailedAttempts ====================

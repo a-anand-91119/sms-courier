@@ -3,6 +3,7 @@ package dev.notyouraverage.smscourier.integration
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupActiveForwardingSession
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupApprovedTargetDevice
 import dev.notyouraverage.smscourier.integration.ScenarioBuilders.setupLockedDevice
@@ -129,7 +130,7 @@ class SecurityIntegrationTest : IntegrationTestBase() {
             passwordHash = passwordHash.hash,
             passwordSalt = passwordHash.salt,
             authKey = authKey,
-            failedAttempts = SecurityManager.MAX_FAILED_ATTEMPTS - 1,
+            failedAttempts = SettingsDefaults.MAX_FAILED_ATTEMPTS - 1,
         )
         deviceRepository.insert(device)
 
@@ -145,7 +146,7 @@ class SecurityIntegrationTest : IntegrationTestBase() {
         // Verify: Device is now locked
         val updatedDevice = deviceRepository.getByPhoneNumberAndRole("+1234567890", DeviceRole.TARGET)
         assertNotNull("Device should exist", updatedDevice)
-        assertEquals("Should have MAX failed attempts", SecurityManager.MAX_FAILED_ATTEMPTS, updatedDevice!!.failedAttempts)
+        assertEquals("Should have MAX failed attempts", SettingsDefaults.MAX_FAILED_ATTEMPTS, updatedDevice!!.failedAttempts)
         assertNotNull("lockedUntil should be set", updatedDevice.lockedUntil)
         assertTrue("lockedUntil should be in future", updatedDevice.lockedUntil!! > System.currentTimeMillis())
     }

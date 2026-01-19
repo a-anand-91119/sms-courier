@@ -24,6 +24,7 @@ import dev.notyouraverage.smscourier.constants.Constants.CODE_FOREGROUND_SERVICE
 import dev.notyouraverage.smscourier.constants.Constants.NOTIFICATION_CHANNEL_GENERAL
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.handlers.SmsCommandHandler
 import dev.notyouraverage.smscourier.models.SmsMessageData
 import dev.notyouraverage.smscourier.notifications.PairingNotificationManager
@@ -31,7 +32,6 @@ import dev.notyouraverage.smscourier.receivers.ServiceNotificationReceiver
 import dev.notyouraverage.smscourier.receivers.SmsReceiver
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
-import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.security.SecurityManager
 import dev.notyouraverage.smscourier.services.SmsSender
