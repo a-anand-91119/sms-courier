@@ -106,6 +106,9 @@ dependencies {
     // ViewModel Compose
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
+    // Lifecycle Compose (for LocalLifecycleOwner)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
     // Password hashing
     implementation(libs.jbcrypt)
 
