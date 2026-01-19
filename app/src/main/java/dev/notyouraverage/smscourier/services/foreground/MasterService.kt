@@ -32,7 +32,6 @@ import dev.notyouraverage.smscourier.receivers.SmsReceiver
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
 import dev.notyouraverage.smscourier.repository.SettingsRepository
-import kotlinx.coroutines.flow.first
 import dev.notyouraverage.smscourier.security.SecurityManager
 import dev.notyouraverage.smscourier.services.SmsSender
 import dev.notyouraverage.smscourier.services.background.SmsService
@@ -40,6 +39,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MasterService : Service() {

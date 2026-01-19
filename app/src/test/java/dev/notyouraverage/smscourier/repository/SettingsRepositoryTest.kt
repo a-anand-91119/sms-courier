@@ -421,13 +421,13 @@ class SettingsRepositoryTest {
     @Test
     fun `settings can toggle between values`() = runTest {
         settingsRepository.notificationPersistence.test {
-            assertFalse(awaitItem()) // Default
-
-            settingsRepository.setNotificationPersistence(true)
-            assertTrue(awaitItem())
+            assertTrue(awaitItem()) // Default is true
 
             settingsRepository.setNotificationPersistence(false)
             assertFalse(awaitItem())
+
+            settingsRepository.setNotificationPersistence(true)
+            assertTrue(awaitItem())
 
             cancelAndIgnoreRemainingEvents()
         }
