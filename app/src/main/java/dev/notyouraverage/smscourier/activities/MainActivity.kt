@@ -7,13 +7,19 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.core.app.ActivityCompat
 import androidx.navigation.compose.rememberNavController
+import dev.notyouraverage.smscourier.data.settings.AppTheme
 import dev.notyouraverage.smscourier.navigation.Screen
 import dev.notyouraverage.smscourier.navigation.SmsCourierNavGraph
 import dev.notyouraverage.smscourier.receivers.PairingActionReceiver
+import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.ui.theme.smscourierTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,7 +37,16 @@ class MainActivity : ComponentActivity() {
         val startDestination = getStartDestinationFromIntent(intent)
 
         setContent {
-            smscourierTheme {
+            val settingsRepository = remember { SettingsRepository(applicationContext) }
+            val themeSetting by settingsRepository.theme.collectAsState(initial = AppTheme.SYSTEM)
+
+            val darkTheme = when (themeSetting) {
+                AppTheme.LIGHT -> false
+                AppTheme.DARK -> true
+                AppTheme.SYSTEM -> isSystemInDarkTheme()
+            }
+
+            smscourierTheme(darkTheme = darkTheme) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     SmsCourierNavGraph(
