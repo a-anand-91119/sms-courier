@@ -3,11 +3,11 @@
 ## Current Position
 
 Phase: 14 of 14 (Advanced Settings & Service Integration)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-01-19 - Completed Phase 13 (Settings Screen & Main Settings)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-19 - Completed 14-01-PLAN.md (Advanced Settings UI)
 
-Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 100% of v0.0.62 | 67% of v0.0.63
+Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 100% of v0.0.62 | 78% of v0.0.63
 
 ## Accumulated Context
 
@@ -39,7 +39,7 @@ Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - IntegrationTestBase pattern: abstract base with full dependency injection
 - 342 total tests passing
 
-**Settings (v0.0.63 - Phases 12-13):**
+**Settings (v0.0.63 - Phases 12-14):**
 - DataStore Preferences for settings persistence
 - SettingsRepository with typed Flow properties
 - Conservative security defaults matching existing SecurityManager constants
@@ -47,21 +47,25 @@ Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - Two SettingsRepository instances (MainActivity and NavGraph) acceptable - DataStore is Context singleton
 - App-level theme observation in MainActivity for immediate theme changes
 - Duration options limited to 15, 30, 60 minutes (within SettingsRepository 1-60 validation)
-- Material3 ListItem pattern for settings rows (SettingsSwitchItem, SettingsSelectionItem)
+- Material3 ListItem pattern for settings rows (SettingsSwitchItem, SettingsSelectionItem, SettingsNumberInputItem)
 - BuildConfig generation enabled for VERSION_NAME access
 - Lifecycle-aware permission refresh using DisposableEffect with LifecycleEventObserver
 - About URLs externalized in Constants.kt (PRIVACY_POLICY_URL, SUPPORT_URL)
+- Collapsible Advanced section with warning header for security emphasis
+- SettingsNumberInputItem shows range in supporting text with helper text below
+- Error handling via snackbar with LaunchedEffect trigger
 
 ### Technical Context
 
 **Current State:**
 - App functionally complete with pairing, forwarding, and session management
 - Settings data layer complete: SettingsRepository with 9 typed Flows
-- Settings screen complete: preferences and information sections
+- Settings screen complete: preferences, advanced, and information sections
+- Advanced section with 6 security settings (lockout, attempts, challenge, pairing, cooldown, timeout)
 - Permission status display with Fix action opening app settings
 - About section with version, privacy policy, and support links
 - Theme observation wired at app level - theme changes apply immediately
-- Comprehensive test coverage: 342 tests passing (41 new SettingsRepository tests)
+- Comprehensive test coverage: 342 tests passing
 - CI/CD pipeline fully configured with parallel test jobs
 - Play Store app in closed testing (12 testers, 14-day wait)
 - Database at version 5
@@ -75,7 +79,7 @@ Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - v0.0.63 Settings (Phases 12-14)
   - Phase 12: Settings Data Layer - COMPLETE
   - Phase 13: Settings Screen & Main Settings - COMPLETE
-  - Phase 14: Advanced Settings & Service Integration - Not Started
+  - Phase 14: Advanced Settings & Service Integration - In Progress (Plan 1/3 complete)
 
 **Parallel Milestone:**
 - Play Store Launch (Phases 1-4)
@@ -99,11 +103,14 @@ None currently identified.
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed Phase 13 (Settings Screen & Main Settings)
+Stopped at: Completed 14-01-PLAN.md (Advanced Settings UI)
 Resume file: None
 
 **Context for next session:**
-- Phase 13 verified complete - Settings screen fully functional
-- All preference items working: notification toggle, duration selector, theme selector
-- All information items working: permission status with Fix, version, privacy policy, support links
-- Next action: `/gsd:discuss-phase 14` or `/gsd:plan-phase 14`
+- Plan 14-01 complete - Advanced settings UI fully functional
+- SettingsViewModel has 6 new security StateFlows with validation-aware setters
+- SettingsScreen has collapsible Advanced section with warning header
+- SettingsNumberInputItem composable available for numeric inputs
+- Error snackbar displays validation errors
+- All 342 tests passing
+- Next action: Execute 14-02-PLAN.md (Service Integration)
