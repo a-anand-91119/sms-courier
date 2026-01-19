@@ -11,8 +11,8 @@ Requirements for v0.0.63 Settings milestone.
 
 - [x] **INFRA-01**: Settings persist across app restarts using DataStore
 - [x] **INFRA-02**: SettingsRepository exposes typed Flows for each setting
-- [ ] **INFRA-03**: MasterService observes settings changes via Flow
-- [ ] **INFRA-04**: SecurityManager uses injected settings instead of hardcoded constants
+- [x] **INFRA-03**: MasterService observes settings changes via Flow
+- [x] **INFRA-04**: SecurityManager uses injected settings instead of hardcoded constants
 
 ### Main Settings
 
@@ -28,12 +28,12 @@ Requirements for v0.0.63 Settings milestone.
 
 ### Advanced Settings
 
-- [ ] **ADV-01**: User can configure device lockout duration (default: 15 minutes)
-- [ ] **ADV-02**: User can configure max failed auth attempts before lockout (default: 5)
-- [ ] **ADV-03**: User can configure challenge expiry timeout (default: 2 minutes)
-- [ ] **ADV-04**: User can configure max pairing resend attempts (default: 5)
-- [ ] **ADV-05**: User can configure pairing resend cooldown (default: 1 minute)
-- [ ] **ADV-06**: User can configure auth request timeout (default: 5 minutes)
+- [x] **ADV-01**: User can configure device lockout duration (default: 15 minutes)
+- [x] **ADV-02**: User can configure max failed auth attempts before lockout (default: 5)
+- [x] **ADV-03**: User can configure challenge expiry timeout (default: 2 minutes)
+- [x] **ADV-04**: User can configure max pairing resend attempts (default: 5)
+- [x] **ADV-05**: User can configure pairing resend cooldown (default: 1 minute)
+- [x] **ADV-06**: User can configure auth request timeout (default: 5 minutes)
 
 ## v2 Requirements
 
@@ -72,20 +72,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | INFRA-01 | Phase 12 | Complete |
 | INFRA-02 | Phase 12 | Complete |
-| INFRA-03 | Phase 14 | Pending |
-| INFRA-04 | Phase 14 | Pending |
+| INFRA-03 | Phase 14 | Complete |
+| INFRA-04 | Phase 14 | Complete |
 | MAIN-01 | Phase 13 | Complete |
 | MAIN-02 | Phase 13 | Complete |
 | MAIN-03 | Phase 13 | Complete |
 | MAIN-04 | Phase 13 | Complete |
 | INFO-01 | Phase 13 | Complete |
 | INFO-02 | Phase 13 | Complete |
-| ADV-01 | Phase 14 | Pending |
-| ADV-02 | Phase 14 | Pending |
-| ADV-03 | Phase 14 | Pending |
-| ADV-04 | Phase 14 | Pending |
-| ADV-05 | Phase 14 | Pending |
-| ADV-06 | Phase 14 | Pending |
+| ADV-01 | Phase 14 | Complete |
+| ADV-02 | Phase 14 | Complete |
+| ADV-03 | Phase 14 | Complete |
+| ADV-04 | Phase 14 | Complete |
+| ADV-05 | Phase 14 | Complete |
+| ADV-06 | Phase 14 | Complete |
 
 **Coverage:**
 - v1 requirements: 16 total
@@ -94,4 +94,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-18*
-*Last updated: 2026-01-19 after Phase 13 completion*
+*Last updated: 2026-01-19 after Phase 14 completion*

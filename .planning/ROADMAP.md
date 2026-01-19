@@ -96,12 +96,12 @@ Plans:
 **Depends on**: Phase 13
 **Requirements**: ADV-01, ADV-02, ADV-03, ADV-04, ADV-05, ADV-06, INFRA-03, INFRA-04
 **Plans:** 3 plans
-**Status**: Not Started
+**Status**: Complete (2026-01-19)
 
 Plans:
-- [ ] 14-01-PLAN.md — Advanced settings UI (collapsible section with 6 security settings)
-- [ ] 14-02-PLAN.md — SecurityManager refactor (inject SettingsRepository, remove hardcoded constants)
-- [ ] 14-03-PLAN.md — Service integration (MasterService auth timeout, PairedDevicesViewModel pairing limits)
+- [x] 14-01-PLAN.md — Advanced settings UI (collapsible section with 6 security settings)
+- [x] 14-02-PLAN.md — SecurityManager refactor (inject SettingsRepository, remove hardcoded constants)
+- [x] 14-03-PLAN.md — Service integration (MasterService auth timeout, PairedDevicesViewModel pairing limits)
 
 ### Play Store Launch (Parallel)
 
@@ -190,4 +190,4 @@ Plans:
 | 11. End-to-End Flow Tests | v0.0.62 | 3/3 | Complete | 2026-01-18 |
 | 12. Settings Data Layer | v0.0.63 | 1/1 | Complete | 2026-01-18 |
 | 13. Settings Screen & Main Settings | v0.0.63 | 3/3 | Complete | 2026-01-19 |
-| 14. Advanced Settings & Service Integration | v0.0.63 | 0/3 | Not Started | - |
+| 14. Advanced Settings & Service Integration | v0.0.63 | 3/3 | Complete | 2026-01-19 |
