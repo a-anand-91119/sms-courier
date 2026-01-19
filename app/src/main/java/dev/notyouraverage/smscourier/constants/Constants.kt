@@ -18,7 +18,6 @@ object Constants {
 }
 
 object AboutLinks {
-    // Privacy policy placeholder - update when real URL is available
-    const val PRIVACY_POLICY_URL = "https://gitlab.com/notyouraverage/smscourier/-/blob/main/PRIVACY.md"
+    const val PRIVACY_POLICY_URL = "https://www.smscourier.app/privacy"
     const val SUPPORT_URL = "https://gitlab.com/notyouraverage/smscourier/-/issues"
 }
