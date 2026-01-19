@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.services.SmsSender
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,12 +28,17 @@ class PairedDevicesViewModel(
     private val deviceRepository: PairedDeviceRepository,
     private val sessionRepository: ForwardingSessionRepository,
     private val smsSender: SmsSender,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
-    companion object {
-        private const val MAX_RESEND_ATTEMPTS = 5
-        private const val RESEND_COOLDOWN_MS = 60_000L // 1 minute between resends
-    }
+    // Settings-based pairing limits (reactive via StateFlow)
+    private val maxResendAttempts: StateFlow<Int> = settingsRepository.maxPairingResendAttempts
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsDefaults.MAX_PAIRING_RESEND_ATTEMPTS)
+
+    private val resendCooldownMinutes: StateFlow<Int> = settingsRepository.pairingResendCooldownMinutes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsDefaults.PAIRING_RESEND_COOLDOWN)
+
+    private val resendCooldownMs: Long get() = resendCooldownMinutes.value * 60 * 1000L
 
     // Devices where this phone is the SOURCE (requests forwarding FROM these devices)
     val sourceDevices: StateFlow<List<PairedDevice>> = deviceRepository.getSourceDevices()
@@ -56,11 +63,12 @@ class PairedDevicesViewModel(
 
     fun canResendPairingRequest(device: PairedDevice): ResendStatus {
         if (device.status != PairingStatus.PENDING_SENT) return ResendStatus.NotPending
-        if (device.resendAttemptCount >= MAX_RESEND_ATTEMPTS) return ResendStatus.MaxAttemptsReached
+        if (device.resendAttemptCount >= maxResendAttempts.value) return ResendStatus.MaxAttemptsReached
         val lastAttempt = device.lastResendAttemptAt ?: return ResendStatus.CanResend
         val elapsed = System.currentTimeMillis() - lastAttempt
-        if (elapsed < RESEND_COOLDOWN_MS) {
-            return ResendStatus.Cooldown(remainingMs = RESEND_COOLDOWN_MS - elapsed)
+        val cooldownMs = resendCooldownMs
+        if (elapsed < cooldownMs) {
+            return ResendStatus.Cooldown(remainingMs = cooldownMs - elapsed)
         }
         return ResendStatus.CanResend
     }
@@ -114,10 +122,16 @@ class PairedDevicesViewModel(
         private val deviceRepository: PairedDeviceRepository,
         private val sessionRepository: ForwardingSessionRepository,
         private val smsSender: SmsSender,
+        private val settingsRepository: SettingsRepository,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PairedDevicesViewModel(deviceRepository, sessionRepository, smsSender) as T
+            return PairedDevicesViewModel(
+                deviceRepository,
+                sessionRepository,
+                smsSender,
+                settingsRepository,
+            ) as T
         }
     }
 }
