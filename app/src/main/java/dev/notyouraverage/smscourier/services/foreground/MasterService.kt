@@ -31,6 +31,7 @@ import dev.notyouraverage.smscourier.receivers.ServiceNotificationReceiver
 import dev.notyouraverage.smscourier.receivers.SmsReceiver
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.security.SecurityManager
 import dev.notyouraverage.smscourier.services.SmsSender
@@ -69,6 +70,10 @@ class MasterService : Service() {
 
     // Track pending auth requests on SOURCE side: targetPhone -> (password, duration)
     private val pendingAuthRequests = mutableMapOf<String, PendingAuthRequest>()
+
+    // Cached auth request timeout (updated via Flow)
+    private var authRequestTimeoutMinutes = SettingsDefaults.AUTH_REQUEST_TIMEOUT
+    private val authRequestTimeoutMs: Long get() = authRequestTimeoutMinutes * 60 * 1000L
 
     data class PendingAuthRequest(
         val password: String,
@@ -130,7 +135,7 @@ class MasterService : Service() {
         settingsRepository = SettingsRepository(this)
         smsSender = SmsSender(this)
         notificationManager = PairingNotificationManager(this)
-        securityManager = SecurityManager(deviceRepository)
+        securityManager = SecurityManager(deviceRepository, settingsRepository)
         commandHandler = SmsCommandHandler(
             deviceRepository = deviceRepository,
             sessionRepository = sessionRepository,
@@ -451,10 +456,10 @@ class MasterService : Service() {
             return
         }
 
-        // Check if request is too old (5 minutes max)
+        // Check if request is too old
         val age = System.currentTimeMillis() - pending.requestedAt
-        if (age > 5 * 60 * 1000L) {
-            Log.w(TAG, "Pending auth request for $senderPhone has expired")
+        if (age > authRequestTimeoutMs) {
+            Log.w(TAG, "Pending auth request for $senderPhone has expired (>${authRequestTimeoutMinutes}min)")
             pendingAuthRequests.remove(senderPhone)
             return
         }
@@ -550,6 +555,16 @@ class MasterService : Service() {
         // Resume any active forwarding sessions from database
         serviceScope.launch {
             resumeActiveForwardingSessions()
+        }
+
+        // Start observing settings changes for SecurityManager
+        securityManager.startObservingSettings(serviceScope)
+
+        // Observe auth request timeout setting
+        serviceScope.launch {
+            settingsRepository.authRequestTimeoutMinutes.collect { value ->
+                authRequestTimeoutMinutes = value
+            }
         }
 
         Log.i(TAG, "MasterService::startingForegroundService")

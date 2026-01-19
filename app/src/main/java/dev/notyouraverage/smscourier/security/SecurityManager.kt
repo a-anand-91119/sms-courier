@@ -3,7 +3,11 @@ package dev.notyouraverage.smscourier.security
 import android.util.Base64
 import android.util.Log
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.repository.SettingsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.mindrot.jbcrypt.BCrypt
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -12,13 +16,11 @@ import javax.crypto.spec.SecretKeySpec
 
 class SecurityManager(
     private val deviceRepository: PairedDeviceRepository,
+    private val settingsRepository: SettingsRepository,
 ) {
     companion object {
         private const val TAG = "SMSC:SecurityManager"
         private const val BCRYPT_COST = 12
-        const val MAX_FAILED_ATTEMPTS = 5
-        const val LOCKOUT_DURATION_MS = 15 * 60 * 1000L // 15 minutes
-        private const val CHALLENGE_EXPIRY_MS = 2 * 60 * 1000L // 2 minutes
         private const val NONCE_LENGTH = 16
 
         fun hashPassword(password: String): PasswordHash {
@@ -69,6 +71,37 @@ class SecurityManager(
     // Pending challenges: phoneNumber -> (nonce, expiresAt)
     private val pendingChallenges = mutableMapOf<String, Pair<String, Long>>()
 
+    // Cached settings values (updated via Flow collection)
+    private var maxFailedAttempts = SettingsDefaults.MAX_FAILED_ATTEMPTS
+    private var lockoutDurationMinutes = SettingsDefaults.LOCKOUT_DURATION
+    private var challengeExpiryMinutes = SettingsDefaults.CHALLENGE_EXPIRY
+
+    // Computed millisecond values
+    private val lockoutDurationMs: Long get() = lockoutDurationMinutes * 60 * 1000L
+    private val challengeExpiryMs: Long get() = challengeExpiryMinutes * 60 * 1000L
+
+    /**
+     * Start observing settings changes. Call from MasterService.onCreate()
+     * with serviceScope to ensure proper lifecycle management.
+     */
+    fun startObservingSettings(scope: CoroutineScope) {
+        scope.launch {
+            settingsRepository.maxFailedAttempts.collect { value ->
+                maxFailedAttempts = value
+            }
+        }
+        scope.launch {
+            settingsRepository.lockoutDurationMinutes.collect { value ->
+                lockoutDurationMinutes = value
+            }
+        }
+        scope.launch {
+            settingsRepository.challengeExpiryMinutes.collect { value ->
+                challengeExpiryMinutes = value
+            }
+        }
+    }
+
     data class PasswordHash(
         val hash: String,
         val salt: String,
@@ -96,8 +129,8 @@ class SecurityManager(
 
     suspend fun recordFailedAttempt(device: PairedDevice) {
         val newAttempts = device.failedAttempts + 1
-        val lockedUntil = if (newAttempts >= MAX_FAILED_ATTEMPTS) {
-            System.currentTimeMillis() + LOCKOUT_DURATION_MS
+        val lockedUntil = if (newAttempts >= maxFailedAttempts) {
+            System.currentTimeMillis() + lockoutDurationMs
         } else {
             null
         }
@@ -120,9 +153,9 @@ class SecurityManager(
         cleanupExpiredChallenges()
 
         val nonce = generateNonce()
-        val expiresAt = System.currentTimeMillis() + CHALLENGE_EXPIRY_MS
+        val expiresAt = System.currentTimeMillis() + challengeExpiryMs
         pendingChallenges[phoneNumber] = Pair(nonce, expiresAt)
-        Log.d(TAG, "Generated challenge for $phoneNumber, expires in ${CHALLENGE_EXPIRY_MS / 1000}s")
+        Log.d(TAG, "Generated challenge for $phoneNumber, expires in ${challengeExpiryMinutes * 60}s")
         return nonce
     }
 
@@ -202,7 +235,7 @@ class SecurityManager(
             recordFailedAttempt(device)
             val updatedDevice = deviceRepository.getByPhoneNumberAndRole(senderPhoneNumber, device.role)
             AuthenticationResult.InvalidResponse(
-                attemptsRemaining = MAX_FAILED_ATTEMPTS - (updatedDevice?.failedAttempts ?: 0),
+                attemptsRemaining = maxFailedAttempts - (updatedDevice?.failedAttempts ?: 0),
             )
         }
     }
