@@ -69,7 +69,12 @@ fun SmsCourierNavGraph(
 
         composable(Screen.PairedDevices.route) {
             val viewModel: PairedDevicesViewModel = viewModel(
-                factory = PairedDevicesViewModel.Factory(deviceRepository, sessionRepository, smsSender),
+                factory = PairedDevicesViewModel.Factory(
+                    deviceRepository,
+                    sessionRepository,
+                    smsSender,
+                    settingsRepository,
+                ),
             )
             PairedDevicesScreen(
                 viewModel = viewModel,
