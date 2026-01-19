@@ -6,21 +6,26 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -31,16 +36,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -75,9 +85,32 @@ fun SettingsScreen(
     val defaultDuration by viewModel.defaultForwardingDurationMinutes.collectAsState()
     val theme by viewModel.theme.collectAsState()
 
+    // Collect advanced/security settings
+    val lockoutDuration by viewModel.lockoutDurationMinutes.collectAsState()
+    val maxFailedAttempts by viewModel.maxFailedAttempts.collectAsState()
+    val challengeExpiry by viewModel.challengeExpiryMinutes.collectAsState()
+    val maxPairingResend by viewModel.maxPairingResendAttempts.collectAsState()
+    val pairingResendCooldown by viewModel.pairingResendCooldownMinutes.collectAsState()
+    val authRequestTimeout by viewModel.authRequestTimeoutMinutes.collectAsState()
+    val settingError by viewModel.settingError.collectAsState()
+
     // Duration dropdown state
     var durationExpanded by remember { mutableStateOf(false) }
     val durationOptions = listOf(15, 30, 60)
+
+    // Advanced section expand/collapse state
+    var advancedExpanded by remember { mutableStateOf(false) }
+
+    // Snackbar state for error messages
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Show snackbar when there's an error
+    LaunchedEffect(settingError) {
+        settingError?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            viewModel.clearSettingError()
+        }
+    }
 
     // Permission states that refresh when screen resumes
     var smsReceiveGranted by remember { mutableStateOf(false) }
@@ -133,6 +166,7 @@ fun SettingsScreen(
                 ),
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.padding(paddingValues),
@@ -209,6 +243,133 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            // Advanced section (collapsible)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { advancedExpanded = !advancedExpanded }
+                        .padding(top = 8.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "Advanced",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Icon(
+                        imageVector = if (advancedExpanded) {
+                            Icons.Default.KeyboardArrowUp
+                        } else {
+                            Icons.Default.KeyboardArrowDown
+                        },
+                        contentDescription = if (advancedExpanded) "Collapse" else "Expand",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+
+            item {
+                AnimatedVisibility(visible = advancedExpanded) {
+                    Column {
+                        // Warning header
+                        ListItem(
+                            headlineContent = {
+                                Text(
+                                    "These settings affect security. Change with care.",
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            },
+                            leadingContent = {
+                                Icon(
+                                    Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            },
+                        )
+
+                        // Security sub-section
+                        Text(
+                            text = "Security",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp),
+                        )
+
+                        SettingsNumberInputItem(
+                            title = "Lockout duration",
+                            value = lockoutDuration,
+                            onValueChange = { viewModel.setLockoutDuration(it) },
+                            minValue = 1,
+                            maxValue = 60,
+                            unit = "minutes",
+                            helperText = "How long devices are locked after failed auth",
+                        )
+
+                        SettingsNumberInputItem(
+                            title = "Max failed attempts",
+                            value = maxFailedAttempts,
+                            onValueChange = { viewModel.setMaxFailedAttempts(it) },
+                            minValue = 1,
+                            maxValue = 10,
+                            unit = "attempts",
+                            helperText = "Failed attempts before lockout",
+                        )
+
+                        SettingsNumberInputItem(
+                            title = "Challenge expiry",
+                            value = challengeExpiry,
+                            onValueChange = { viewModel.setChallengeExpiry(it) },
+                            minValue = 1,
+                            maxValue = 10,
+                            unit = "minutes",
+                            helperText = "Time before auth challenge expires",
+                        )
+
+                        // Pairing sub-section
+                        Text(
+                            text = "Pairing",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+                        )
+
+                        SettingsNumberInputItem(
+                            title = "Max pairing resend",
+                            value = maxPairingResend,
+                            onValueChange = { viewModel.setMaxPairingResendAttempts(it) },
+                            minValue = 1,
+                            maxValue = 10,
+                            unit = "attempts",
+                            helperText = "Maximum resend attempts",
+                        )
+
+                        SettingsNumberInputItem(
+                            title = "Pairing resend cooldown",
+                            value = pairingResendCooldown,
+                            onValueChange = { viewModel.setPairingResendCooldown(it) },
+                            minValue = 1,
+                            maxValue = 10,
+                            unit = "minutes",
+                            helperText = "Wait time between resends",
+                        )
+
+                        SettingsNumberInputItem(
+                            title = "Auth request timeout",
+                            value = authRequestTimeout,
+                            onValueChange = { viewModel.setAuthRequestTimeout(it) },
+                            minValue = 1,
+                            maxValue = 30,
+                            unit = "minutes",
+                            helperText = "Time before auth request expires",
+                        )
                     }
                 }
             }
@@ -334,6 +495,49 @@ private fun SettingsSelectionItem(
             )
         },
         modifier = Modifier.clickable(onClick = onClick),
+    )
+}
+
+@Composable
+private fun SettingsNumberInputItem(
+    title: String,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    minValue: Int,
+    maxValue: Int,
+    unit: String,
+    helperText: String? = null,
+) {
+    var textValue by remember(value) { mutableStateOf(value.toString()) }
+
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = {
+            Column {
+                Text("$minValue-$maxValue $unit")
+                helperText?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+        },
+        trailingContent = {
+            OutlinedTextField(
+                value = textValue,
+                onValueChange = { newValue ->
+                    textValue = newValue
+                    newValue.toIntOrNull()?.let { intValue ->
+                        onValueChange(intValue)
+                    }
+                },
+                modifier = Modifier.width(80.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+        },
     )
 }
 
