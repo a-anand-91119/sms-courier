@@ -64,4 +64,33 @@
 
 ---
 
+## v0.0.63 Settings (Shipped: 2026-01-19)
+
+**Delivered:** Full settings screen with DataStore persistence, main preferences (notification, duration, theme), permission status, about section, and advanced security settings with reactive service integration.
+
+**Phases completed:** 12-14 (7 plans)
+
+**Key accomplishments:**
+- DataStore-backed settings persistence with SettingsRepository singleton
+- 9 typed Flow properties for reactive settings access
+- Settings screen with gear icon navigation from HomeScreen
+- Main settings: notification persistence toggle, default forwarding duration, theme selection
+- Theme observation at app level for immediate changes
+- Permission status with Fix action navigating to app settings
+- About section with version, privacy policy, support links
+- Collapsible Advanced section with 6 security settings
+- SecurityManager refactored with SettingsRepository injection
+- MasterService observes authRequestTimeoutMinutes via Flow
+- PairedDevicesViewModel uses configurable pairing limits
+
+**Stats:**
+- 3 phases, 7 plans executed
+- 41 SettingsRepositoryTest cases
+- 343 total tests passing
+- 2 days from start to ship
+
+**Git range:** v0.0.63
+
+---
+
 _See [milestones/](milestones/) for archived milestone details._

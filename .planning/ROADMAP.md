@@ -13,7 +13,7 @@ None (Android app development patterns already established in codebase)
 - [**v0.0.7-v0.0.10 Feature Improvements**](milestones/v0.1-ROADMAP.md) - Phases 5-7 (shipped 2026-01-15)
 - **v0.0.60-v0.0.61 CI/CD Optimizations** - Phase 8 (shipped 2026-01-16)
 - [**v0.0.62 Testing**](milestones/v0.0.62-ROADMAP.md) - Phases 9-11 (shipped 2026-01-18)
-- [**v0.0.63 Settings**](milestones/v0.0.63-settings/ROADMAP.md) - Phases 12-14 (in progress)
+- [**v0.0.63 Settings**](milestones/v0.0.63-settings/ROADMAP.md) - Phases 12-14 (shipped 2026-01-19)
 - **Play Store Launch** - Phases 1-4 (parallel)
 
 ## Completed Milestones
@@ -58,50 +58,24 @@ See [milestones/v0.0.62-ROADMAP.md](milestones/v0.0.62-ROADMAP.md) for full deta
 
 </details>
 
+<details>
+<summary>v0.0.63 Settings (Phases 12-14) - SHIPPED 2026-01-19</summary>
+
+- [x] Phase 12: Settings Data Layer (1/1 plans) - completed 2026-01-18
+- [x] Phase 13: Settings Screen & Main Settings (3/3 plans) - completed 2026-01-19
+- [x] Phase 14: Advanced Settings & Service Integration (3/3 plans) - completed 2026-01-19
+
+**Key accomplishments:**
+- DataStore-backed settings persistence with SettingsRepository
+- Settings screen with navigation, preferences, permission status, and about section
+- 6 advanced security settings (lockout, attempts, challenge expiry, pairing limits, auth timeout)
+- SecurityManager and MasterService refactored for reactive settings via Flow
+
+See [milestones/v0.0.63-settings/ROADMAP.md](milestones/v0.0.63-settings/ROADMAP.md) for full details.
+
+</details>
+
 ## Phases
-
-### v0.0.63 Settings (In Progress)
-
-**Milestone Goal:** Add settings screen with user-configurable preferences for notifications, service behavior, security, and app appearance.
-
-See [milestones/v0.0.63-settings/ROADMAP.md](milestones/v0.0.63-settings/ROADMAP.md) for full phase details.
-
-#### Phase 12: Settings Data Layer
-
-**Goal**: Settings persist reliably and are accessible via typed Flows throughout the app
-**Depends on**: Nothing (first phase of milestone)
-**Requirements**: INFRA-01, INFRA-02
-**Plans:** 1 plan
-**Status**: Complete (2026-01-18)
-
-Plans:
-- [x] 12-01-PLAN.md — DataStore setup and SettingsRepository implementation
-
-#### Phase 13: Settings Screen & Main Settings
-
-**Goal**: Users can access and modify main settings and view app information
-**Depends on**: Phase 12
-**Requirements**: MAIN-01, MAIN-02, MAIN-03, MAIN-04, INFO-01, INFO-02
-**Plans:** 3 plans
-**Status**: Complete (2026-01-19)
-
-Plans:
-- [x] 13-01-PLAN.md — Settings screen navigation and layout
-- [x] 13-02-PLAN.md — Main settings preferences (notification, duration, theme)
-- [x] 13-03-PLAN.md — Information sections (permissions, about)
-
-#### Phase 14: Advanced Settings & Service Integration
-
-**Goal**: Users can configure security parameters and services react to settings changes
-**Depends on**: Phase 13
-**Requirements**: ADV-01, ADV-02, ADV-03, ADV-04, ADV-05, ADV-06, INFRA-03, INFRA-04
-**Plans:** 3 plans
-**Status**: Complete (2026-01-19)
-
-Plans:
-- [x] 14-01-PLAN.md — Advanced settings UI (collapsible section with 6 security settings)
-- [x] 14-02-PLAN.md — SecurityManager refactor (inject SettingsRepository, remove hardcoded constants)
-- [x] 14-03-PLAN.md — Service integration (MasterService auth timeout, PairedDevicesViewModel pairing limits)
 
 ### Play Store Launch (Parallel)
 

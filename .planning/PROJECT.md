@@ -8,18 +8,11 @@ SMS Courier is an Android app for forwarding SMS messages between two paired dev
 
 Reliable, secure SMS forwarding between paired devices with minimal user intervention.
 
-## Current Milestone: v0.0.63 Settings
+## Current Milestone: Play Store Launch
 
-**Goal:** Add a settings screen with user-configurable preferences for notifications, service behavior, security, and app appearance.
+**Goal:** Complete closed testing period and launch publicly on Google Play Store.
 
-**Target features:**
-- Persistent notification toggle (recreate on dismiss vs stay dismissed)
-- Auto-start on boot
-- Default forwarding duration
-- Theme selection (Light/Dark/System)
-- About section (version, privacy policy, support)
-- Permission status with fix links
-- Advanced settings (security timeouts, pairing rate limits)
+**Status:** Phase 3 in progress (12 testers enrolled, 14-day waiting period)
 
 ## Requirements
 
@@ -32,17 +25,19 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 - Room database for paired device and session management
 - Jetpack Compose UI with Navigation Compose
 - CI/CD pipeline with Play Store deployment
-- Comprehensive test coverage (301 tests)
+- Comprehensive test coverage (343 tests)
+- Settings screen with DataStore persistence (v0.0.63)
+- Notification persistence toggle (v0.0.63)
+- Default forwarding duration setting (v0.0.63)
+- Theme selection with immediate application (v0.0.63)
+- About section with version, privacy policy, support links (v0.0.63)
+- Permission status with fix navigation (v0.0.63)
+- Advanced security settings (lockout, attempts, timeouts) (v0.0.63)
+- Reactive settings via Flow collection in services (v0.0.63)
 
 ### Active
 
-- [ ] Settings screen with main and advanced sections
-- [ ] Notification persistence toggle
-- [ ] Auto-start on boot functionality
-- [ ] Default forwarding duration setting
-- [ ] Theme selection
-- [ ] About section
-- [ ] Permission status display
+(Play Store Launch milestone - no code requirements)
 
 ### Out of Scope
 
@@ -54,29 +49,31 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 ## Context
 
 **Current state:**
-- App functionally complete and approved for Play Store closed testing
-- 12 testers enrolled, 14-day waiting period in progress
-- 301 tests passing with comprehensive coverage
-- Play Store Launch milestone running in parallel (Phases 3-4)
+- App functionally complete with settings feature shipped (v0.0.63)
+- Play Store closed testing in progress (12 testers, 14-day wait)
+- 343 tests passing with comprehensive coverage
+- All features validated, ready for production release
 
 **Technical environment:**
 - Kotlin with Jetpack Compose
 - Room database (version 5)
+- DataStore Preferences for settings persistence
 - Material 3 with dynamic colors
 - Target API 35
 
 ## Constraints
 
-- **Parallel milestone:** Play Store Launch is still active (dogfooding phase)
-- **No breaking changes:** Settings must not disrupt existing functionality
-- **SharedPreferences/DataStore:** Settings persistence needs lightweight storage
+- **Play Store timeline:** 14-day closed testing period required before open beta
+- **No breaking changes:** Maintain stability during dogfooding
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| SharedPreferences vs DataStore | TBD during implementation | — Pending |
-| Settings UI library | Compose Preferences vs custom | — Pending |
+| DataStore vs SharedPreferences | Modern, coroutine-native, type-safe | DataStore Preferences |
+| Settings UI library | Full control over Material3 styling | Custom Compose components |
+| Settings architecture | Reactive updates to services | SettingsRepository with Flow properties |
+| Security defaults | Match existing SecurityManager constants | Conservative defaults |
 
 ---
-*Last updated: 2026-01-18 after v0.0.63 milestone initialization*
+*Last updated: 2026-01-19 after v0.0.63 milestone shipped*
