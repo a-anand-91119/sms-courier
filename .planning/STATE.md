@@ -3,11 +3,11 @@
 ## Current Position
 
 Phase: 13 of 14 (Settings Screen & Main Settings)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-01-19 - Completed 13-01-PLAN.md (Settings Screen Navigation and Layout)
+Last activity: 2026-01-19 - Completed 13-02-PLAN.md (Main Settings Preferences)
 
-Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 100% of v0.0.62 | 50% of v0.0.63
+Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.60-v0.0.61 | 100% of v0.0.62 | 67% of v0.0.63
 
 ## Accumulated Context
 
@@ -46,13 +46,15 @@ Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 - require() validation throws IllegalArgumentException on invalid input
 - Two SettingsRepository instances (MainActivity and NavGraph) acceptable - DataStore is Context singleton
 - App-level theme observation in MainActivity for immediate theme changes
+- Duration options limited to 15, 30, 60 minutes (within SettingsRepository 1-60 validation)
+- Material3 ListItem pattern for settings rows (SettingsSwitchItem, SettingsSelectionItem)
 
 ### Technical Context
 
 **Current State:**
 - App functionally complete with pairing, forwarding, and session management
 - Settings data layer complete: SettingsRepository with 9 typed Flows
-- Settings screen scaffold complete: SettingsViewModel with Factory pattern
+- Settings screen with main preferences: notification toggle, duration selector, theme selector
 - Theme observation wired at app level - theme changes apply immediately
 - Comprehensive test coverage: 342 tests passing (41 new SettingsRepository tests)
 - CI/CD pipeline fully configured with parallel test jobs
@@ -67,7 +69,7 @@ Progress: ██████████ 100% of v0.0.7-v0.0.10 | 100% of v0.0.6
 **Current Milestone:**
 - v0.0.63 Settings (Phases 12-14)
   - Phase 12: Settings Data Layer - COMPLETE
-  - Phase 13: Settings Screen & Main Settings - Plan 1 COMPLETE (2 remaining)
+  - Phase 13: Settings Screen & Main Settings - Plan 2 COMPLETE (1 remaining)
   - Phase 14: Advanced Settings & Service Integration - Not Started
 
 **Parallel Milestone:**
@@ -92,11 +94,11 @@ None currently identified.
 ## Session Continuity
 
 Last session: 2026-01-19
-Stopped at: Completed 13-01-PLAN.md (Settings Screen Navigation and Layout)
+Stopped at: Completed 13-02-PLAN.md (Main Settings Preferences)
 Resume file: None
 
 **Context for next session:**
-- Phase 13 Plan 01 complete - SettingsScreen scaffold and navigation working
-- SettingsViewModel exposes theme, notificationPersistence, defaultForwardingDuration StateFlows
-- Plan 13-02 will add preference items (notification toggle, duration selector, theme selector)
+- Phase 13 Plan 02 complete - Main settings preferences functional
+- Notification persistence toggle, duration dropdown (15/30/60 min), theme segmented buttons
+- Reusable composables: SettingsSwitchItem, SettingsSelectionItem
 - Plan 13-03 will add information items (permissions status, about section)
