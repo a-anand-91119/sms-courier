@@ -19,5 +19,5 @@ object Constants {
 
 object AboutLinks {
     const val PRIVACY_POLICY_URL = "https://www.smscourier.app/privacy"
-    const val SUPPORT_URL = "https://gitlab.com/notyouraverage/smscourier/-/issues"
+    const val SUPPORT_URL = "https://gitlab.notyouraverage.dev/a.anand.91119/sms-courier/-/issues"
 }
