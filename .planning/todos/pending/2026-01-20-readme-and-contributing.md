@@ -4,6 +4,7 @@ title: Create README and CONTRIBUTING documentation
 area: docs
 files: []
 priority: backlog
+jira: SC-53
 ---
 
 ## Problem

@@ -4,6 +4,7 @@ title: Message history and forwarding logs
 area: feature-backlog
 files: []
 priority: backlog
+jira: SC-51
 ---
 
 ## Problem
