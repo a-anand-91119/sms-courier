@@ -92,7 +92,7 @@ None currently identified.
 
 ### Pending Todos
 
-11 todos tracked in `.planning/todos/pending/`
+12 todos tracked in `.planning/todos/pending/`
 
 **Feature Backlog:**
 - Forward to email or chat apps
@@ -110,6 +110,9 @@ None currently identified.
 **Tech Debt:**
 - Remove legacy background service code
 - Settings export/import
+
+**Documentation:**
+- Create README and CONTRIBUTING files
 
 ## Session Continuity
 
