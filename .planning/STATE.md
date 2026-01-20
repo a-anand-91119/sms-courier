@@ -92,13 +92,24 @@ None currently identified.
 
 ### Pending Todos
 
-4 todos tracked in `.planning/todos/pending/`
+11 todos tracked in `.planning/todos/pending/`
 
 **Feature Backlog:**
 - Forward to email or chat apps
 - Group messages by contact type
 - Sync sent messages back to original device
 - Smart filters for selective forwarding
+- Message history and forwarding logs
+- Scheduled and recurring forwarding sessions
+- Multi-destination forwarding (one-to-many)
+
+**Reliability:**
+- Auto-start app on device boot
+- Proper permission management flow
+
+**Tech Debt:**
+- Remove legacy background service code
+- Settings export/import
 
 ## Session Continuity
 
