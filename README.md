@@ -27,8 +27,8 @@ Forward SMS messages securely between your Android devices.
 
 ### Build from Source
 ```bash
-git clone https://github.com/yourusername/SMSCourier.git
-cd SMSCourier
+git clone https://gitlab.notyouraverage.dev/a.anand.91119/sms-courier.git
+cd sms-courier
 ./gradlew assembleDebug
 ```
 

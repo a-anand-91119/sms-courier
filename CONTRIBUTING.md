@@ -13,8 +13,8 @@ Thank you for your interest in contributing to SMS Courier!
 ### Setup
 
 ```bash
-git clone https://github.com/yourusername/SMSCourier.git
-cd SMSCourier
+git clone https://gitlab.notyouraverage.dev/a.anand.91119/sms-courier.git
+cd sms-courier
 ```
 
 Open the project in Android Studio and let Gradle sync.
