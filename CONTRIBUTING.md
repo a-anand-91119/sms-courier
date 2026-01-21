@@ -87,7 +87,7 @@ Open an issue describing:
 
 ## Architecture Overview
 
-See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation, including:
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed documentation, including:
 
 - SMS command protocol
 - Service architecture

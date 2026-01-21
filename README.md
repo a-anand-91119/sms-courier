@@ -2,7 +2,7 @@
 
 Forward SMS messages securely between your Android devices.
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/a-anand-91119/sms-courier)](LICENSE)
 [![Android](https://img.shields.io/badge/Android-14%2B-green.svg)](https://developer.android.com/about/versions/14)
 
 ## Features

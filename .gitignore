@@ -9,7 +9,6 @@
 .cxx
 local.properties
 .claude
-docs
 fastlane/report.xml
 fastlane/README.md
 agent-history.json
