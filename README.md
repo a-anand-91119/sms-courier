@@ -99,6 +99,13 @@ SMS Courier only processes messages from paired devices and its own command prot
 - SMS capability (phone with active SIM)
 - SMS permissions granted
 
+## Documentation
+
+- [Usage Guide](docs/USAGE.md) - Detailed instructions for all features
+- [FAQ](docs/FAQ.md) - Frequently asked questions
+- [Architecture](docs/ARCHITECTURE.md) - Technical architecture overview
+- [Security Policy](SECURITY.md) - Security features and vulnerability reporting
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
