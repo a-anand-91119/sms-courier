@@ -164,11 +164,11 @@ Plans:
   5. Migration 5 to 6 completes successfully preserving all existing data (verified by MigrationTestHelper)
   6. Indexes exist on ForwardedMessage (session_id, timestamp) for query performance
   7. Foreign key CASCADE deletes messages when session is deleted
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 15-01: TBD
-- [ ] 15-02: TBD
+- [ ] 15-01-PLAN.md — Schema v6: ForwardedMessage entity, PairedDevice soft delete columns, ForwardingSession tracking columns, Migration 5->6
+- [ ] 15-02-PLAN.md — Migration testing: MigrationTestHelper tests for data preservation, CASCADE delete, and index verification
 
 #### Phase 16: Message Storage Integration
 **Goal**: Messages are stored during forwarding with real-time session statistics
