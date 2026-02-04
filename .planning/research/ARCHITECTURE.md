@@ -1,444 +1,678 @@
-# Architecture Patterns for Settings Feature
+# Architecture Research: Device History & Bidirectional Visibility Integration
 
-**Domain:** Android Settings Screen
-**Project:** SMS Courier (v0.0.63)
-**Researched:** 2026-01-18
+**Domain:** Android Room + Jetpack Compose Architecture Extension
+**Researched:** 2026-02-04
+**Confidence:** HIGH
 
-## Recommended Architecture
+## Existing Architecture (v0.0.63)
 
-The Settings feature should follow the existing Clean Architecture with MVVM pattern already established in SMS Courier, extended with a dedicated settings data layer using Jetpack DataStore.
+### Current System Overview
 
 ```
-+------------------+     +------------------+     +------------------+
-|   SettingsScreen |---->| SettingsViewModel|---->| SettingsRepository|
-|   (Compose UI)   |<----|   (StateFlow)    |<----|    (DataStore)   |
-+------------------+     +------------------+     +------------------+
-                                                           |
-                                                           v
-                                   +------------------------------------------+
-                                   |              MasterService               |
-                                   | (Observes settings via SettingsRepository)|
-                                   +------------------------------------------+
-                                                           |
-                                                           v
-                                   +------------------------------------------+
-                                   |             BootReceiver                 |
-                                   | (Reads autoStart from SettingsRepository)|
-                                   +------------------------------------------+
+┌─────────────────────────────────────────────────────────────┐
+│                    UI Layer (Jetpack Compose)                │
+├─────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │  Home    │  │ Paired   │  │Forward   │  │Settings  │    │
+│  │ Screen   │  │Devices   │  │Control   │  │ Screen   │    │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
+│       │             │              │             │           │
+├───────┴─────────────┴──────────────┴─────────────┴───────────┤
+│                    ViewModel Layer                            │
+├─────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │  Home    │  │ Paired   │  │Forward   │  │Settings  │    │
+│  │ViewModel │  │Devices   │  │Control   │  │ViewModel │    │
+│  │          │  │ViewModel │  │ViewModel │  │          │    │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
+│       │             │              │             │           │
+├───────┴─────────────┴──────────────┴─────────────┴───────────┤
+│                   Repository Layer                            │
+├─────────────────────────────────────────────────────────────┤
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────┐   │
+│  │ PairedDevice     │  │ ForwardingSession│  │Settings  │   │
+│  │ Repository       │  │ Repository       │  │Repository│   │
+│  └────────┬─────────┘  └────────┬─────────┘  └────┬─────┘   │
+│           │                     │                  │          │
+├───────────┴─────────────────────┴──────────────────┴─────────┤
+│                    Service Layer                              │
+├─────────────────────────────────────────────────────────────┤
+│  ┌──────────────────┐  ┌──────────────────┐                 │
+│  │  MasterService   │  │ SmsCommandHandler│                 │
+│  │  (foreground)    │←→│                  │                 │
+│  └────────┬─────────┘  └────────┬─────────┘                 │
+│           │                     │                             │
+├───────────┴─────────────────────┴─────────────────────────────┤
+│                    Data Layer (Room v5)                       │
+├─────────────────────────────────────────────────────────────┤
+│  ┌───────────────┐  ┌──────────────────┐  ┌──────────────┐  │
+│  │ PairedDevice  │  │ForwardingSession │  │  DataStore   │  │
+│  │   Entity      │  │    Entity        │  │(Preferences) │  │
+│  └───────────────┘  └──────────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Component Boundaries
+### Current Component Responsibilities
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| SettingsScreen | Render settings UI, handle user input | SettingsViewModel |
-| SettingsViewModel | Manage UI state, validate input | SettingsRepository |
-| SettingsRepository | Abstract DataStore operations, expose Flows | DataStore, consumers |
-| SettingsDataStore | Persist/retrieve settings values | Android DataStore |
-| MasterService | Observe relevant settings, apply at runtime | SettingsRepository |
-| BootReceiver | Check autoStart setting, start service | SettingsRepository |
-| ThemeWrapper | Apply theme based on settings | SettingsRepository |
+| Component | Responsibility | Current Implementation |
+|-----------|----------------|------------------------|
+| **SmsCourierDatabase** | Database singleton, migration management | Room v5, entities: PairedDevice, ForwardingSession |
+| **PairedDevice Entity** | Stores device pairing info, roles, security | Composite PK: (phoneNumber, role), password hash, auth key |
+| **ForwardingSession Entity** | Tracks forwarding sessions | Auto-increment PK, isActive flag, message count |
+| **Repositories** | Expose Flow-based data access | Wraps DAOs, Flow transformation, normalization |
+| **ViewModels** | Manage UI state via StateFlow | combine() flows, stateIn() for lifecycle awareness |
+| **MasterService** | Orchestrates SMS operations | Foreground service, registers SmsReceiver, session management |
+| **SmsCommandHandler** | Business logic for SMSC commands | Handles pairing, forwarding, message interception |
 
-### Data Flow
+## New Architecture Requirements (v0.0.64)
 
-**Settings Write Flow:**
+### Required Additions
+
+The new features require:
+1. **ForwardedMessage entity** - Store individual forwarded messages with session relationship
+2. **Device history tracking** - Track removed devices with soft delete pattern
+3. **Bidirectional visibility calculation** - Compute forwarding direction indicators
+4. **Export functionality** - Generate CSV/JSON/TXT from history
+5. **Archive management** - Retention policies and auto-cleanup
+6. **Session/contact view toggle** - UI state persistence
+
+### Enhanced System Overview
+
 ```
-1. User toggles setting in SettingsScreen
-2. SettingsScreen calls ViewModel.updateSetting(key, value)
-3. ViewModel calls SettingsRepository.setSetting(key, value)
-4. Repository writes to DataStore (suspending, on IO dispatcher)
-5. DataStore emits new value via Flow
-6. All observers (ViewModel, Service) receive update
-7. UI recomposes with new state
+┌─────────────────────────────────────────────────────────────┐
+│                    UI Layer (Jetpack Compose)                │
+├─────────────────────────────────────────────────────────────┤
+│  Existing Screens         │  NEW Screens                     │
+│  ┌──────────┐            │  ┌──────────┐  ┌──────────┐      │
+│  │  Home    │ (enhanced) │  │ Device   │  │ Session  │      │
+│  │ Screen   │←───────────┼→ │ History  │  │ History  │      │
+│  └──────────┘            │  └──────────┘  └──────────┘      │
+│  ┌──────────┐            │  ┌──────────┐                    │
+│  │ Paired   │ (enhanced) │  │ Archive  │                    │
+│  │ Devices  │←───────────┼→ │ Mgmt     │                    │
+│  └──────────┘            │  └──────────┘                    │
+├──────────────────────────┴──────────────────────────────────┤
+│                    ViewModel Layer                            │
+├─────────────────────────────────────────────────────────────┤
+│  Enhanced ViewModels      │  NEW ViewModels                  │
+│  ┌──────────┐            │  ┌──────────┐  ┌──────────┐      │
+│  │  Home    │ (+bidir    │  │ Device   │  │ Session  │      │
+│  │ViewModel │  status)   │  │ History  │  │ History  │      │
+│  └──────────┘            │  │ViewModel │  │ViewModel │      │
+│                          │  └──────────┘  └──────────┘      │
+│                          │  ┌──────────┐                    │
+│                          │  │ Archive  │                    │
+│                          │  │ViewModel │                    │
+│                          │  └──────────┘                    │
+├──────────────────────────┴──────────────────────────────────┤
+│                   Repository Layer                            │
+├─────────────────────────────────────────────────────────────┤
+│  Existing Repositories    │  NEW Repository                  │
+│  ┌──────────────────┐    │  ┌────────────────┐              │
+│  │ PairedDevice     │    │  │ ForwardedMessage│              │
+│  │ Repository       │    │  │ Repository      │              │
+│  │ (enhanced)       │    │  │                 │              │
+│  └──────────────────┘    │  └────────────────┘              │
+│  ┌──────────────────┐    │                                   │
+│  │ ForwardingSession│    │                                   │
+│  │ Repository       │    │                                   │
+│  │ (enhanced)       │    │                                   │
+│  └──────────────────┘    │                                   │
+├──────────────────────────┴──────────────────────────────────┤
+│                    Service Layer                              │
+├─────────────────────────────────────────────────────────────┤
+│  ┌──────────────────┐  ┌──────────────────┐  NEW            │
+│  │ SmsCommandHandler│  │  MasterService   │  ┌──────────┐   │
+│  │ (enhanced to     │  │                  │  │ History  │   │
+│  │  store messages) │  │                  │  │ Cleanup  │   │
+│  └──────────────────┘  └──────────────────┘  │ Worker   │   │
+│                                               └──────────┘   │
+├─────────────────────────────────────────────────────────────┤
+│                    Data Layer (Room v6)                       │
+├─────────────────────────────────────────────────────────────┤
+│  Enhanced Entities        │  NEW Entity                      │
+│  ┌───────────────┐        │  ┌────────────────┐             │
+│  │ PairedDevice  │        │  │ ForwardedMessage│             │
+│  │ (+isArchived, │        │  │ (FK: sessionId) │             │
+│  │  archivedAt)  │        │  └────────────────┘             │
+│  └───────────────┘        │                                  │
+│  ┌───────────────┐        │                                  │
+│  │ForwardingSession       │                                  │
+│  │ (unchanged)   │        │                                  │
+│  └───────────────┘        │                                  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Settings Read Flow (UI):**
-```
-1. SettingsScreen created
-2. ViewModel collects SettingsRepository.settings as StateFlow
-3. Compose observes StateFlow with collectAsState()
-4. Initial values render immediately (from cache or defaults)
-5. When DataStore emits, UI automatically updates
-```
+## Database Schema Migration (v5 → v6)
 
-**Settings Read Flow (Service):**
-```
-1. MasterService.onCreate() collects relevant settings
-2. SettingsRepository emits current values
-3. Service applies settings (e.g., notification behavior)
-4. When settings change, Flow emits, service updates behavior
-5. No need for restart - reactive updates
-```
+### Migration Strategy
 
-## Patterns to Follow
+Room database version 5 → 6 requires:
 
-### Pattern 1: DataStore Repository
-
-Encapsulate DataStore behind a repository for testability and abstraction.
-
-**What:** Single repository class that owns the DataStore instance and exposes typed Flows for each setting.
-
-**When:** Always. Never access DataStore directly from ViewModels or Services.
-
-**Example:**
+**MIGRATION_5_6:**
 ```kotlin
-class SettingsRepository(
-    private val dataStore: DataStore<Preferences>
-) {
-    val autoStartOnBoot: Flow<Boolean> = dataStore.data
-        .map { prefs -> prefs[AUTO_START_KEY] ?: false }
-        .distinctUntilChanged()
+private val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // 1. Add ForwardedMessage table with foreign key to forwarding_sessions
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS forwarded_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                session_id INTEGER NOT NULL,
+                original_sender TEXT NOT NULL,
+                message_body TEXT NOT NULL,
+                received_at INTEGER NOT NULL,
+                was_encrypted INTEGER NOT NULL DEFAULT 0,
+                FOREIGN KEY(session_id) REFERENCES forwarding_sessions(id)
+                    ON DELETE CASCADE
+            )
+        """)
 
-    val defaultForwardingDuration: Flow<Int> = dataStore.data
-        .map { prefs -> prefs[DEFAULT_DURATION_KEY] ?: 30 }
-        .distinctUntilChanged()
+        // 2. Create index for efficient session lookup
+        db.execSQL("""
+            CREATE INDEX index_forwarded_messages_session_id
+            ON forwarded_messages(session_id)
+        """)
 
-    val themeMode: Flow<ThemeMode> = dataStore.data
-        .map { prefs ->
-            ThemeMode.fromString(prefs[THEME_KEY] ?: ThemeMode.SYSTEM.name)
-        }
-        .distinctUntilChanged()
+        // 3. Add soft delete columns to paired_devices
+        db.execSQL("""
+            ALTER TABLE paired_devices
+            ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0
+        """)
 
-    val notificationPersistence: Flow<Boolean> = dataStore.data
-        .map { prefs -> prefs[NOTIFICATION_PERSIST_KEY] ?: true }
-        .distinctUntilChanged()
-
-    suspend fun setAutoStartOnBoot(enabled: Boolean) {
-        dataStore.edit { prefs -> prefs[AUTO_START_KEY] = enabled }
-    }
-
-    suspend fun setDefaultForwardingDuration(minutes: Int) {
-        dataStore.edit { prefs -> prefs[DEFAULT_DURATION_KEY] = minutes }
-    }
-
-    suspend fun setThemeMode(mode: ThemeMode) {
-        dataStore.edit { prefs -> prefs[THEME_KEY] = mode.name }
-    }
-
-    suspend fun setNotificationPersistence(enabled: Boolean) {
-        dataStore.edit { prefs -> prefs[NOTIFICATION_PERSIST_KEY] = enabled }
-    }
-
-    companion object {
-        private val AUTO_START_KEY = booleanPreferencesKey("auto_start_on_boot")
-        private val DEFAULT_DURATION_KEY = intPreferencesKey("default_forwarding_duration")
-        private val THEME_KEY = stringPreferencesKey("theme_mode")
-        private val NOTIFICATION_PERSIST_KEY = booleanPreferencesKey("notification_persistence")
+        db.execSQL("""
+            ALTER TABLE paired_devices
+            ADD COLUMN archived_at INTEGER
+        """)
     }
 }
 ```
 
-### Pattern 2: ViewModel Factory Injection
+### Migration Best Practices Applied
 
-Match existing pattern for ViewModel creation.
+1. **Schema export enabled** - `exportSchema = true` in `@Database` annotation generates JSON for version tracking
+2. **Manual migration chosen** - Complex schema changes (foreign keys, indexes) require manual SQL
+3. **Incremental version bump** - Version 5 → 6 (single increment)
+4. **ON DELETE CASCADE** - Deleting sessions automatically removes associated messages
+5. **Index creation** - Optimizes session-to-messages queries
 
-**What:** Use ViewModelProvider.Factory to inject SettingsRepository.
+**Sources:**
+- [Migrate your Room database | Android Developers](https://developer.android.com/training/data-storage/room/migrating-db-versions)
+- [Understanding migrations with Room | Medium](https://medium.com/androiddevelopers/understanding-migrations-with-room-f01e04b07929)
 
-**When:** Creating SettingsViewModel in NavGraph.
+## New Entity: ForwardedMessage
 
-**Example:**
+### Entity Definition
+
 ```kotlin
-class SettingsViewModel(
-    private val settingsRepository: SettingsRepository
-) : ViewModel() {
-
-    val uiState: StateFlow<SettingsUiState> = combine(
-        settingsRepository.autoStartOnBoot,
-        settingsRepository.defaultForwardingDuration,
-        settingsRepository.themeMode,
-        settingsRepository.notificationPersistence
-    ) { autoStart, duration, theme, notifPersist ->
-        SettingsUiState(
-            autoStartOnBoot = autoStart,
-            defaultForwardingDuration = duration,
-            themeMode = theme,
-            notificationPersistence = notifPersist
+@Entity(
+    tableName = "forwarded_messages",
+    foreignKeys = [
+        ForeignKey(
+            entity = ForwardingSession::class,
+            parentColumns = ["id"],
+            childColumns = ["session_id"],
+            onDelete = ForeignKey.CASCADE
         )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        SettingsUiState()
-    )
+    ],
+    indices = [Index("session_id")]
+)
+data class ForwardedMessage(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
 
-    fun updateAutoStart(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.setAutoStartOnBoot(enabled)
-        }
-    }
+    @ColumnInfo(name = "session_id")
+    val sessionId: Long,
 
-    // ... other update methods
+    @ColumnInfo(name = "original_sender")
+    val originalSender: String,
 
-    class Factory(
-        private val settingsRepository: SettingsRepository
-    ) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SettingsViewModel(settingsRepository) as T
-        }
-    }
-}
-```
+    @ColumnInfo(name = "message_body")
+    val messageBody: String,
 
-### Pattern 3: Service Settings Observation
+    @ColumnInfo(name = "received_at")
+    val receivedAt: Long = System.currentTimeMillis(),
 
-Services should observe settings reactively rather than reading once.
-
-**What:** Collect settings Flows in ServiceScope and react to changes.
-
-**When:** MasterService needs to change behavior based on settings.
-
-**Example:**
-```kotlin
-// In MasterService
-private fun observeSettings() {
-    serviceScope.launch {
-        settingsRepository.notificationPersistence.collect { persist ->
-            notificationPersistenceEnabled = persist
-            // If notification was dismissed and persistence is re-enabled, recreate it
-            if (persist && !notificationVisible) {
-                recreateForegroundNotification()
-            }
-        }
-    }
-}
-```
-
-### Pattern 4: Boot Receiver with Settings Check
-
-BootReceiver should read settings before starting service.
-
-**What:** Check autoStartOnBoot setting in BootReceiver.onReceive().
-
-**When:** Device boots and app needs to decide whether to start service.
-
-**Example:**
-```kotlin
-class BootReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
-            // Use runBlocking carefully here - boot receiver has limited time
-            val autoStart = runBlocking {
-                val dataStore = context.settingsDataStore
-                dataStore.data.first()[AUTO_START_KEY] ?: false
-            }
-
-            if (autoStart) {
-                Intent(context, MasterService::class.java).apply {
-                    action = MasterService.START_SELF
-                    context.startForegroundService(this)
-                }
-            }
-        }
-    }
-}
-```
-
-### Pattern 5: Theme Application at App Level
-
-Theme settings should be applied at the top level of the UI tree.
-
-**What:** Observe theme setting in MainActivity or a wrapper composable.
-
-**When:** Theme setting changes should affect entire app immediately.
-
-**Example:**
-```kotlin
-// In MainActivity
-@Composable
-fun SmsCourierApp(settingsRepository: SettingsRepository) {
-    val themeMode by settingsRepository.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
-
-    val darkTheme = when (themeMode) {
-        ThemeMode.DARK -> true
-        ThemeMode.LIGHT -> false
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-    }
-
-    smscourierTheme(darkTheme = darkTheme) {
-        Surface(color = MaterialTheme.colorScheme.background) {
-            val navController = rememberNavController()
-            SmsCourierNavGraph(navController = navController)
-        }
-    }
-}
-```
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1: Direct DataStore Access from UI
-
-**What:** Accessing DataStore directly from Composables or ViewModels without repository.
-
-**Why bad:**
-- Violates separation of concerns
-- Makes testing difficult
-- Creates multiple DataStore instances (potential corruption)
-
-**Instead:** Always go through SettingsRepository.
-
-### Anti-Pattern 2: Synchronous DataStore Reads on UI Thread
-
-**What:** Using `runBlocking` to read DataStore in UI code.
-
-**Why bad:**
-- Can cause ANRs
-- Blocks UI thread
-- Defeats purpose of Flow-based API
-
-**Instead:** Use `collectAsState()` with sensible defaults for initial state.
-
-### Anti-Pattern 3: Creating Multiple DataStore Instances
-
-**What:** Creating DataStore in multiple places (Activity, Service, etc.).
-
-**Why bad:**
-- Can cause data corruption
-- Inconsistent state across components
-- Memory waste
-
-**Instead:** Single DataStore instance, created as extension property on Context:
-```kotlin
-val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "settings"
+    @ColumnInfo(name = "was_encrypted")
+    val wasEncrypted: Boolean = false
 )
 ```
 
-### Anti-Pattern 4: Caching DataStore Values
+### Relationship Pattern: One-to-Many
 
-**What:** Creating local cache variables that mirror DataStore state.
+**Pattern:** ForwardingSession (parent) → ForwardedMessage (children)
 
-**Why bad:**
-- Invalidates DataStore's consistency guarantees
-- Creates stale data bugs
-- Adds unnecessary complexity
+- **Foreign key constraint** ensures referential integrity
+- **ON DELETE CASCADE** automatically removes messages when session deleted
+- **Index on session_id** optimizes queries for session history
+- **@Relation annotation NOT needed** for basic foreign key (only for embedded queries)
 
-**Instead:** Always read from Flow; use `stateIn()` for caching in ViewModels.
+**Sources:**
+- [Choose relationship types between objects | Android Developers](https://developer.android.com/training/data-storage/room/relationships)
+- [Database relations with Room | Medium](https://medium.com/androiddevelopers/database-relations-with-room-544ab95e4542)
 
-### Anti-Pattern 5: Ignoring Settings Changes in Service
+## Soft Delete Pattern: Device Archiving
 
-**What:** Reading settings once at service start and never updating.
+### Implementation Strategy
 
-**Why bad:**
-- Settings changes don't take effect until service restart
-- Poor user experience
-- Inconsistent behavior
+Instead of hard deleting paired devices, implement **soft delete as lifecycle state**:
 
-**Instead:** Observe settings Flows in ServiceScope and react to changes.
+```kotlin
+// Enhanced PairedDevice entity
+@Entity(tableName = "paired_devices", ...)
+data class PairedDevice(
+    // ... existing fields ...
 
-## Suggested Build Order
+    @ColumnInfo(name = "is_archived")
+    val isArchived: Boolean = false,
 
-Dependencies between components determine the build order:
-
-```
-Phase 1: Data Layer (Foundation)
-   |
-   +-- 1.1 DataStore setup (extension property, keys)
-   |
-   +-- 1.2 SettingsRepository (with typed Flows)
-   |
-   +-- 1.3 Unit tests for SettingsRepository
-
-Phase 2: ViewModel Layer
-   |
-   +-- 2.1 SettingsViewModel (combines Flows, exposes update methods)
-   |
-   +-- 2.2 Unit tests for SettingsViewModel
-
-Phase 3: UI Layer
-   |
-   +-- 3.1 SettingsScreen (main settings)
-   |
-   +-- 3.2 Advanced settings section
-   |
-   +-- 3.3 About section
-
-Phase 4: Integration Points
-   |
-   +-- 4.1 Theme integration in MainActivity
-   |
-   +-- 4.2 MasterService settings observation
-   |
-   +-- 4.3 BootReceiver for auto-start
-   |
-   +-- 4.4 Notification persistence in MasterService
-
-Phase 5: NavGraph Integration
-   |
-   +-- 5.1 Replace placeholder SettingsScreen
-   |
-   +-- 5.2 Wire up SettingsRepository in NavGraph
+    @ColumnInfo(name = "archived_at")
+    val archivedAt: Long? = null
+)
 ```
 
-### Phase Rationale
+### Repository Query Patterns
 
-1. **Data Layer First:** Everything depends on SettingsRepository. Building this first enables parallel development of ViewModel and integration points.
+```kotlin
+// PairedDeviceDao enhancements
+@Dao
+interface PairedDeviceDao {
+    // Active devices (existing queries enhanced)
+    @Query("SELECT * FROM paired_devices WHERE device_role = :role AND is_archived = 0")
+    fun getActiveDevicesByRole(role: DeviceRole): Flow<List<PairedDevice>>
 
-2. **ViewModel Before UI:** ViewModel defines the contract that UI implements. Having stable ViewModel APIs enables UI iteration without churn.
+    // Archived devices (NEW)
+    @Query("SELECT * FROM paired_devices WHERE is_archived = 1 ORDER BY archived_at DESC")
+    fun getArchivedDevices(): Flow<List<PairedDevice>>
 
-3. **UI After Foundation:** With ViewModel complete, UI is purely presentational and can be designed/iterated independently.
+    // All devices including archived (NEW)
+    @Query("SELECT * FROM paired_devices ORDER BY is_archived ASC, last_activity_at DESC")
+    fun getAllDevicesIncludingArchived(): Flow<List<PairedDevice>>
 
-4. **Integration Points Last:** These touch existing code and benefit from having the core settings infrastructure complete and tested.
+    // Archive operation (NEW)
+    @Query("UPDATE paired_devices SET is_archived = 1, archived_at = :archivedAt WHERE phoneNumber = :phoneNumber AND device_role = :role")
+    suspend fun archiveDevice(phoneNumber: String, role: DeviceRole, archivedAt: Long)
 
-5. **NavGraph Integration Final:** Small change that connects everything; should be done after all pieces are tested.
+    // Restore from archive (NEW)
+    @Query("UPDATE paired_devices SET is_archived = 0, archived_at = NULL WHERE phoneNumber = :phoneNumber AND device_role = :role")
+    suspend fun restoreDevice(phoneNumber: String, role: DeviceRole)
 
-## File Structure
-
-Recommended file locations following existing project conventions:
-
-```
-app/src/main/java/dev/notyouraverage/smscourier/
-  |
-  +-- data/
-  |     +-- settings/
-  |           +-- SettingsDataStore.kt    # DataStore setup, keys
-  |           +-- SettingsRepository.kt   # Repository with Flows
-  |           +-- ThemeMode.kt            # Enum for theme options
-  |
-  +-- viewmodels/
-  |     +-- SettingsViewModel.kt          # ViewModel with Factory
-  |
-  +-- composables/
-  |     +-- screens/
-  |           +-- SettingsScreen.kt       # Main settings screen
-  |           +-- SettingsComponents.kt   # Reusable setting items
-  |
-  +-- receivers/
-  |     +-- BootReceiver.kt               # New receiver for auto-start
-  |
-  +-- navigation/
-        +-- NavGraph.kt                   # Update to wire SettingsScreen
-
-app/src/test/java/dev/notyouraverage/smscourier/
-  |
-  +-- data/
-  |     +-- settings/
-  |           +-- SettingsRepositoryTest.kt
-  |
-  +-- viewmodels/
-        +-- SettingsViewModelTest.kt
+    // Cleanup old archives (NEW)
+    @Query("DELETE FROM paired_devices WHERE is_archived = 1 AND archived_at < :threshold")
+    suspend fun deleteArchivedOlderThan(threshold: Long)
+}
 ```
 
-## Scalability Considerations
+### Archiving vs Deletion Decision Tree
 
-| Concern | Current (10 settings) | Future (50+ settings) |
-|---------|----------------------|----------------------|
-| DataStore performance | Excellent | Still good - single file read |
-| Repository complexity | Manageable | Consider grouping by category |
-| ViewModel state | Simple data class | Nested state or multiple VMs |
-| UI organization | Single scrollable list | Nested navigation or tabs |
+```
+Device deletion requested
+    ↓
+Is pairing APPROVED?
+    ├─ YES → Archive device (soft delete)
+    │         - Preserve forwarding history
+    │         - Keep sessions + messages
+    │         - Send UNPAIR to remote
+    │
+    └─ NO → Hard delete
+            - PENDING_SENT: No history to preserve
+            - PENDING_RECEIVED: Never completed pairing
+            - REJECTED: Already concluded
+```
 
-**Recommendation:** Start simple. The current settings list (~10 items) doesn't need complex organization. Add structure only when complexity demands it.
+**Rationale:** Soft delete as **explicit lifecycle state** (archived) is clearer than hidden boolean flag.
+
+**Sources:**
+- [Avoiding the soft delete anti-pattern | Cultured Systems](https://www.cultured.systems/2024/04/24/Soft-delete/)
+
+## Integration Points
+
+### Summary of Files to Modify
+
+| File | Change Type | Why |
+|------|-------------|-----|
+| `handlers/SmsCommandHandler.kt` | Enhance | Store messages on forward/receive |
+| `viewmodels/PairedDevicesViewModel.kt` | Enhance | Archive instead of hard delete |
+| `viewmodels/HomeViewModel.kt` | Enhance | Calculate bidirectional status |
+| `data/dao/PairedDeviceDao.kt` | Enhance | Add archive queries |
+| `repository/PairedDeviceRepository.kt` | Enhance | Add archive methods |
+
+### Integration Point 1: Message Storage in SmsCommandHandler
+
+**File to modify:** `handlers/SmsCommandHandler.kt`
+
+**Change:** Add `ForwardedMessageRepository` parameter, call `insertMessage()` after forwarding
+
+**Location:** `handleIncomingSms()` method (line ~355-368)
+
+**After forwarding each SMS:**
+```kotlin
+forwardedMessageRepository.insertMessage(
+    ForwardedMessage(
+        sessionId = session.id,
+        originalSender = originalSender,
+        messageBody = messageBody,
+        wasEncrypted = session.encryptionKey != null
+    )
+)
+```
+
+### Integration Point 2: Message Storage on Receive (SOURCE device)
+
+**File to modify:** `handlers/SmsCommandHandler.kt`
+
+**Change:** Store received forwarded messages
+
+**Locations:**
+- `handleForwardedDataEncrypted()` (line ~310-342)
+- `handleForwardedData()` (unencrypted version)
+
+**After showing notification:**
+```kotlin
+val activeSession = sessionRepository.getActiveSessionForDevice(senderPhone)
+if (activeSession != null) {
+    forwardedMessageRepository.insertMessage(
+        ForwardedMessage(
+            sessionId = activeSession.id,
+            originalSender = originalSender,
+            messageBody = message,
+            wasEncrypted = true
+        )
+    )
+}
+```
+
+### Integration Point 3: Archive on Device Deletion
+
+**File to modify:** `viewmodels/PairedDevicesViewModel.kt`
+
+**Change:** Archive APPROVED devices instead of hard delete
+
+**Location:** `deleteDevice()` method (line ~89-113)
+
+**Replace hard delete with:**
+```kotlin
+if (device.status == PairingStatus.APPROVED) {
+    // Send UNPAIR SMS
+    smsSender.sendUnpair(device.phoneNumber, roleToDeleteOnRemote)
+
+    // CHANGED: Archive instead of hard delete (preserves history)
+    deviceRepository.archiveDevice(device.phoneNumber, device.role)
+} else {
+    // Hard delete for non-approved pairings (no history to preserve)
+    deviceRepository.deleteByPhoneNumberAndRole(device.phoneNumber, device.role)
+}
+```
+
+### Integration Point 4: Bidirectional Status Calculation
+
+**File to modify:** `viewmodels/HomeViewModel.kt`
+
+**Change:** Calculate bidirectional status from devices and sessions
+
+**Location:** `homeState` StateFlow declaration
+
+**Add helper function:**
+```kotlin
+private fun calculateDeviceStatuses(
+    devices: List<PairedDevice>,
+    sessions: List<ForwardingSession>
+): Map<String, BidirectionalStatus> {
+    val devicesByPhone = devices.groupBy { it.phoneNumber }
+    val activeSessionPhones = sessions.map { it.devicePhoneNumber }.toSet()
+
+    return devicesByPhone.mapValues { (phone, deviceRoles) ->
+        val hasSource = deviceRoles.any { it.role == DeviceRole.SOURCE }
+        val hasTarget = deviceRoles.any { it.role == DeviceRole.TARGET }
+        val isForwardingActive = activeSessionPhones.contains(phone)
+
+        when {
+            hasSource && hasTarget && isForwardingActive ->
+                BidirectionalStatus.BIDIRECTIONAL_ACTIVE  // ⇅
+            hasSource && hasTarget ->
+                BidirectionalStatus.BIDIRECTIONAL_INACTIVE // ↕
+            hasSource && isForwardingActive ->
+                BidirectionalStatus.RECEIVING              // ↓
+            hasSource ->
+                BidirectionalStatus.CAN_RECEIVE            // ⇩
+            hasTarget && isForwardingActive ->
+                BidirectionalStatus.SENDING                // ↑
+            hasTarget ->
+                BidirectionalStatus.CAN_SEND               // ⇧
+            else ->
+                BidirectionalStatus.NONE                   // −
+        }
+    }
+}
+```
+
+**Pattern:** Reactive calculation using `combine()` Flow operator
+
+**Sources:**
+- [State and Jetpack Compose | Android Developers](https://developer.android.com/develop/ui/compose/state)
+- [Jetpack Compose with ViewModel and Flow | Medium](https://medium.com/@android-world/jetpack-compose-with-viewmodel-and-flow-a-comprehensive-guide-ce3b079a44d1)
+
+## New Components Summary
+
+| Component | Type | File Location | Purpose |
+|-----------|------|---------------|---------|
+| ForwardedMessage | Entity | `data/entities/ForwardedMessage.kt` | Store individual messages |
+| ForwardedMessageDao | DAO | `data/dao/ForwardedMessageDao.kt` | Database operations for messages |
+| ForwardedMessageRepository | Repository | `repository/ForwardedMessageRepository.kt` | Expose Flow-based message access, export |
+| DeviceHistoryViewModel | ViewModel | `viewmodels/DeviceHistoryViewModel.kt` | Manage device history screen state |
+| SessionHistoryViewModel | ViewModel | `viewmodels/SessionHistoryViewModel.kt` | Manage session history screen state |
+| ArchiveManagementViewModel | ViewModel | `viewmodels/ArchiveManagementViewModel.kt` | Manage archive settings and cleanup |
+| HistoryCleanupWorker | Worker | `workers/HistoryCleanupWorker.kt` | Periodic background cleanup |
+| DeviceHistoryScreen | Composable | `composables/screens/DeviceHistoryScreen.kt` | UI for device history |
+| SessionHistoryScreen | Composable | `composables/screens/SessionHistoryScreen.kt` | UI for session history |
+| ArchiveManagementScreen | Composable | `composables/screens/ArchiveManagementScreen.kt` | UI for archive management |
+| BidirectionalStatus | Enum | `data/entities/BidirectionalStatus.kt` | Forwarding direction indicators |
+| ExportFormat | Enum | `data/enums/ExportFormat.kt` | CSV, JSON, TXT formats |
+
+## Export Pattern
+
+### File Generation and Sharing
+
+Export functionality uses Android's FileProvider + share intent pattern:
+
+1. **Generate content** in repository (withContext(Dispatchers.IO))
+2. **Write to cache directory** (app-private, temporary)
+3. **Create URI** using FileProvider
+4. **Launch share intent** with ACTION_SEND
+
+**FileProvider setup required:**
+- Add provider to `AndroidManifest.xml`
+- Create `res/xml/file_paths.xml` with cache-path
+
+**Export formats:**
+- **CSV**: Headers + rows, for spreadsheet import
+- **JSON**: Structured data, for programmatic access
+- **TXT**: Human-readable, for viewing/printing
+
+**Sources:**
+- [Send simple data to other apps | Android Developers](https://developer.android.com/training/sharing/send)
+- [Sharing a file | Android Developers](https://developer.android.com/training/secure-file-sharing/share-file)
+
+## Data Flow Changes
+
+### Message Forwarding Flow (Enhanced)
+
+```
+Incoming SMS to TARGET device
+    ↓
+SmsReceiver intercepts
+    ↓
+MasterService.onReceive()
+    ↓
+SmsCommandHandler.handleIncomingSms()
+    ↓
+For each active session:
+    ├─ Send forwarded SMS to SOURCE
+    ├─ sessionRepository.recordForwardedMessage(session.id)
+    └─ NEW: forwardedMessageRepository.insertMessage() [TARGET side]
+    ↓
+SMS sent to SOURCE device
+    ↓
+SmsReceiver on SOURCE
+    ↓
+SmsCommandHandler.handleForwardedDataEncrypted()
+    ↓
+    ├─ Decrypt message
+    ├─ Show notification
+    └─ NEW: forwardedMessageRepository.insertMessage() [SOURCE side]
+```
+
+### Device Deletion Flow (Enhanced)
+
+```
+User taps "Delete Device"
+    ↓
+PairedDevicesViewModel.deleteDevice()
+    ↓
+Is status APPROVED?
+    ├─ YES → Archive flow
+    │   ├─ End active sessions
+    │   ├─ Send UNPAIR SMS
+    │   └─ deviceRepository.archiveDevice()
+    │       └─ UPDATE paired_devices SET is_archived = 1
+    │           (sessions + messages preserved)
+    │
+    └─ NO → Hard delete flow
+        ├─ End active sessions
+        └─ deviceRepository.deleteByPhoneNumberAndRole()
+            └─ DELETE FROM paired_devices
+                (cascades to sessions → messages via FK)
+```
+
+### History Cleanup Flow
+
+```
+Daily at midnight (WorkManager)
+    ↓
+HistoryCleanupWorker.doWork()
+    ↓
+1. Get retention setting (e.g., 90 days)
+2. Calculate threshold timestamp
+    ↓
+3. DELETE FROM paired_devices
+   WHERE is_archived = 1 AND archived_at < threshold
+    ↓
+4. DELETE FROM forwarded_messages
+   WHERE received_at < threshold
+    ↓
+Result.success()
+```
+
+## Recommended Build Order
+
+### Phase Structure Recommendation
+
+Based on dependencies and integration complexity:
+
+**Phase 1: Data Layer Foundation**
+- Migration 5 → 6 (ForwardedMessage table, soft delete columns)
+- ForwardedMessage entity
+- ForwardedMessageDao
+- ForwardedMessageRepository
+- Enhanced PairedDeviceDao (archive queries)
+- Enhanced PairedDeviceRepository (archive methods)
+- **Rationale:** Everything depends on data layer
+
+**Phase 2: Message Storage Integration**
+- Update SmsCommandHandler (message storage on forward)
+- Update SmsCommandHandler (message storage on receive)
+- Enhanced PairedDevicesViewModel (archive on delete)
+- **Rationale:** Starts populating database for testing UI
+
+**Phase 3: History UI - Device Level**
+- DeviceHistoryViewModel
+- DeviceHistoryScreen
+- Archive indicator on PairedDevicesScreen
+- Navigation integration
+- **Rationale:** Users need device-level view before drilling into sessions
+
+**Phase 4: History UI - Session Level**
+- SessionHistoryViewModel
+- SessionHistoryScreen
+- Message list with session breakdown
+- Navigation from device history
+- **Rationale:** Detail view after master view
+
+**Phase 5: Bidirectional Visibility**
+- Enhanced HomeViewModel (status calculation)
+- BidirectionalStatus enum
+- Update HomeScreen (indicators)
+- Update PairedDevicesScreen (directional arrows)
+- **Rationale:** Independent of history, can be done in parallel
+
+**Phase 6: Export Functionality**
+- Export format generation (CSV, JSON, TXT)
+- FileProvider setup
+- Share intent integration
+- Export UI in history screens
+- **Rationale:** Requires data layer but independent of cleanup
+
+**Phase 7: Archive Management**
+- ArchiveManagementViewModel
+- ArchiveManagementScreen
+- Settings integration (retention days)
+- Manual cleanup trigger
+- **Rationale:** Management UI after core features
+
+**Phase 8: Auto-Cleanup**
+- HistoryCleanupWorker
+- WorkManager scheduling
+- Settings integration (auto-cleanup toggle)
+- MainApplication initialization
+- **Rationale:** Automation last after manual flows tested
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Eager Loading All Messages
+
+**What people do:** Load all messages for all sessions on app startup
+**Why it's wrong:** Causes memory pressure, slow UI, unnecessary database queries
+**Do this instead:** Use pagination with `PagingSource` for large message lists, load messages only when session detail screen opened
+
+### Anti-Pattern 2: Blocking UI Thread for Export
+
+**What people do:** Generate CSV/JSON synchronously when user taps export
+**Why it's wrong:** ANR (Application Not Responding) on large datasets
+**Do this instead:** Use `withContext(Dispatchers.IO)` for file generation, show progress indicator
+
+### Anti-Pattern 3: No Foreign Key Constraints
+
+**What people do:** Manual cleanup of messages when session deleted
+**Why it's wrong:** Easy to miss cleanup, orphaned records accumulate
+**Do this instead:** Use `ForeignKey.CASCADE` to auto-delete messages with sessions
+
+### Anti-Pattern 4: Hard Delete Everything
+
+**What people do:** Delete paired devices immediately, lose all history
+**Why it's wrong:** Users can't review history after removing device
+**Do this instead:** Soft delete (archive) for APPROVED pairings, hard delete only for PENDING/REJECTED
+
+### Anti-Pattern 5: Recalculating Status on Every Recomposition
+
+**What people do:** Calculate bidirectional status in Composable
+**Why it's wrong:** Recalculates on every recomposition, inefficient
+**Do this instead:** Calculate in ViewModel using `combine()`, cache in StateFlow
 
 ## Sources
 
-- [Android DataStore Documentation](https://developer.android.com/topic/libraries/architecture/datastore)
-- [Mastering Jetpack DataStore in 2025](https://medium.com/design-bootcamp/mastering-jetpack-datastore-in-2025-replace-sharedpreferences-with-modern-apis-b065d2addd9e)
-- [DataStore vs SharedPreferences in 2025](https://www.atipik.ch/en/blog/android-jetpack-datastore-vs-sharedpreferences)
-- [Android Developer Documentation - DataStore](https://developer.android.com/codelabs/android-preferences-datastore)
-- [GitHub - Android AutoStart App](https://github.com/PerfsolTech/Android-AutoStart-App)
-- Project codebase analysis: `/Users/aanand/AndroidStudioProjects/SMSCourier/`
+### Official Android Documentation
+- [Migrate your Room database | Android Developers](https://developer.android.com/training/data-storage/room/migrating-db-versions)
+- [Choose relationship types between objects | Android Developers](https://developer.android.com/training/data-storage/room/relationships)
+- [Define work requests | Android Developers](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work)
+- [Send simple data to other apps | Android Developers](https://developer.android.com/training/sharing/send)
+- [State and Jetpack Compose | Android Developers](https://developer.android.com/develop/ui/compose/state)
+
+### Technical Articles
+- [Understanding migrations with Room | Medium](https://medium.com/androiddevelopers/understanding-migrations-with-room-f01e04b07929)
+- [Database relations with Room | Medium](https://medium.com/androiddevelopers/database-relations-with-room-544ab95e4542)
+- [Jetpack Compose with ViewModel and Flow | Medium](https://medium.com/@android-world/jetpack-compose-with-viewmodel-and-flow-a-comprehensive-guide-ce3b079a44d1)
+- [Avoiding the soft delete anti-pattern | Cultured Systems](https://www.cultured.systems/2024/04/24/Soft-delete/)
 
 ---
-
-*Architecture research: 2026-01-18*
-*Update when major patterns change*
+*Architecture research for: SMS Courier v0.0.64 Device History & Bidirectional Visibility*
+*Researched: 2026-02-04*
+*Confidence: HIGH - All findings verified against official Android documentation and existing codebase patterns*
