@@ -15,6 +15,7 @@ None (Android app development patterns already established in codebase)
 - [**v0.0.62 Testing**](milestones/v0.0.62-ROADMAP.md) - Phases 9-11 (shipped 2026-01-18)
 - [**v0.0.63 Settings**](milestones/v0.0.63-settings/ROADMAP.md) - Phases 12-14 (shipped 2026-01-19)
 - **Play Store Launch** - Phases 1-4 (parallel)
+- 🚧 **v0.0.64 Device Management & Visibility** - Phases 15-22 (in progress)
 
 ## Completed Milestones
 
@@ -108,27 +109,18 @@ Pipeline validated and working:
 
 **Goal**: Complete 14-day closed testing period with 12+ testers to unlock open testing
 **Depends on**: Phase 2 (complete)
-**Status**: In Progress (12 testers enrolled, waiting 14 days)
+**Status**: Complete (2026-02-01)
 
-**Play Store Status (as of 2026-01-18):**
-- App approved for closed testing
-- 12 testers enrolled (requirement met)
-- 14-day waiting period in progress
-- After 14 days: Open testing (beta) access granted
-
-Key focus:
-- Daily personal use of the app
-- Fix reliability issues - no missed messages
-- Polish UX rough edges
-- No new features or major refactors
-
-**Approach**: Ad-hoc issue-driven. Issues discovered during dogfooding get addressed directly without formal PLAN.md files.
+**Play Store Status:**
+- Closed testing completed successfully
+- 14-day waiting period fulfilled
+- Applied for beta testing and production access on 2026-02-01
 
 #### Phase 4: Open Testing & Production Release
 
 **Goal**: Promote to open testing (beta), then to production
-**Depends on**: Phase 3 (14-day closed testing complete)
-**Status**: Not Started
+**Depends on**: Phase 3 (complete)
+**Status**: In Progress — applied for beta/production access, awaiting Google review
 **Plans**: TBD
 
 **Play Store Progression:**
@@ -147,14 +139,165 @@ Plans:
 - [ ] 04-01: TBD (promote to open testing)
 - [ ] 04-02: TBD (promote to production)
 
+### 🚧 v0.0.64 Device Management & Visibility (In Progress)
+
+**Milestone Goal:** Enhanced device management with session history, message-level storage, bidirectional forwarding visibility, and configurable history retention.
+
+- [ ] **Phase 15: Database Foundation & Migration** - Add ForwardedMessage table, soft delete columns, and migration testing
+- [ ] **Phase 16: Message Storage Integration** - Populate ForwardedMessage during forwarding sessions
+- [ ] **Phase 17: Device History UI** - Active/removed device list with statistics
+- [ ] **Phase 18: Session History & Message Detail** - Session list with message-level bottom sheets
+- [ ] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
+- [ ] **Phase 20: Bidirectional Visibility Indicators** - Home screen directional status (↑↓⇅)
+- [ ] **Phase 21: History Retention Settings** - Configurable retention with manual cleanup
+- [ ] **Phase 22: Auto-Cleanup with WorkManager** - Periodic background cleanup
+
+#### Phase 15: Database Foundation & Migration
+**Goal**: Database schema supports message-level storage and device archiving with validated migration
+**Depends on**: Phase 14 (Settings shipped)
+**Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05, DATA-06, DATA-07
+**Success Criteria** (what must be TRUE):
+  1. ForwardedMessage table exists with sessionId foreign key, sender, content, timestamp columns
+  2. PairedDevice table has isArchived, archivedAt, archivalInitiatedBy columns
+  3. ForwardingSession table tracks messageCount and updatedAt
+  4. PairedDevice table tracks totalSessions and totalMessagesForwarded
+  5. Migration 5 to 6 completes successfully preserving all existing data (verified by MigrationTestHelper)
+  6. Indexes exist on ForwardedMessage (session_id, timestamp) for query performance
+  7. Foreign key CASCADE deletes messages when session is deleted
+**Plans**: TBD
+
+Plans:
+- [ ] 15-01: TBD
+- [ ] 15-02: TBD
+
+#### Phase 16: Message Storage Integration
+**Goal**: Messages are stored during forwarding with real-time session statistics
+**Depends on**: Phase 15
+**Requirements**: MSG-01, MSG-02, MSG-03, MSG-04, MSG-05
+**Success Criteria** (what must be TRUE):
+  1. TARGET device stores full message content (sender, content, timestamp) when forwarding SMS
+  2. SOURCE device stores only session metadata without message content
+  3. Session message count updates in real-time during active forwarding
+  4. Session statistics (totalSessions, totalMessagesForwarded) update when session ends
+  5. Message storage operations run asynchronously on Dispatchers.IO without blocking MasterService
+**Plans**: TBD
+
+Plans:
+- [ ] 16-01: TBD
+- [ ] 16-02: TBD
+
+#### Phase 17: Device History UI
+**Goal**: Users can view device list with active/removed sections and aggregate statistics
+**Depends on**: Phase 16
+**Requirements**: HIST-01, HIST-02, HIST-03, HIST-04, HIST-05, HIST-06, HIST-07
+**Success Criteria** (what must be TRUE):
+  1. Device History screen is accessible from Quick Actions menu on HomeScreen
+  2. Active devices section displays all paired devices with total sessions and message counts
+  3. Removed devices section displays archived devices (collapsed by default)
+  4. Device cards show last session date or "[Active]" badge for ongoing sessions
+  5. Tapping active device navigates to Session History screen for that device
+  6. Tapping removed device navigates to Archive Management screen for that device
+**Plans**: TBD
+
+Plans:
+- [ ] 17-01: TBD
+- [ ] 17-02: TBD
+
+#### Phase 18: Session History & Message Detail
+**Goal**: Users can view session list and drill down to message-level details
+**Depends on**: Phase 17
+**Requirements**: SESS-01, SESS-02, SESS-03, SESS-04, SESS-05, SESS-06, SESS-07, DETAIL-01, DETAIL-02, DETAIL-03, DETAIL-04, DETAIL-05
+**Success Criteria** (what must be TRUE):
+  1. Session History screen shows all sessions for selected device with pagination
+  2. Session cards display start date, duration, and message count
+  3. User can toggle between session view and contact view (grouped by sender)
+  4. View preference (session/contact) persists across app restarts via DataStore
+  5. Tapping session opens message detail bottom sheet
+  6. Active sessions show real-time message count with "[Active]" badge
+  7. Message detail bottom sheet displays sender number, timestamp, and content with pagination for large lists
+  8. Messages are read-only (no delete/edit actions)
+**Plans**: TBD
+
+Plans:
+- [ ] 18-01: TBD
+- [ ] 18-02: TBD
+- [ ] 18-03: TBD
+
+#### Phase 19: Export Functionality
+**Goal**: Users can export session/message history in multiple formats to external storage
+**Depends on**: Phase 16
+**Requirements**: EXP-01, EXP-02, EXP-03, EXP-04, EXP-05, EXP-06
+**Success Criteria** (what must be TRUE):
+  1. User can export session and message data to CSV format with proper column headers
+  2. User can export session and message data to JSON format with structured schema
+  3. User can export session and message data to plain text format (human-readable)
+  4. Export uses Storage Access Framework (ACTION_CREATE_DOCUMENT) for file creation
+  5. Export works on API 29-35 without permission fragmentation or failures
+  6. Export is accessible from both Archive Management and Session History screens
+**Plans**: TBD
+
+Plans:
+- [ ] 19-01: TBD
+- [ ] 19-02: TBD
+
+#### Phase 20: Bidirectional Visibility Indicators
+**Goal**: Home screen shows directional forwarding status with smart indicators
+**Depends on**: Phase 16
+**Requirements**: BIDIR-01, BIDIR-02, BIDIR-03, BIDIR-04, BIDIR-05, BIDIR-06, BIDIR-07, BIDIR-08
+**Success Criteria** (what must be TRUE):
+  1. Home screen calculates active session status (forwarding TO, receiving FROM, bidirectional)
+  2. Smart status indicator shows ↑ with count when user is forwarding TO other devices
+  3. Smart status indicator shows ↓ with count when user is receiving FROM other devices
+  4. Smart status indicator shows ⇅ with count for bidirectional sessions
+  5. Status indicator only shows active directions (hides if count is zero)
+  6. Tapping status indicator opens session breakdown bottom sheet
+  7. Session breakdown groups sessions by direction (Forwarding To, Receiving From, Bidirectional)
+  8. Paired devices list shows directional arrows next to each device (↑ forwarding, ↓ receiving, ⇅ bidirectional)
+**Plans**: TBD
+
+Plans:
+- [ ] 20-01: TBD
+- [ ] 20-02: TBD
+
+#### Phase 21: History Retention Settings
+**Goal**: Users can configure history retention and manually clean old data
+**Depends on**: Phase 16
+**Requirements**: RETENTION-01, RETENTION-02, RETENTION-03, RETENTION-04
+**Success Criteria** (what must be TRUE):
+  1. Settings screen has history retention option with range 7-90 days or "Forever" (0)
+  2. Default retention is 30 days for new installations
+  3. Advanced Settings section has auto-cleanup toggle
+  4. Settings screen has "Clean up now" button for manual cleanup
+  5. Manual cleanup deletes messages and sessions older than retention setting
+**Plans**: TBD
+
+Plans:
+- [ ] 21-01: TBD
+- [ ] 21-02: TBD
+
+#### Phase 22: Auto-Cleanup with WorkManager
+**Goal**: History cleanup runs automatically on schedule based on retention settings
+**Depends on**: Phase 21
+**Requirements**: RETENTION-05, RETENTION-06, RETENTION-07, RETENTION-08
+**Success Criteria** (what must be TRUE):
+  1. WorkManager schedules periodic cleanup task with 24-hour interval
+  2. Cleanup job respects retention setting (deletes messages older than N days)
+  3. WorkManager uses lenient constraints (battery not low only, no idle requirement)
+  4. Last cleanup timestamp is displayed in Settings screen
+  5. Auto-cleanup only runs when toggle is enabled in settings
+**Plans**: TBD
+
+Plans:
+- [ ] 22-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 1. Play Store Submission | Play Store Launch | - | Complete | 2026-01-15 |
 | 2. CI/CD Pipeline | Play Store Launch | - | Complete | 2026-01-15 |
-| 3. Closed Testing Period | Play Store Launch | ad-hoc | In Progress | - |
-| 4. Open Testing & Production | Play Store Launch | 0/2 | Not Started | - |
+| 3. Closed Testing Period | Play Store Launch | ad-hoc | Complete | 2026-02-01 |
+| 4. Open Testing & Production | Play Store Launch | 0/2 | In Progress | - |
 | 5. Bidirectional Pairing | v0.0.7-v0.0.10 | 2/2 | Complete | 2026-01-15 |
 | 6. Pending State & Pairing UX | v0.0.7-v0.0.10 | 3/3 | Complete | 2026-01-15 |
 | 7. UI/UX Polish | v0.0.7-v0.0.10 | 2/2 | Complete | 2026-01-15 |
@@ -165,3 +308,11 @@ Plans:
 | 12. Settings Data Layer | v0.0.63 | 1/1 | Complete | 2026-01-18 |
 | 13. Settings Screen & Main Settings | v0.0.63 | 3/3 | Complete | 2026-01-19 |
 | 14. Advanced Settings & Service Integration | v0.0.63 | 3/3 | Complete | 2026-01-19 |
+| 15. Database Foundation & Migration | v0.0.64 | 0/TBD | Not started | - |
+| 16. Message Storage Integration | v0.0.64 | 0/TBD | Not started | - |
+| 17. Device History UI | v0.0.64 | 0/TBD | Not started | - |
+| 18. Session History & Message Detail | v0.0.64 | 0/TBD | Not started | - |
+| 19. Export Functionality | v0.0.64 | 0/TBD | Not started | - |
+| 20. Bidirectional Visibility Indicators | v0.0.64 | 0/TBD | Not started | - |
+| 21. History Retention Settings | v0.0.64 | 0/TBD | Not started | - |
+| 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/TBD | Not started | - |

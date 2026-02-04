@@ -131,74 +131,76 @@ Explicitly excluded from this milestone.
 
 ## Traceability
 
-Which phases cover which requirements. Will be updated during roadmap creation.
+Which phases cover which requirements.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| DATA-03 | TBD | Pending |
-| DATA-04 | TBD | Pending |
-| DATA-05 | TBD | Pending |
-| DATA-06 | TBD | Pending |
-| DATA-07 | TBD | Pending |
-| MSG-01 | TBD | Pending |
-| MSG-02 | TBD | Pending |
-| MSG-03 | TBD | Pending |
-| MSG-04 | TBD | Pending |
-| MSG-05 | TBD | Pending |
-| HIST-01 | TBD | Pending |
-| HIST-02 | TBD | Pending |
-| HIST-03 | TBD | Pending |
-| HIST-04 | TBD | Pending |
-| HIST-05 | TBD | Pending |
-| HIST-06 | TBD | Pending |
-| HIST-07 | TBD | Pending |
-| SESS-01 | TBD | Pending |
-| SESS-02 | TBD | Pending |
-| SESS-03 | TBD | Pending |
-| SESS-04 | TBD | Pending |
-| SESS-05 | TBD | Pending |
-| SESS-06 | TBD | Pending |
-| SESS-07 | TBD | Pending |
-| DETAIL-01 | TBD | Pending |
-| DETAIL-02 | TBD | Pending |
-| DETAIL-03 | TBD | Pending |
-| DETAIL-04 | TBD | Pending |
-| DETAIL-05 | TBD | Pending |
-| ARCH-01 | TBD | Pending |
-| ARCH-02 | TBD | Pending |
-| ARCH-03 | TBD | Pending |
-| ARCH-04 | TBD | Pending |
-| ARCH-05 | TBD | Pending |
-| EXP-01 | TBD | Pending |
-| EXP-02 | TBD | Pending |
-| EXP-03 | TBD | Pending |
-| EXP-04 | TBD | Pending |
-| EXP-05 | TBD | Pending |
-| EXP-06 | TBD | Pending |
-| BIDIR-01 | TBD | Pending |
-| BIDIR-02 | TBD | Pending |
-| BIDIR-03 | TBD | Pending |
-| BIDIR-04 | TBD | Pending |
-| BIDIR-05 | TBD | Pending |
-| BIDIR-06 | TBD | Pending |
-| BIDIR-07 | TBD | Pending |
-| BIDIR-08 | TBD | Pending |
-| RETENTION-01 | TBD | Pending |
-| RETENTION-02 | TBD | Pending |
-| RETENTION-03 | TBD | Pending |
-| RETENTION-04 | TBD | Pending |
-| RETENTION-05 | TBD | Pending |
-| RETENTION-06 | TBD | Pending |
-| RETENTION-07 | TBD | Pending |
-| RETENTION-08 | TBD | Pending |
+| DATA-01 | Phase 15 | Pending |
+| DATA-02 | Phase 15 | Pending |
+| DATA-03 | Phase 15 | Pending |
+| DATA-04 | Phase 15 | Pending |
+| DATA-05 | Phase 15 | Pending |
+| DATA-06 | Phase 15 | Pending |
+| DATA-07 | Phase 15 | Pending |
+| MSG-01 | Phase 16 | Pending |
+| MSG-02 | Phase 16 | Pending |
+| MSG-03 | Phase 16 | Pending |
+| MSG-04 | Phase 16 | Pending |
+| MSG-05 | Phase 16 | Pending |
+| HIST-01 | Phase 17 | Pending |
+| HIST-02 | Phase 17 | Pending |
+| HIST-03 | Phase 17 | Pending |
+| HIST-04 | Phase 17 | Pending |
+| HIST-05 | Phase 17 | Pending |
+| HIST-06 | Phase 17 | Pending |
+| HIST-07 | Phase 17 | Pending |
+| SESS-01 | Phase 18 | Pending |
+| SESS-02 | Phase 18 | Pending |
+| SESS-03 | Phase 18 | Pending |
+| SESS-04 | Phase 18 | Pending |
+| SESS-05 | Phase 18 | Pending |
+| SESS-06 | Phase 18 | Pending |
+| SESS-07 | Phase 18 | Pending |
+| DETAIL-01 | Phase 18 | Pending |
+| DETAIL-02 | Phase 18 | Pending |
+| DETAIL-03 | Phase 18 | Pending |
+| DETAIL-04 | Phase 18 | Pending |
+| DETAIL-05 | Phase 18 | Pending |
+| ARCH-01 | Phase 17 | Pending |
+| ARCH-02 | Phase 17 | Pending |
+| ARCH-03 | Phase 19 | Pending |
+| ARCH-04 | Phase 17 | Pending |
+| ARCH-05 | Phase 17 | Pending |
+| EXP-01 | Phase 19 | Pending |
+| EXP-02 | Phase 19 | Pending |
+| EXP-03 | Phase 19 | Pending |
+| EXP-04 | Phase 19 | Pending |
+| EXP-05 | Phase 19 | Pending |
+| EXP-06 | Phase 19 | Pending |
+| BIDIR-01 | Phase 20 | Pending |
+| BIDIR-02 | Phase 20 | Pending |
+| BIDIR-03 | Phase 20 | Pending |
+| BIDIR-04 | Phase 20 | Pending |
+| BIDIR-05 | Phase 20 | Pending |
+| BIDIR-06 | Phase 20 | Pending |
+| BIDIR-07 | Phase 20 | Pending |
+| BIDIR-08 | Phase 20 | Pending |
+| RETENTION-01 | Phase 21 | Pending |
+| RETENTION-02 | Phase 21 | Pending |
+| RETENTION-03 | Phase 21 | Pending |
+| RETENTION-04 | Phase 21 | Pending |
+| RETENTION-05 | Phase 22 | Pending |
+| RETENTION-06 | Phase 22 | Pending |
+| RETENTION-07 | Phase 22 | Pending |
+| RETENTION-08 | Phase 22 | Pending |
 
 **Coverage:**
 - v1 requirements: 56 total
-- Mapped to phases: 0
-- Unmapped: 56
+- Mapped to phases: 56
+- Unmapped: 0
+
+Coverage validation: 100% (56/56 requirements mapped)
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after initial definition*
+*Last updated: 2026-02-04 - roadmap created, traceability complete*

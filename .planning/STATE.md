@@ -1,94 +1,70 @@
 # Project State: SMS Courier
 
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-02-04)
+
+**Core value:** Reliable, secure SMS forwarding between paired devices with minimal user intervention
+**Current focus:** Phase 15 - Database Foundation & Migration
+
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements for v0.0.64
-Last activity: 2026-02-04 — Milestone v0.0.64 started: device management & visibility
+Phase: 15 of 22 (Database Foundation & Migration)
+Plan: Ready to plan
+Status: Ready to plan Phase 15
+Last activity: 2026-02-04 — Roadmap created for v0.0.64
 
-Progress: ░░░░░░░░░░ Requirements phase | Play Store Launch (Phase 4) in parallel
+Progress: [████░░░░░░] 64% (14/22 phases complete)
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 20 (from Phases 1-14)
+- Average duration: Not tracked
+- Total execution time: Not tracked
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| Previous milestones | 20 | - | - |
+
+**Recent Trend:**
+- Last 5 plans: Settings phase execution
+- Trend: Stable
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
-### Key Decisions
+### Decisions
+
+Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
 
 **Architecture:**
-- SMS-based command protocol with `SMSC` prefix for device-to-device communication
+- SMS-based command protocol with SMSC prefix for device-to-device communication
 - Foreground service (MasterService) for reliable message forwarding
-- Room database for paired device management and session tracking
+- Room database for paired device management and session tracking (current version: 5)
 - Jetpack Compose UI with Navigation Compose
-- Composite primary key `(phoneNumber, role)` for bidirectional pairing (v0.1)
+- Composite primary key (phoneNumber, role) for bidirectional pairing (v0.1)
+
+**v0.0.64 Decisions:**
+- Soft delete pattern for PairedDevice (isArchived, archivedAt columns)
+- ForwardedMessage table with foreign key CASCADE to ForwardingSession
+- Storage Access Framework exclusively for export (API 29-35 compatibility)
+- Paging 3 mandatory for message lists (performance at scale)
+- Manual cleanup before WorkManager automation (trust before automation)
 
 **Security:**
 - Bcrypt password hashing for device pairing
 - Failed attempt tracking and device lockout
-- Secure pairing workflow (request -> approve -> password)
-- Role-specific UNPAIR command: `SMSC UNPAIR SOURCE` / `SMSC UNPAIR TARGET`
+- Role-specific UNPAIR command
 
-**CI/CD:**
-- GitLab CI/CD with Kubernetes runners
-- Semantic versioning with automatic version code calculation (v1.2.3 -> 10203)
-- Automated deployment: tag -> internal, manual promotions to alpha -> beta -> production
-- Fastlane for Play Store deployment automation
-- Parallel test jobs: test:unit (fastlane) and test:integration (gradle filter)
-
-**Testing (v0.0.62):**
-- Reflection-based testing for private methods when PDU construction is impractical
-- SmsSender made `open` class to enable test subclassing
-- IntegrationTestBase pattern: abstract base with full dependency injection
-- 342 total tests passing
-
-**Settings (v0.0.63 - Phases 12-14):**
+**Settings (v0.0.63):**
 - DataStore Preferences for settings persistence
 - SettingsRepository with typed Flow properties
 - Conservative security defaults matching existing SecurityManager constants
-- require() validation throws IllegalArgumentException on invalid input
-- Two SettingsRepository instances (MainActivity and NavGraph) acceptable - DataStore is Context singleton
-- App-level theme observation in MainActivity for immediate theme changes
-- Duration options limited to 15, 30, 60 minutes (within SettingsRepository 1-60 validation)
-- Material3 ListItem pattern for settings rows (SettingsSwitchItem, SettingsSelectionItem, SettingsNumberInputItem)
-- BuildConfig generation enabled for VERSION_NAME access
-- Lifecycle-aware permission refresh using DisposableEffect with LifecycleEventObserver
-- About URLs externalized in Constants.kt (PRIVACY_POLICY_URL, SUPPORT_URL)
-- Collapsible Advanced section with warning header for security emphasis
-- SettingsNumberInputItem shows range in supporting text with helper text below
-- Error handling via snackbar with LaunchedEffect trigger
-- Cached settings with Flow collection pattern for MasterService auth timeout
-- StateFlow.stateIn() pattern for PairedDevicesViewModel reactive settings
-- SecurityManager receives settingsRepository in constructor with startObservingSettings() for lifecycle-managed collection
-
-### Technical Context
-
-**Current State:**
-- App functionally complete with pairing, forwarding, and session management
-- Settings fully integrated: data layer, UI, and service/ViewModel consumption
-- All 9 settings from SettingsRepository wired to consumers:
-  - Main: notification persistence, default forwarding duration, theme
-  - Advanced: lockout duration, max failed attempts, challenge expiry, max pairing resend attempts, pairing resend cooldown, auth request timeout
-- MasterService uses configurable auth request timeout
-- PairedDevicesViewModel uses configurable pairing resend limits
-- SecurityManager uses configurable lockout, attempts, and challenge expiry settings
-- Theme observation wired at app level - theme changes apply immediately
-- Comprehensive test coverage: 342+ tests
-- CI/CD pipeline fully configured with parallel test jobs
-- Play Store closed testing complete, applied for beta/production access (awaiting Google review)
-- Database at version 5
-
-**Completed Milestones:**
-- v0.0.7-v0.0.10 Feature Improvements: SHIPPED 2026-01-15 (Phases 5-7)
-- v0.0.60-v0.0.61 CI/CD Optimizations: SHIPPED 2026-01-16 (Phase 8)
-- v0.0.62 Testing: SHIPPED 2026-01-18 (Phases 9-11)
-- v0.0.63 Settings: SHIPPED 2026-01-19 (Phases 12-14)
-
-**Parallel Milestone:**
-- Play Store Launch (Phases 1-4)
-  - Phase 3: Complete - Closed testing finished
-  - Phase 4: In Progress - Applied for beta/production access, awaiting Google review
-
-### Blockers/Concerns Carried Forward
-
-None currently identified.
 
 ### Pending Todos
 
@@ -99,7 +75,6 @@ None currently identified.
 - Group messages by contact type
 - Sync sent messages back to original device
 - Smart filters for selective forwarding
-- Message history and forwarding logs
 - Scheduled and recurring forwarding sessions
 - Multi-destination forwarding (one-to-many)
 
@@ -111,14 +86,17 @@ None currently identified.
 - Remove legacy background service code
 - Settings export/import
 
+### Blockers/Concerns
+
+None yet.
+
 ## Session Continuity
 
 Last session: 2026-02-04
-Stopped at: Milestone initialization in progress
+Stopped at: Roadmap created for v0.0.64 (Phases 15-22)
 Resume file: None
 
-**Context for next session:**
-- Starting v0.0.64 milestone: Enhanced device management and bidirectional visibility
-- MILESTONE-CONTEXT.md contains complete specification from interview
-- Next: Define requirements and create roadmap
-- Play Store Launch (Phase 4) continues in parallel - awaiting Google review
+**Next actions:**
+- Review ROADMAP.md for v0.0.64 phase structure
+- Execute /gsd:plan-phase 15 to create Database Foundation & Migration plan
+- Parallel: Play Store Launch Phase 4 awaiting Google review
