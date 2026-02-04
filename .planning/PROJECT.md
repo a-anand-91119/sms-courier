@@ -8,11 +8,20 @@ SMS Courier is an Android app for forwarding SMS messages between two paired dev
 
 Reliable, secure SMS forwarding between paired devices with minimal user intervention.
 
-## Current Milestone: Play Store Launch
+## Current Milestone: v0.0.64 Device Management & Visibility
 
-**Goal:** Complete closed testing period and launch publicly on Google Play Store.
+**Goal:** Enhanced device management with session history and bidirectional forwarding visibility
 
-**Status:** Phase 3 in progress (12 testers enrolled, 14-day waiting period)
+**Target features:**
+- Device history screen (all devices - active & removed)
+- Session history with message-level details
+- Export history (CSV, JSON, TXT)
+- Archive management for removed devices
+- Bidirectional forwarding visibility (↑↓⇅ indicators)
+- Session breakdown and directional indicators
+- Configurable history retention and auto-cleanup
+
+**Parallel:** Play Store Launch (Phase 4 in progress - awaiting Google review)
 
 ## Requirements
 
@@ -37,22 +46,31 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 
 ### Active
 
-(Play Store Launch milestone - no code requirements)
+**v0.0.64 Device Management & Visibility:**
+- Device history with session tracking and message storage
+- Bidirectional forwarding visibility on home screen
+- Archive management for removed devices
+- Export functionality (CSV, JSON, TXT formats)
+- Configurable history retention and auto-cleanup
+- Session/contact view toggle with persistence
+- Directional indicators on paired devices list
 
 ### Out of Scope
 
 - Message format customization — deferred to future milestone
-- Data management (clear history) — deferred until device/SMS history feature
 - Notification grouping — deferred to future milestone
 - In-app notification channel controls — use Android system settings
+- Contact name lookup for message history — deferred to future milestone
+- Delivery tracking for forwarded messages — deferred to future milestone
+- PIN/fingerprint authentication for history access — deferred to future milestone
 
 ## Context
 
 **Current state:**
 - App functionally complete with settings feature shipped (v0.0.63)
-- Play Store closed testing in progress (12 testers, 14-day wait)
+- Play Store closed testing complete, applied for beta/production access
 - 343 tests passing with comprehensive coverage
-- All features validated, ready for production release
+- Starting v0.0.64 milestone: Enhanced device management and visibility features
 
 **Technical environment:**
 - Kotlin with Jetpack Compose
@@ -63,7 +81,7 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 
 ## Constraints
 
-- **Play Store timeline:** 14-day closed testing period required before open beta
+- **Play Store timeline:** Awaiting Google review for beta/production access
 - **No breaking changes:** Maintain stability during dogfooding
 
 ## Key Decisions
@@ -76,4 +94,4 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 | Security defaults | Match existing SecurityManager constants | Conservative defaults |
 
 ---
-*Last updated: 2026-01-19 after v0.0.63 milestone shipped*
+*Last updated: 2026-02-04 — milestone v0.0.64 started: device management & visibility*
