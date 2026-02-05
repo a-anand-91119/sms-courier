@@ -81,4 +81,21 @@ data class PairedDevice(
 
     @ColumnInfo(name = "last_resend_attempt_at")
     val lastResendAttemptAt: Long? = null,
+
+    // Soft delete (DATA-02)
+    @ColumnInfo(name = "is_archived", defaultValue = "0")
+    val isArchived: Boolean = false,
+
+    @ColumnInfo(name = "archived_at")
+    val archivedAt: Long? = null,
+
+    @ColumnInfo(name = "archival_initiated_by")
+    val archivalInitiatedBy: String? = null,
+
+    // Aggregate statistics (DATA-04)
+    @ColumnInfo(name = "total_sessions", defaultValue = "0")
+    val totalSessions: Int = 0,
+
+    @ColumnInfo(name = "total_messages_forwarded", defaultValue = "0")
+    val totalMessagesForwarded: Int = 0
 )

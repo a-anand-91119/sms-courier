@@ -7,14 +7,16 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import dev.notyouraverage.smscourier.data.dao.ForwardedMessageDao
 import dev.notyouraverage.smscourier.data.dao.ForwardingSessionDao
 import dev.notyouraverage.smscourier.data.dao.PairedDeviceDao
+import dev.notyouraverage.smscourier.data.entities.ForwardedMessage
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 
 @Database(
-    entities = [PairedDevice::class, ForwardingSession::class],
-    version = 5,
+    entities = [PairedDevice::class, ForwardingSession::class, ForwardedMessage::class],
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -22,6 +24,7 @@ abstract class SmsCourierDatabase : RoomDatabase() {
 
     abstract fun pairedDeviceDao(): PairedDeviceDao
     abstract fun forwardingSessionDao(): ForwardingSessionDao
+    abstract fun forwardedMessageDao(): ForwardedMessageDao
 
     companion object {
         private const val DATABASE_NAME = "sms_courier_database"
@@ -91,6 +94,51 @@ abstract class SmsCourierDatabase : RoomDatabase() {
             }
         }
 
+        // Migration from version 5 to 6: Add ForwardedMessage table, soft delete, and tracking columns
+        internal val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Step 1: Create ForwardedMessage table with foreign key CASCADE
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS forwarded_messages (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        session_id INTEGER NOT NULL,
+                        sender_number TEXT NOT NULL,
+                        message_content TEXT NOT NULL,
+                        timestamp INTEGER NOT NULL,
+                        FOREIGN KEY(session_id) REFERENCES forwarding_sessions(id)
+                            ON DELETE CASCADE
+                    )
+                """)
+
+                // Step 2: Create indexes for query performance
+                db.execSQL("""
+                    CREATE INDEX IF NOT EXISTS index_forwarded_messages_session_id
+                    ON forwarded_messages(session_id)
+                """)
+                db.execSQL("""
+                    CREATE INDEX IF NOT EXISTS index_forwarded_messages_timestamp
+                    ON forwarded_messages(timestamp)
+                """)
+
+                // Step 3: Add soft delete columns to PairedDevice
+                db.execSQL("ALTER TABLE paired_devices ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE paired_devices ADD COLUMN archived_at INTEGER")
+                db.execSQL("ALTER TABLE paired_devices ADD COLUMN archival_initiated_by TEXT")
+
+                // Step 4: Add aggregate statistics to PairedDevice
+                db.execSQL("ALTER TABLE paired_devices ADD COLUMN total_sessions INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE paired_devices ADD COLUMN total_messages_forwarded INTEGER NOT NULL DEFAULT 0")
+
+                // Step 5: Add tracking columns to ForwardingSession
+                db.execSQL("ALTER TABLE forwarding_sessions ADD COLUMN message_count INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE forwarding_sessions ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0")
+
+                // Step 6: Initialize new columns from existing data
+                db.execSQL("UPDATE forwarding_sessions SET updated_at = started_at WHERE updated_at = 0")
+                db.execSQL("UPDATE forwarding_sessions SET message_count = messages_forwarded WHERE message_count = 0")
+            }
+        }
+
         fun getDatabase(context: Context): SmsCourierDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -98,7 +146,7 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                     SmsCourierDatabase::class.java,
                     DATABASE_NAME,
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build()
                 INSTANCE = instance
                 instance

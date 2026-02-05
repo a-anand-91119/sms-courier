@@ -39,4 +39,11 @@ data class ForwardingSession(
     // Plain password for encrypting/decrypting forwarded messages
     @ColumnInfo(name = "encryption_key")
     val encryptionKey: String? = null,
+
+    // Message count tracking (DATA-03)
+    @ColumnInfo(name = "message_count", defaultValue = "0")
+    val messageCount: Int = 0,
+
+    @ColumnInfo(name = "updated_at", defaultValue = "0")
+    val updatedAt: Long = System.currentTimeMillis()
 )
