@@ -156,6 +156,7 @@ Plans:
 **Goal**: Database schema supports message-level storage and device archiving with validated migration
 **Depends on**: Phase 14 (Settings shipped)
 **Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05, DATA-06, DATA-07
+**Status**: Complete (2026-02-05)
 **Success Criteria** (what must be TRUE):
   1. ForwardedMessage table exists with sessionId foreign key, sender, content, timestamp columns
   2. PairedDevice table has isArchived, archivedAt, archivalInitiatedBy columns
@@ -167,8 +168,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 15-01-PLAN.md — Schema v6: ForwardedMessage entity, PairedDevice soft delete columns, ForwardingSession tracking columns, Migration 5->6
-- [ ] 15-02-PLAN.md — Migration testing: MigrationTestHelper tests for data preservation, CASCADE delete, and index verification
+- [x] 15-01-PLAN.md — Schema v6: ForwardedMessage entity, PairedDevice soft delete columns, ForwardingSession tracking columns, Migration 5->6
+- [x] 15-02-PLAN.md — Migration testing: MigrationTestHelper tests for data preservation, CASCADE delete, and index verification
 
 #### Phase 16: Message Storage Integration
 **Goal**: Messages are stored during forwarding with real-time session statistics
@@ -308,7 +309,7 @@ Plans:
 | 12. Settings Data Layer | v0.0.63 | 1/1 | Complete | 2026-01-18 |
 | 13. Settings Screen & Main Settings | v0.0.63 | 3/3 | Complete | 2026-01-19 |
 | 14. Advanced Settings & Service Integration | v0.0.63 | 3/3 | Complete | 2026-01-19 |
-| 15. Database Foundation & Migration | v0.0.64 | 0/TBD | Not started | - |
+| 15. Database Foundation & Migration | v0.0.64 | 2/2 | Complete | 2026-02-05 |
 | 16. Message Storage Integration | v0.0.64 | 0/TBD | Not started | - |
 | 17. Device History UI | v0.0.64 | 0/TBD | Not started | - |
 | 18. Session History & Message Detail | v0.0.64 | 0/TBD | Not started | - |

@@ -9,13 +9,13 @@ Requirements for v0.0.64 milestone.
 
 ### Data Layer
 
-- [ ] **DATA-01**: ForwardedMessage table stores individual SMS (sessionId FK, senderNumber, messageContent, timestamp)
-- [ ] **DATA-02**: PairedDevice soft delete columns (isArchived, archivedAt, archivalInitiatedBy)
-- [ ] **DATA-03**: ForwardingSession message count tracking (messageCount, updatedAt)
-- [ ] **DATA-04**: PairedDevice aggregate statistics (totalSessions, totalMessagesForwarded)
-- [ ] **DATA-05**: Database migration 5 → 6 preserves all existing data
-- [ ] **DATA-06**: Indexes on ForwardedMessage (session_id, timestamp) for performance
-- [ ] **DATA-07**: Foreign key CASCADE (delete session → delete messages)
+- [x] **DATA-01**: ForwardedMessage table stores individual SMS (sessionId FK, senderNumber, messageContent, timestamp)
+- [x] **DATA-02**: PairedDevice soft delete columns (isArchived, archivedAt, archivalInitiatedBy)
+- [x] **DATA-03**: ForwardingSession message count tracking (messageCount, updatedAt)
+- [x] **DATA-04**: PairedDevice aggregate statistics (totalSessions, totalMessagesForwarded)
+- [x] **DATA-05**: Database migration 5 → 6 preserves all existing data
+- [x] **DATA-06**: Indexes on ForwardedMessage (session_id, timestamp) for performance
+- [x] **DATA-07**: Foreign key CASCADE (delete session → delete messages)
 
 ### Message Storage
 
@@ -135,13 +135,13 @@ Which phases cover which requirements.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 15 | Pending |
-| DATA-02 | Phase 15 | Pending |
-| DATA-03 | Phase 15 | Pending |
-| DATA-04 | Phase 15 | Pending |
-| DATA-05 | Phase 15 | Pending |
-| DATA-06 | Phase 15 | Pending |
-| DATA-07 | Phase 15 | Pending |
+| DATA-01 | Phase 15 | Complete |
+| DATA-02 | Phase 15 | Complete |
+| DATA-03 | Phase 15 | Complete |
+| DATA-04 | Phase 15 | Complete |
+| DATA-05 | Phase 15 | Complete |
+| DATA-06 | Phase 15 | Complete |
+| DATA-07 | Phase 15 | Complete |
 | MSG-01 | Phase 16 | Pending |
 | MSG-02 | Phase 16 | Pending |
 | MSG-03 | Phase 16 | Pending |
@@ -203,4 +203,4 @@ Coverage validation: 100% (56/56 requirements mapped)
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 - roadmap created, traceability complete*
+*Last updated: 2026-02-05 - Phase 15 complete (DATA-01 through DATA-07)*
