@@ -80,6 +80,13 @@ android {
         disable += "StateFlowValueCalledInComposition"
         disable += "FlowOperatorInvokedInComposition"
     }
+    sourceSets {
+        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
+    }
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -122,6 +129,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.room.testing)
 //    androidTestImplementation(libs.screengrab)
 //    androidTestImplementation(libs.uiautomator)
 
