@@ -16,7 +16,7 @@ import dev.notyouraverage.smscourier.data.entities.PairedDevice
 
 @Database(
     entities = [PairedDevice::class, ForwardingSession::class, ForwardedMessage::class],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -154,6 +154,55 @@ abstract class SmsCourierDatabase : RoomDatabase() {
             }
         }
 
+        // Migration from version 7 to 8: Remove orphaned FK from forwarding_sessions
+        // The FK to paired_devices was invalid (phoneNumber is not unique in composite PK)
+        internal val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // SQLite doesn't support DROP FOREIGN KEY, must recreate table
+                // Step 1: Create new table without the FK
+                db.execSQL("""
+                    CREATE TABLE forwarding_sessions_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        device_phone_number TEXT NOT NULL,
+                        started_at INTEGER NOT NULL,
+                        duration_minutes INTEGER NOT NULL,
+                        expires_at INTEGER NOT NULL,
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        stopped_by TEXT,
+                        messages_forwarded INTEGER NOT NULL DEFAULT 0,
+                        encryption_key TEXT,
+                        message_count INTEGER NOT NULL DEFAULT 0,
+                        updated_at INTEGER NOT NULL DEFAULT 0
+                    )
+                """)
+
+                // Step 2: Copy data from old table
+                db.execSQL("""
+                    INSERT INTO forwarding_sessions_new (
+                        id, device_phone_number, started_at, duration_minutes,
+                        expires_at, is_active, stopped_by, messages_forwarded,
+                        encryption_key, message_count, updated_at
+                    )
+                    SELECT id, device_phone_number, started_at, duration_minutes,
+                           expires_at, is_active, stopped_by, messages_forwarded,
+                           encryption_key, message_count, updated_at
+                    FROM forwarding_sessions
+                """)
+
+                // Step 3: Drop old table
+                db.execSQL("DROP TABLE forwarding_sessions")
+
+                // Step 4: Rename new table
+                db.execSQL("ALTER TABLE forwarding_sessions_new RENAME TO forwarding_sessions")
+
+                // Step 5: Recreate index
+                db.execSQL("""
+                    CREATE INDEX IF NOT EXISTS index_forwarding_sessions_device_phone_number
+                    ON forwarding_sessions(device_phone_number)
+                """)
+            }
+        }
+
         fun getDatabase(context: Context): SmsCourierDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -167,7 +216,8 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                         MIGRATION_3_4,
                         MIGRATION_4_5,
                         MIGRATION_5_6,
-                        MIGRATION_6_7
+                        MIGRATION_6_7,
+                        MIGRATION_7_8
                     )
                     .build()
                 INSTANCE = instance
