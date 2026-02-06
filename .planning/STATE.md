@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 18 of 22 (Session History & Message Detail)
-Plan: 01 of 04 complete
+Plan: 03 of 04 complete
 Status: In progress
-Last activity: 2026-02-06 — Completed 18-01-PLAN.md (Paging Infrastructure)
+Last activity: 2026-02-06 — Completed 18-03-PLAN.md (Message Detail Components)
 
 Progress: [████████░░] 77% (17/22 phases complete)
 
@@ -31,10 +31,10 @@ Progress: [████████░░] 77% (17/22 phases complete)
 | 15 - Database Foundation | 2 | 7m 14s | 3m 37s |
 | 16 - Message Storage | 2 | 11m | 5m 30s |
 | 17 - Device History UI | 4 | 20m 20s | 5m 05s |
-| 18 - Session History UI | 1 | 4m 30s | 4m 30s |
+| 18 - Session History UI | 2 | 7m 01s | 3m 30s |
 
 **Recent Trend:**
-- Last 5 plans: device history screen UI, navigation integration, archive UNPAIR gap closure, paging infrastructure
+- Last 5 plans: navigation integration, archive UNPAIR gap closure, paging infrastructure, message detail components
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -72,6 +72,8 @@ Recent decisions affecting current work:
 
 **Phase 18 - Session History UI:**
 - Room 2.6.1 requires explicit room-paging dependency for PagingSource — Added in 18-01
+- ModalBottomSheet for message detail with skipPartiallyExpanded=false for 50%/full height — Added in 18-03
+- animateContentSize for expandable message rows — Added in 18-03
 
 **Security:**
 - Bcrypt password hashing for device pairing
@@ -109,11 +111,11 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-06 10:06 UTC
-Stopped at: Completed 18-01-PLAN.md (Paging Infrastructure)
+Last session: 2026-02-06 10:12 UTC
+Stopped at: Completed 18-03-PLAN.md (Message Detail Components)
 Resume file: None
 
 **Next actions:**
-- Continue Phase 18 with 18-02-PLAN.md (Session History Screen)
-- 18-02 depends on 18-01 (complete)
+- Continue Phase 18 with 18-04-PLAN.md (Navigation Integration)
+- 18-04 depends on 18-02 and 18-03 (18-02 pending, 18-03 complete)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
