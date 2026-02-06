@@ -216,7 +216,7 @@ Plans:
   1. Session History screen shows all sessions for selected device with pagination
   2. Session cards display start date, duration, and message count
   3. User can toggle between session view and contact view (grouped by sender)
-  4. View preference (session/contact) persists across app restarts via DataStore
+  4. Session view is default on screen open (no persistence of toggle state per CONTEXT.md)
   5. Tapping session opens message detail bottom sheet
   6. Active sessions show real-time message count with "[Active]" badge
   7. Message detail bottom sheet displays sender number, timestamp, and content with pagination for large lists
