@@ -163,6 +163,7 @@ fun SmsCourierNavGraph(
                 factory = DeviceHistoryViewModel.Factory(
                     deviceRepository,
                     sessionRepository,
+                    exportManager,
                 ),
             )
             DeviceHistoryScreen(

@@ -27,9 +27,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -67,6 +69,7 @@ fun MessageDetailBottomSheet(
     session: ForwardingSession,
     messages: LazyPagingItems<ForwardedMessage>,
     onDismiss: () -> Unit,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Per CONTEXT.md: 50% initial height with drag to full screen
@@ -83,7 +86,7 @@ fun MessageDetailBottomSheet(
                 .padding(horizontal = 24.dp),
         ) {
             // Session metadata header
-            SessionMetadataHeader(session = session)
+            SessionMetadataHeader(session = session, onExport = onExport)
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
@@ -103,6 +106,7 @@ fun MessageDetailBottomSheet(
 @Composable
 private fun SessionMetadataHeader(
     session: ForwardingSession,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -119,8 +123,19 @@ private fun SessionMetadataHeader(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
             )
-            if (session.isActive) {
-                ActiveSessionBadge()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                if (session.isActive) {
+                    ActiveSessionBadge()
+                }
+                IconButton(onClick = onExport) {
+                    Icon(
+                        Icons.Default.Share,
+                        contentDescription = "Export session",
+                    )
+                }
             }
         }
 
