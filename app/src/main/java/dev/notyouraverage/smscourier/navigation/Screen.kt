@@ -17,6 +17,14 @@ sealed class Screen(val route: String) {
         }
     }
 
+    data object SessionHistory : Screen("session_history/{phoneNumber}/{role}") {
+        fun createRoute(phoneNumber: String, role: String): String {
+            // URL encode phone number to handle '+' and other special characters (E.164 format)
+            val encodedPhone = java.net.URLEncoder.encode(phoneNumber, "UTF-8")
+            return "session_history/$encodedPhone/$role"
+        }
+    }
+
     // Screen with arguments
     data object DeviceDetail : Screen("device_detail/{phoneNumber}") {
         fun createRoute(phoneNumber: String): String = "device_detail/$phoneNumber"
