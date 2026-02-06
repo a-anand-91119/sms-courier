@@ -176,16 +176,17 @@ Plans:
 **Depends on**: Phase 15
 **Requirements**: MSG-01, MSG-02, MSG-03, MSG-04, MSG-05
 **Success Criteria** (what must be TRUE):
-  1. TARGET device stores full message content (sender, content, timestamp) when forwarding SMS
+  1. TARGET device stores full message content (sender, content, timestamp, destinationNumber) when forwarding SMS
   2. SOURCE device stores only session metadata without message content
   3. Session message count updates in real-time during active forwarding
-  4. Session statistics (totalSessions, totalMessagesForwarded) update when session ends
-  5. Message storage operations run asynchronously on Dispatchers.IO without blocking MasterService
-**Plans**: TBD
+  4. Session statistics (totalSessions, totalMessagesForwarded) update immediately (per session start and per message)
+  5. Message storage operations run on Dispatchers.IO without blocking MasterService
+  6. Storage failures do not crash MasterService or block SMS forwarding
+**Plans**: 2 plans
 
 Plans:
-- [ ] 16-01: TBD
-- [ ] 16-02: TBD
+- [ ] 16-01-PLAN.md — Schema v7: Add destinationNumber to ForwardedMessage, DAO counter methods, Migration 6->7
+- [ ] 16-02-PLAN.md — Repository + integration: ForwardedMessageRepository, SmsCommandHandler integration, crash recovery
 
 #### Phase 17: Device History UI
 **Goal**: Users can view device list with active/removed sections and aggregate statistics
