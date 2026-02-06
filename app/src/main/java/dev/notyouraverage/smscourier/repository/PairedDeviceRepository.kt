@@ -74,6 +74,15 @@ class PairedDeviceRepository(
         pairedDeviceDao.deleteByPhoneNumberAndRole(normalizePhoneNumber(phoneNumber), role)
     }
 
+    suspend fun archiveDevice(phoneNumber: String, role: DeviceRole, initiatedBy: String) = withContext(ioDispatcher) {
+        pairedDeviceDao.archiveDevice(
+            normalizePhoneNumber(phoneNumber),
+            role,
+            System.currentTimeMillis(),
+            initiatedBy,
+        )
+    }
+
     suspend fun updatePairingStatus(phoneNumber: String, role: DeviceRole, status: PairingStatus) = withContext(ioDispatcher) {
         pairedDeviceDao.updatePairingStatus(normalizePhoneNumber(phoneNumber), role, status)
     }

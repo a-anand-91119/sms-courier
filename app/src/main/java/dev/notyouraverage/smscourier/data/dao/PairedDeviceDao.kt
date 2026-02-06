@@ -17,10 +17,10 @@ interface PairedDeviceDao {
     @Query("SELECT * FROM paired_devices WHERE device_role = :role")
     fun getDevicesByRole(role: DeviceRole): Flow<List<PairedDevice>>
 
-    @Query("SELECT * FROM paired_devices WHERE phoneNumber = :phoneNumber")
+    @Query("SELECT * FROM paired_devices WHERE phoneNumber = :phoneNumber AND is_archived = 0")
     suspend fun getDeviceByPhoneNumber(phoneNumber: String): List<PairedDevice>
 
-    @Query("SELECT * FROM paired_devices WHERE phoneNumber = :phoneNumber AND device_role = :role")
+    @Query("SELECT * FROM paired_devices WHERE phoneNumber = :phoneNumber AND device_role = :role AND is_archived = 0")
     suspend fun getDeviceByPhoneNumberAndRole(phoneNumber: String, role: DeviceRole): PairedDevice?
 
     @Query("SELECT * FROM paired_devices WHERE device_role = :role AND pairing_status = :status")
@@ -141,4 +141,13 @@ interface PairedDeviceDao {
         """,
     )
     fun getArchivedDevices(): Flow<List<PairedDevice>>
+
+    @Query(
+        """
+        UPDATE paired_devices
+        SET is_archived = 1, archived_at = :timestamp, archival_initiated_by = :initiatedBy
+        WHERE phoneNumber = :phoneNumber AND device_role = :role
+        """,
+    )
+    suspend fun archiveDevice(phoneNumber: String, role: DeviceRole, timestamp: Long, initiatedBy: String)
 }
