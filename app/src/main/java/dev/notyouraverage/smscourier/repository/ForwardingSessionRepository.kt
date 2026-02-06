@@ -89,4 +89,12 @@ class ForwardingSessionRepository(
     suspend fun getSessionCountForDevice(phoneNumber: String): Int = withContext(ioDispatcher) {
         forwardingSessionDao.getSessionCountForDevice(phoneNumber)
     }
+
+    /**
+     * Get all sessions for a device as a list (for export).
+     */
+    suspend fun getSessionsForDeviceList(phoneNumber: String): List<ForwardingSession> =
+        withContext(ioDispatcher) {
+            forwardingSessionDao.getSessionsForDeviceList(phoneNumber)
+        }
 }

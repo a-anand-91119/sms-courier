@@ -107,4 +107,20 @@ class ForwardedMessageRepository(
         withContext(Dispatchers.IO) {
             messageDao.getMessageCountForSender(phoneNumber, senderNumber)
         }
+
+    /**
+     * Get all messages for a session as a list (for export).
+     */
+    suspend fun getMessagesForSessionList(sessionId: Long): List<ForwardedMessage> =
+        withContext(Dispatchers.IO) {
+            messageDao.getMessagesForSessionList(sessionId)
+        }
+
+    /**
+     * Get all messages for a device across all sessions (for bulk export).
+     */
+    suspend fun getMessagesForDeviceList(phoneNumber: String): List<ForwardedMessage> =
+        withContext(Dispatchers.IO) {
+            messageDao.getMessagesForDeviceList(phoneNumber)
+        }
 }
