@@ -74,4 +74,22 @@ object DateTimeFormatters {
         val dateTimeFormat = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
         return dateTimeFormat.format(Date(timestampMillis))
     }
+
+    /**
+     * ISO 8601 format for JSON export with timezone offset.
+     * Example: "2026-02-06T14:30:00+00:00"
+     */
+    fun formatIso8601(timestampMillis: Long): String {
+        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US)
+        return isoFormat.format(Date(timestampMillis))
+    }
+
+    /**
+     * Local datetime format for CSV/TXT export.
+     * Example: "2026-02-06 14:30:00"
+     */
+    fun formatExportDateTime(timestampMillis: Long): String {
+        val exportFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+        return exportFormat.format(Date(timestampMillis))
+    }
 }
