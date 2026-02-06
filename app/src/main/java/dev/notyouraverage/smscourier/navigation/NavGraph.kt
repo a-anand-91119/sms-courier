@@ -34,6 +34,7 @@ import dev.notyouraverage.smscourier.viewmodels.PairingRequestsViewModel
 import dev.notyouraverage.smscourier.viewmodels.SessionHistoryViewModel
 import dev.notyouraverage.smscourier.viewmodels.SettingsViewModel
 import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
+import dev.notyouraverage.smscourier.export.ExportManager
 
 @Composable
 fun SmsCourierNavGraph(
@@ -55,6 +56,9 @@ fun SmsCourierNavGraph(
             database.forwardingSessionDao(),
             database.pairedDeviceDao(),
         )
+    }
+    val exportManager = remember {
+        ExportManager(sessionRepository, messageRepository)
     }
 
     NavHost(
@@ -192,6 +196,7 @@ fun SmsCourierNavGraph(
                     phoneNumber = phoneNumber,
                     role = role,
                     deviceRepository = deviceRepository,
+                    exportManager = exportManager,
                 ),
             )
             ArchiveManagementScreen(
@@ -218,6 +223,7 @@ fun SmsCourierNavGraph(
                 factory = SessionHistoryViewModel.Factory(
                     sessionRepository = sessionRepository,
                     messageRepository = messageRepository,
+                    exportManager = exportManager,
                     phoneNumber = phoneNumber,
                     deviceRole = role,
                 ),

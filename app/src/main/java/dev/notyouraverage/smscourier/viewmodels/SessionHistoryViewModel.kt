@@ -1,11 +1,18 @@
 package dev.notyouraverage.smscourier.viewmodels
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
+import dev.notyouraverage.smscourier.export.ExportConfig
+import dev.notyouraverage.smscourier.export.ExportFormat
+import dev.notyouraverage.smscourier.export.ExportFormatter
+import dev.notyouraverage.smscourier.export.ExportManager
+import dev.notyouraverage.smscourier.export.ExportState
 import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import kotlinx.coroutines.flow.Flow
@@ -13,10 +20,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 class SessionHistoryViewModel(
     private val sessionRepository: ForwardingSessionRepository,
     private val messageRepository: ForwardedMessageRepository,
+    private val exportManager: ExportManager,
     val phoneNumber: String,
     val deviceRole: String,
 ) : ViewModel() {
@@ -24,6 +33,13 @@ class SessionHistoryViewModel(
     // Tab state - per CONTEXT.md: "Always opens to Sessions view by default, no persistence of toggle state"
     private val _selectedTab = MutableStateFlow(Tab.SESSIONS)
     val selectedTab: StateFlow<Tab> = _selectedTab.asStateFlow()
+
+    // Export state for UI feedback
+    private val _exportState = MutableStateFlow<ExportState>(ExportState.Idle)
+    val exportState: StateFlow<ExportState> = _exportState.asStateFlow()
+
+    // Pending export config (set when user confirms format, cleared after SAF picker result)
+    private var pendingExportConfig: ExportConfig? = null
 
     // Paged sessions flow - cachedIn survives configuration changes
     val sessions: Flow<PagingData<ForwardingSession>> =
@@ -59,6 +75,59 @@ class SessionHistoryViewModel(
         }
     }
 
+    /**
+     * Called when user selects format in bottom sheet.
+     * Stores config for SAF picker result and returns filename + MIME type.
+     */
+    fun prepareExport(format: ExportFormat, includeMetadata: Boolean): Pair<String, String> {
+        pendingExportConfig = ExportConfig(
+            format = format,
+            includeMetadata = includeMetadata,
+            devicePhone = phoneNumber,
+            deviceRole = deviceRole,
+        )
+        val filename = exportManager.generateFilename(format)
+        return filename to format.mimeType
+    }
+
+    /**
+     * Called after SAF picker returns a Uri.
+     * Performs the actual export to the selected file.
+     */
+    fun executeExport(uri: Uri, contentResolver: ContentResolver) {
+        val config = pendingExportConfig ?: return
+        pendingExportConfig = null
+
+        _exportState.value = ExportState.Loading
+
+        viewModelScope.launch {
+            try {
+                // Load data
+                val data = exportManager.loadDeviceData(phoneNumber, deviceRole)
+
+                // Format content
+                val content = ExportFormatter.formatToString(data, config)
+
+                // Write to file
+                contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write(content.toByteArray(Charsets.UTF_8))
+                } ?: throw IOException("Failed to open output stream")
+
+                val filename = exportManager.generateFilename(config.format)
+                _exportState.value = ExportState.Success(filename)
+            } catch (e: Exception) {
+                _exportState.value = ExportState.Error(e.message ?: "Export failed")
+            }
+        }
+    }
+
+    /**
+     * Clears export state after snackbar is dismissed.
+     */
+    fun clearExportState() {
+        _exportState.value = ExportState.Idle
+    }
+
     enum class Tab {
         SESSIONS, CONTACTS
     }
@@ -66,6 +135,7 @@ class SessionHistoryViewModel(
     class Factory(
         private val sessionRepository: ForwardingSessionRepository,
         private val messageRepository: ForwardedMessageRepository,
+        private val exportManager: ExportManager,
         private val phoneNumber: String,
         private val deviceRole: String,
     ) : ViewModelProvider.Factory {
@@ -74,6 +144,7 @@ class SessionHistoryViewModel(
             return SessionHistoryViewModel(
                 sessionRepository,
                 messageRepository,
+                exportManager,
                 phoneNumber,
                 deviceRole,
             ) as T
