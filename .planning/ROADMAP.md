@@ -213,6 +213,14 @@ Plans:
 **Depends on**: Phase 17
 **Requirements**: SESS-01, SESS-02, SESS-03, SESS-04, SESS-05, SESS-06, SESS-07, DETAIL-01, DETAIL-02, DETAIL-03, DETAIL-04, DETAIL-05
 **Status**: Complete (2026-02-06)
+**Plans**: 4 plans
+
+Plans:
+- [x] 18-01-PLAN.md — Data layer: Add Paging 3 dependency, DAO PagingSource queries, repository Pager wrappers, DateTimeFormatters utility
+- [x] 18-02-PLAN.md — Session History UI: SessionHistoryViewModel with paging, SessionHistoryScreen with tabs, session/contact cards
+- [x] 18-03-PLAN.md — Message Detail: MessageDetailBottomSheet with expandable rows, pagination, session metadata
+- [x] 18-04-PLAN.md — Navigation: SessionHistory route, NavGraph integration, DeviceHistoryScreen connection, bottom sheet wiring
+
 **Success Criteria** (what must be TRUE):
   1. Session History screen shows all sessions for selected device with pagination
   2. Session cards display start date, duration, and message count
@@ -234,6 +242,7 @@ Plans:
 **Goal**: Users can export session/message history in multiple formats to external storage
 **Depends on**: Phase 16
 **Requirements**: EXP-01, EXP-02, EXP-03, EXP-04, EXP-05, EXP-06
+**Status**: Complete (2026-02-06)
 **Success Criteria** (what must be TRUE):
   1. User can export session and message data to CSV format with proper column headers
   2. User can export session and message data to JSON format with structured schema
@@ -241,14 +250,16 @@ Plans:
   4. Export uses Storage Access Framework (ACTION_CREATE_DOCUMENT) for file creation
   5. Export works on API 29-35 without permission fragmentation or failures
   6. Export is accessible from both Archive Management and Session History screens
-**Plans**: 5 plans
+**Plans**: 7 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — Export Types & Formatters: ExportFormat enum, data classes, CSV/JSON/TXT formatters with proper escaping
-- [ ] 19-02-PLAN.md — Export Data Layer: DAO queries for bulk export, repository wrappers, ExportManager with data loading
-- [ ] 19-03-PLAN.md — Session History Export: ExportState, ExportFormatBottomSheet, SessionHistoryViewModel export methods, SAF integration
-- [ ] 19-04-PLAN.md — Archive Management Export: Export button and SAF integration for archived devices
-- [ ] 19-05-PLAN.md — Navigation Wiring: ExportManager injection into ViewModels via NavGraph
+- [x] 19-01-PLAN.md — Export Types & Formatters: ExportFormat enum, data classes, CSV/JSON/TXT formatters with proper escaping
+- [x] 19-02-PLAN.md — Export Data Layer: DAO queries for bulk export, repository wrappers, ExportManager with data loading
+- [x] 19-03-PLAN.md — Session History Export: ExportState, ExportFormatBottomSheet, SessionHistoryViewModel export methods, SAF integration
+- [x] 19-04-PLAN.md — Archive Management Export: Export button and SAF integration for archived devices
+- [x] 19-05-PLAN.md — Navigation Wiring: ExportManager injection into ViewModels via NavGraph
+- [x] 19-06-PLAN.md — Single-Session Export: MessageDetailBottomSheet button, SessionCard long-press, single-session export logic
+- [x] 19-07-PLAN.md — Device History Export: DeviceDetailBottomSheet export button, per-device export from Device History screen
 
 #### Phase 20: Bidirectional Visibility Indicators
 **Goal**: Home screen shows directional forwarding status with smart indicators
@@ -322,7 +333,7 @@ Plans:
 | 16. Message Storage Integration | v0.0.64 | 2/2 | Complete | 2026-02-06 |
 | 17. Device History UI | v0.0.64 | 3/3 | Complete | 2026-02-06 |
 | 18. Session History & Message Detail | v0.0.64 | 4/4 | Complete | 2026-02-06 |
-| 19. Export Functionality | v0.0.64 | 0/5 | Not started | - |
+| 19. Export Functionality | v0.0.64 | 7/7 | Complete | 2026-02-06 |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 0/TBD | Not started | - |
 | 21. History Retention Settings | v0.0.64 | 0/TBD | Not started | - |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/TBD | Not started | - |

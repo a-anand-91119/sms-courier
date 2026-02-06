@@ -63,12 +63,12 @@ Requirements for v0.0.64 milestone.
 
 ### Export Functionality
 
-- [ ] **EXP-01**: Export to CSV format (session + message data)
-- [ ] **EXP-02**: Export to JSON format (structured data)
-- [ ] **EXP-03**: Export to plain text format (human-readable)
-- [ ] **EXP-04**: Storage Access Framework integration (ACTION_CREATE_DOCUMENT)
-- [ ] **EXP-05**: Export works on API 29-35 without permission fragmentation
-- [ ] **EXP-06**: Export accessible from Archive Management and Session History screens
+- [x] **EXP-01**: Export to CSV format (session + message data)
+- [x] **EXP-02**: Export to JSON format (structured data)
+- [x] **EXP-03**: Export to plain text format (human-readable)
+- [x] **EXP-04**: Storage Access Framework integration (ACTION_CREATE_DOCUMENT)
+- [x] **EXP-05**: Export works on API 29-35 without permission fragmentation
+- [x] **EXP-06**: Export accessible from Archive Management and Session History screens
 
 ### Bidirectional Visibility
 
@@ -168,15 +168,15 @@ Which phases cover which requirements.
 | DETAIL-05 | Phase 18 | Complete |
 | ARCH-01 | Phase 17 | Pending |
 | ARCH-02 | Phase 17 | Pending |
-| ARCH-03 | Phase 19 | Pending |
+| ARCH-03 | Phase 19 | Complete |
 | ARCH-04 | Phase 17 | Pending |
 | ARCH-05 | Phase 17 | Pending |
-| EXP-01 | Phase 19 | Pending |
-| EXP-02 | Phase 19 | Pending |
-| EXP-03 | Phase 19 | Pending |
-| EXP-04 | Phase 19 | Pending |
-| EXP-05 | Phase 19 | Pending |
-| EXP-06 | Phase 19 | Pending |
+| EXP-01 | Phase 19 | Complete |
+| EXP-02 | Phase 19 | Complete |
+| EXP-03 | Phase 19 | Complete |
+| EXP-04 | Phase 19 | Complete |
+| EXP-05 | Phase 19 | Complete |
+| EXP-06 | Phase 19 | Complete |
 | BIDIR-01 | Phase 20 | Pending |
 | BIDIR-02 | Phase 20 | Pending |
 | BIDIR-03 | Phase 20 | Pending |
@@ -203,4 +203,4 @@ Coverage validation: 100% (56/56 requirements mapped)
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-06 - Phase 18 complete (SESS-01 through SESS-07, DETAIL-01 through DETAIL-05)*
+*Last updated: 2026-02-06 - Phase 19 complete (EXP-01 through EXP-06, ARCH-03)*
