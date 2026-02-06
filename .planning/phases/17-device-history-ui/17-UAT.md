@@ -28,14 +28,13 @@ note: User suggested light green background for "Active" badge for better readab
 
 ### 4. Removed Devices Section (Collapsed)
 expected: If there are archived/removed devices, a "Removed Devices" section header appears. It is collapsed by default - tap to expand.
-result: issue
-reported: "i don't see any removed devices section. i unpaiured my curernt active device, and everything is emtpy. parid devices page, device history. all are empty"
-severity: major
+result: pending
+note: Gap fixed in 17-04-PLAN.md - awaiting user validation
 
 ### 5. Removed Device Cards (Muted Styling)
 expected: When Removed Devices section is expanded, archived device cards appear with muted/grayed styling (lower opacity) compared to active devices.
-result: skipped
-reason: Blocked by Test 4 - no removed devices visible
+result: pending
+note: Blocked by Test 4 - awaiting validation after gap fix
 
 ### 6. Empty State Display
 expected: If no devices have ever been paired, Device History screen shows an icon and "No devices paired yet" message with helpful subtitle.
@@ -52,26 +51,26 @@ result: pass
 
 ### 9. Removed Device Dialog
 expected: Tapping a removed device card shows a dialog with device name, message "This device was removed", and three buttons: "View History", "Restore", "Delete" (Delete in red).
-result: skipped
-reason: Blocked by Test 4 - no removed devices visible
+result: pending
+note: Blocked by Test 4 - awaiting validation after gap fix
 
 ### 10. Navigate to Archive Management
 expected: From the removed device dialog, tapping "View History" navigates to Archive Management screen showing device info, role badge, removal reason, statistics, and red "Delete All Data" button at bottom.
-result: skipped
-reason: Blocked by Test 4 - no removed devices visible
+result: pending
+note: Blocked by Test 4 - awaiting validation after gap fix
 
 ### 11. Delete Confirmation Dialog
 expected: On Archive Management screen, tapping "Delete All Data" shows a confirmation dialog with warning icon, "Delete All Data?" title, and warning message. Confirming deletes the device and navigates back.
-result: skipped
-reason: Blocked by Test 4 - no removed devices visible
+result: pending
+note: Blocked by Test 4 - awaiting validation after gap fix
 
 ## Summary
 
 total: 11
 passed: 6
-issues: 1
-pending: 0
-skipped: 4
+issues: 0
+pending: 5
+skipped: 0
 
 ## Gaps
 
