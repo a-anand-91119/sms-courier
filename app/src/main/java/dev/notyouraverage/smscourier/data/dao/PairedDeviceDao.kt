@@ -104,4 +104,22 @@ interface PairedDeviceDao {
         """,
     )
     suspend fun updateResendAttempt(phoneNumber: String, role: DeviceRole, count: Int, timestamp: Long)
+
+    @Query(
+        """
+        UPDATE paired_devices
+        SET total_messages_forwarded = total_messages_forwarded + 1
+        WHERE phoneNumber = :phoneNumber AND device_role = :role
+        """,
+    )
+    suspend fun incrementTotalMessagesForwarded(phoneNumber: String, role: DeviceRole)
+
+    @Query(
+        """
+        UPDATE paired_devices
+        SET total_sessions = total_sessions + 1
+        WHERE phoneNumber = :phoneNumber AND device_role = :role
+        """,
+    )
+    suspend fun incrementTotalSessions(phoneNumber: String, role: DeviceRole)
 }

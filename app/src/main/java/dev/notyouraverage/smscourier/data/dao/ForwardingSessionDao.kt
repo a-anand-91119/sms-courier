@@ -58,6 +58,9 @@ interface ForwardingSessionDao {
     @Query("UPDATE forwarding_sessions SET messages_forwarded = messages_forwarded + 1 WHERE id = :sessionId")
     suspend fun incrementMessagesForwarded(sessionId: Long)
 
+    @Query("UPDATE forwarding_sessions SET message_count = message_count + 1 WHERE id = :sessionId")
+    suspend fun incrementMessageCount(sessionId: Long)
+
     @Query(
         """
         UPDATE forwarding_sessions
