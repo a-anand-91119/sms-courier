@@ -5,9 +5,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import dev.notyouraverage.smscourier.composables.screens.AddDeviceScreen
+import dev.notyouraverage.smscourier.composables.screens.ArchiveManagementScreen
+import dev.notyouraverage.smscourier.composables.screens.DeviceHistoryScreen
+import java.net.URLDecoder
 import dev.notyouraverage.smscourier.composables.screens.ForwardingControlScreen
 import dev.notyouraverage.smscourier.composables.screens.HomeScreen
 import dev.notyouraverage.smscourier.composables.screens.PairedDevicesScreen
@@ -19,6 +24,8 @@ import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
 import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.services.SmsSender
 import dev.notyouraverage.smscourier.viewmodels.AddDeviceViewModel
+import dev.notyouraverage.smscourier.viewmodels.ArchiveManagementViewModel
+import dev.notyouraverage.smscourier.viewmodels.DeviceHistoryViewModel
 import dev.notyouraverage.smscourier.viewmodels.ForwardingControlViewModel
 import dev.notyouraverage.smscourier.viewmodels.HomeViewModel
 import dev.notyouraverage.smscourier.viewmodels.PairedDevicesViewModel
@@ -131,6 +138,53 @@ fun SmsCourierNavGraph(
                 factory = SettingsViewModel.Factory(settingsRepository),
             )
             SettingsScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(Screen.DeviceHistory.route) {
+            val viewModel: DeviceHistoryViewModel = viewModel(
+                factory = DeviceHistoryViewModel.Factory(
+                    deviceRepository,
+                    sessionRepository,
+                ),
+            )
+            DeviceHistoryScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSessionHistory = { phoneNumber, role ->
+                    // Phase 18 will implement Session History screen
+                    // For now, navigation stub
+                },
+                onNavigateToArchiveManagement = { phoneNumber, role ->
+                    navController.navigate(Screen.ArchiveManagement.createRoute(phoneNumber, role))
+                },
+            )
+        }
+
+        composable(
+            route = Screen.ArchiveManagement.route,
+            arguments = listOf(
+                navArgument("phoneNumber") { type = NavType.StringType },
+                navArgument("role") { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            // URL decode phone number (was encoded in Screen.ArchiveManagement.createRoute)
+            val phoneNumber = URLDecoder.decode(
+                backStackEntry.arguments?.getString("phoneNumber") ?: return@composable,
+                "UTF-8",
+            )
+            val role = backStackEntry.arguments?.getString("role") ?: return@composable
+
+            val viewModel: ArchiveManagementViewModel = viewModel(
+                factory = ArchiveManagementViewModel.Factory(
+                    phoneNumber = phoneNumber,
+                    role = role,
+                    deviceRepository = deviceRepository,
+                ),
+            )
+            ArchiveManagementScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
             )
