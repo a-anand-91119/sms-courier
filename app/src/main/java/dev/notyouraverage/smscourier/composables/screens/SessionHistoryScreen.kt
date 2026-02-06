@@ -37,28 +37,40 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import dev.notyouraverage.smscourier.composables.components.ContactCard
+import dev.notyouraverage.smscourier.composables.components.MessageDetailBottomSheet
 import dev.notyouraverage.smscourier.composables.components.SessionCard
 import dev.notyouraverage.smscourier.composables.components.SkeletonSessionCard
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
+import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 import dev.notyouraverage.smscourier.viewmodels.SessionHistoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionHistoryScreen(
     viewModel: SessionHistoryViewModel,
+    messageRepository: ForwardedMessageRepository,
     onNavigateBack: () -> Unit,
-    onSessionClick: (ForwardingSession) -> Unit,
 ) {
     val selectedTab by viewModel.selectedTab.collectAsState()
+    val selectedSession by viewModel.selectedSession.collectAsState()
     val sessions = viewModel.sessions.collectAsLazyPagingItems()
     val contacts = viewModel.contacts.collectAsLazyPagingItems()
     val contactMessageCounts by viewModel.contactMessageCounts.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    // Messages for selected session (collected only when session is selected)
+    val messagesFlow = remember(selectedSession) {
+        selectedSession?.let { session ->
+            messageRepository.getMessagesForSessionPaged(session.id)
+        }
+    }
+    val messages = messagesFlow?.collectAsLazyPagingItems()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -108,7 +120,7 @@ fun SessionHistoryScreen(
             SessionHistoryViewModel.Tab.SESSIONS -> {
                 SessionsList(
                     sessions = sessions,
-                    onSessionClick = onSessionClick,
+                    onSessionClick = { viewModel.selectSession(it) },
                     modifier = Modifier.padding(paddingValues),
                 )
             }
@@ -121,6 +133,17 @@ fun SessionHistoryScreen(
                     modifier = Modifier.padding(paddingValues),
                 )
             }
+        }
+    }
+
+    // Message detail bottom sheet - shown when a session is selected
+    selectedSession?.let { session ->
+        if (messages != null) {
+            MessageDetailBottomSheet(
+                session = session,
+                messages = messages,
+                onDismiss = { viewModel.selectSession(null) },
+            )
         }
     }
 }
