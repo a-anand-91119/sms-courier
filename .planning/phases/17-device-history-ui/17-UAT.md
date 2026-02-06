@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: fixed
 phase: 17-device-history-ui
-source: [17-01-SUMMARY.md, 17-02-SUMMARY.md, 17-03-SUMMARY.md]
+source: [17-01-SUMMARY.md, 17-02-SUMMARY.md, 17-03-SUMMARY.md, 17-04-SUMMARY.md]
 started: 2026-02-06T07:25:00Z
-updated: 2026-02-06T07:35:00Z
+updated: 2026-02-06T08:00:00Z
 ---
 
 ## Current Test
@@ -76,24 +76,18 @@ skipped: 4
 ## Gaps
 
 - truth: "Unpaired devices should appear in Removed Devices section with archived status"
-  status: failed
+  status: fixed
+  fixed_by: 17-04-PLAN.md
   reason: "User reported: i don't see any removed devices section. i unpaired my current active device, and everything is empty. paired devices page, device history. all are empty"
   severity: major
   test: 4
   root_cause: "SmsCommandHandler.handleUnpair() calls deviceRepository.deleteByPhoneNumberAndRole() which performs hard delete. The soft delete columns (isArchived, archivedAt, archivalInitiatedBy) exist in schema but no archive methods were implemented. UNPAIR deletes devices permanently instead of archiving them."
-  artifacts:
-    - path: "app/src/main/java/dev/notyouraverage/smscourier/handlers/SmsCommandHandler.kt"
-      issue: "Lines 175, 186: Uses deleteByPhoneNumberAndRole() instead of archiving"
-    - path: "app/src/main/java/dev/notyouraverage/smscourier/repository/PairedDeviceRepository.kt"
-      issue: "Missing archiveDevice() method"
-    - path: "app/src/main/java/dev/notyouraverage/smscourier/data/dao/PairedDeviceDao.kt"
-      issue: "Missing UPDATE query to set is_archived=1"
-  missing:
-    - "Add DAO method: archiveDevice(phoneNumber, role, timestamp, initiatedBy) - UPDATE query"
-    - "Add Repository method: archiveDevice(phoneNumber, role, initiatedBy) wrapping DAO"
-    - "Update SmsCommandHandler.handleUnpair() to call archiveDevice() instead of delete"
-    - "Distinguish LOCAL vs REMOTE initiated archive (REMOTE when receiving UNPAIR, LOCAL when user initiates)"
-  debug_session: "inline diagnosis"
+  fix_applied:
+    - "Added DAO method: archiveDevice(phoneNumber, role, timestamp, initiatedBy)"
+    - "Added Repository method: archiveDevice(phoneNumber, role, initiatedBy)"
+    - "Updated SmsCommandHandler.handleUnpair() to call archiveDevice() with REMOTE initiator"
+    - "Updated PairedDevicesViewModel.deleteDevice() to call archiveDevice() with LOCAL initiator"
+    - "Updated getDeviceByPhoneNumber/getDeviceByPhoneNumberAndRole to exclude archived devices"
 
 ## UX Suggestions (non-blocking)
 

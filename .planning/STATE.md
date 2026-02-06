@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 17 of 22 (Device History UI)
-Plan: 03 of 03 complete
-Status: Phase complete
-Last activity: 2026-02-06 — Completed 17-03-PLAN.md (Navigation Integration)
+Plan: 04 of 04 complete (includes gap closure)
+Status: Phase complete (gap fixed)
+Last activity: 2026-02-06 — Completed 17-04-PLAN.md (Gap Closure: Archive UNPAIR)
 
 Progress: [████████░░] 77% (17/22 phases complete)
 
@@ -30,10 +30,10 @@ Progress: [████████░░] 77% (17/22 phases complete)
 | Previous milestones | 20 | - | - |
 | 15 - Database Foundation | 2 | 7m 14s | 3m 37s |
 | 16 - Message Storage | 2 | 11m | 5m 30s |
-| 17 - Device History UI | 3 | 12m 20s | 4m 07s |
+| 17 - Device History UI | 4 | 20m 20s | 5m 05s |
 
 **Recent Trend:**
-- Last 5 plans: message storage integration, device history data layer, device history screen UI, navigation integration
+- Last 5 plans: device history data layer, device history screen UI, navigation integration, archive UNPAIR gap closure
 - Trend: Stable
 
 *Updated after each plan completion*
