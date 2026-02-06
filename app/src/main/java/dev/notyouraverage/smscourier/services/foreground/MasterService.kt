@@ -30,6 +30,7 @@ import dev.notyouraverage.smscourier.models.SmsMessageData
 import dev.notyouraverage.smscourier.notifications.PairingNotificationManager
 import dev.notyouraverage.smscourier.receivers.ServiceNotificationReceiver
 import dev.notyouraverage.smscourier.receivers.SmsReceiver
+import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
 import dev.notyouraverage.smscourier.repository.SettingsRepository
@@ -59,6 +60,7 @@ class MasterService : Service() {
     private lateinit var database: SmsCourierDatabase
     private lateinit var deviceRepository: PairedDeviceRepository
     private lateinit var sessionRepository: ForwardingSessionRepository
+    private lateinit var messageRepository: ForwardedMessageRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var smsSender: SmsSender
     private lateinit var notificationManager: PairingNotificationManager
@@ -132,6 +134,12 @@ class MasterService : Service() {
         database = SmsCourierDatabase.getDatabase(this)
         deviceRepository = PairedDeviceRepository(database.pairedDeviceDao())
         sessionRepository = ForwardingSessionRepository(database.forwardingSessionDao())
+        messageRepository = ForwardedMessageRepository(
+            database = database,
+            messageDao = database.forwardedMessageDao(),
+            sessionDao = database.forwardingSessionDao(),
+            deviceDao = database.pairedDeviceDao(),
+        )
         settingsRepository = SettingsRepository(this)
         smsSender = SmsSender(this)
         notificationManager = PairingNotificationManager(this)
@@ -139,6 +147,7 @@ class MasterService : Service() {
         commandHandler = SmsCommandHandler(
             deviceRepository = deviceRepository,
             sessionRepository = sessionRepository,
+            messageRepository = messageRepository,
             smsSender = smsSender,
             notificationManager = notificationManager,
             securityManager = securityManager,
@@ -285,6 +294,16 @@ class MasterService : Service() {
                     state.phoneNumber,
                     state.durationMinutes,
                 )
+
+                // Increment device total sessions (we are TARGET, they are SOURCE)
+                serviceScope.launch {
+                    try {
+                        deviceRepository.incrementTotalSessions(state.phoneNumber, DeviceRole.TARGET)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to increment totalSessions for ${state.phoneNumber}: ${e.message}")
+                    }
+                }
+
                 // Set up timeout handler
                 val timeoutRunnable = Runnable {
                     serviceScope.launch {

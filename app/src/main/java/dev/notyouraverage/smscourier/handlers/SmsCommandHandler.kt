@@ -6,6 +6,7 @@ import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.notifications.PairingNotificationManager
+import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
 import dev.notyouraverage.smscourier.security.MessageEncryption
@@ -15,6 +16,7 @@ import dev.notyouraverage.smscourier.services.SmsSender
 class SmsCommandHandler(
     private val deviceRepository: PairedDeviceRepository,
     private val sessionRepository: ForwardingSessionRepository,
+    private val messageRepository: ForwardedMessageRepository,
     private val smsSender: SmsSender,
     private val notificationManager: PairingNotificationManager,
     private val securityManager: SecurityManager,
@@ -361,8 +363,29 @@ class SmsCommandHandler(
         }
 
         for (session in activeSessions) {
-            smsSender.sendForwardedSms(session.devicePhoneNumber, originalSender, messageBody)
-            sessionRepository.recordForwardedMessage(session.id)
+            // TARGET: Store message before forwarding
+            val storeResult = messageRepository.storeMessageWithCounters(
+                sessionId = session.id,
+                senderNumber = originalSender,
+                messageContent = messageBody,
+                destinationNumber = session.devicePhoneNumber,
+                devicePhone = session.devicePhoneNumber,
+                deviceRole = DeviceRole.TARGET, // We are TARGET forwarding to SOURCE
+            )
+
+            if (storeResult.isFailure) {
+                Log.w(TAG, "Failed to store message for session ${session.id}, continuing with forward")
+                // Per CONTEXT.md: storage failure should NOT block forwarding
+            }
+
+            // Forward to SOURCE
+            smsSender.sendForwardedSms(
+                session.devicePhoneNumber,
+                originalSender,
+                messageBody,
+                session.encryptionKey,
+            )
+            sessionRepository.recordForwardedMessage(session.id) // Keep legacy counter for backward compat
             Log.i(TAG, "Forwarded SMS to ${session.devicePhoneNumber}")
         }
     }

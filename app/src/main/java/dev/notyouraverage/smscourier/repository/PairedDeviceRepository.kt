@@ -133,6 +133,14 @@ class PairedDeviceRepository(
         )
     }
 
+    suspend fun incrementTotalSessions(phoneNumber: String, role: DeviceRole) = withContext(ioDispatcher) {
+        pairedDeviceDao.incrementTotalSessions(normalizePhoneNumber(phoneNumber), role)
+    }
+
+    suspend fun incrementTotalMessagesForwarded(phoneNumber: String, role: DeviceRole) = withContext(ioDispatcher) {
+        pairedDeviceDao.incrementTotalMessagesForwarded(normalizePhoneNumber(phoneNumber), role)
+    }
+
     private fun normalizePhoneNumber(phoneNumber: String): String {
         // Basic normalization: remove spaces, dashes, and parentheses
         // In production, use libphonenumber for proper E.164 normalization
