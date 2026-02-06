@@ -122,4 +122,23 @@ interface PairedDeviceDao {
         """,
     )
     suspend fun incrementTotalSessions(phoneNumber: String, role: DeviceRole)
+
+    @Query(
+        """
+        SELECT * FROM paired_devices
+        WHERE is_archived = 0
+        AND pairing_status = 'APPROVED'
+        ORDER BY last_activity_at DESC
+        """,
+    )
+    fun getActiveDevices(): Flow<List<PairedDevice>>
+
+    @Query(
+        """
+        SELECT * FROM paired_devices
+        WHERE is_archived = 1
+        ORDER BY archived_at DESC
+        """,
+    )
+    fun getArchivedDevices(): Flow<List<PairedDevice>>
 }
