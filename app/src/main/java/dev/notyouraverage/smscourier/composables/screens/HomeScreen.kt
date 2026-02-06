@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -70,6 +71,7 @@ fun HomeScreen(
     onNavigateToPairedDevices: () -> Unit,
     onNavigateToPairingRequests: () -> Unit,
     onNavigateToAddDevice: () -> Unit,
+    onNavigateToDeviceHistory: () -> Unit,
     onNavigateToForwardingControl: () -> Unit,
     onNavigateToSettings: () -> Unit,
 ) {
@@ -208,6 +210,13 @@ fun HomeScreen(
                 title = "Paired Devices",
                 subtitle = "Manage your connected devices",
                 onClick = onNavigateToPairedDevices,
+            )
+
+            QuickActionCard(
+                icon = Icons.Default.Refresh,
+                title = "Device History",
+                subtitle = "View all devices and their activity",
+                onClick = onNavigateToDeviceHistory,
             )
 
             QuickActionCard(

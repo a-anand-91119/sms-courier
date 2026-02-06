@@ -58,6 +58,9 @@ fun SmsCourierNavGraph(
                 onNavigateToAddDevice = {
                     navController.navigate(Screen.AddDevice.route)
                 },
+                onNavigateToDeviceHistory = {
+                    navController.navigate(Screen.DeviceHistory.route)
+                },
                 onNavigateToForwardingControl = {
                     navController.navigate(Screen.ForwardingControl.route)
                 },
