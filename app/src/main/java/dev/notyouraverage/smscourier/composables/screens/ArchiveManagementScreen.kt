@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -30,22 +31,31 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.notyouraverage.smscourier.composables.components.ExportFormatBottomSheet
 import dev.notyouraverage.smscourier.composables.components.RoleBadge
+import dev.notyouraverage.smscourier.export.ExportState
 import dev.notyouraverage.smscourier.viewmodels.ArchiveManagementViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,8 +66,34 @@ fun ArchiveManagementScreen(
 ) {
     val device by viewModel.device.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val exportState by viewModel.exportState.collectAsState()
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showExportSheet by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    // SAF launcher for export
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*"),
+    ) { uri ->
+        uri?.let { viewModel.executeExport(it, context.contentResolver) }
+    }
+
+    // Handle export state changes
+    LaunchedEffect(exportState) {
+        when (val state = exportState) {
+            is ExportState.Success -> {
+                snackbarHostState.showSnackbar("Exported to ${state.fileName}")
+                viewModel.clearExportState()
+            }
+            is ExportState.Error -> {
+                snackbarHostState.showSnackbar("Export failed: ${state.message}")
+                viewModel.clearExportState()
+            }
+            else -> {}
+        }
+    }
 
     // Delete confirmation dialog (ARCH-04)
     if (showDeleteConfirmation) {
@@ -115,6 +151,7 @@ fun ArchiveManagementScreen(
                 ),
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         when {
             isLoading -> {
@@ -249,8 +286,32 @@ fun ArchiveManagementScreen(
                         }
                     }
 
-                    // Export button placeholder (ARCH-03 is Phase 19)
-                    // Will be added in Phase 19
+                    // Export button (ARCH-03 / EXP-06)
+                    // Per CONTEXT.md: "Prominent export button for archived devices"
+                    OutlinedButton(
+                        onClick = { showExportSheet = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = exportState !is ExportState.Loading,
+                    ) {
+                        if (exportState is ExportState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Exporting...")
+                        } else {
+                            Icon(
+                                Icons.Default.Share,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Export History")
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Spacer(modifier = Modifier.weight(1f))
 
@@ -275,5 +336,17 @@ fun ArchiveManagementScreen(
                 }
             }
         }
+    }
+
+    // Export format picker
+    if (showExportSheet) {
+        ExportFormatBottomSheet(
+            onDismiss = { showExportSheet = false },
+            onExport = { format, includeMetadata ->
+                showExportSheet = false
+                val (filename, _) = viewModel.prepareExport(format, includeMetadata)
+                exportLauncher.launch(filename)
+            },
+        )
     }
 }

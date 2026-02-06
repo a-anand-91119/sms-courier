@@ -1,5 +1,7 @@
 package dev.notyouraverage.smscourier.composables.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,12 +18,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -30,23 +36,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.remember
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
 import dev.notyouraverage.smscourier.composables.components.ContactCard
+import dev.notyouraverage.smscourier.composables.components.ExportFormatBottomSheet
 import dev.notyouraverage.smscourier.composables.components.MessageDetailBottomSheet
 import dev.notyouraverage.smscourier.composables.components.SessionCard
 import dev.notyouraverage.smscourier.composables.components.SkeletonSessionCard
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
+import dev.notyouraverage.smscourier.export.ExportState
 import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 import dev.notyouraverage.smscourier.viewmodels.SessionHistoryViewModel
 
@@ -62,7 +73,35 @@ fun SessionHistoryScreen(
     val sessions = viewModel.sessions.collectAsLazyPagingItems()
     val contacts = viewModel.contacts.collectAsLazyPagingItems()
     val contactMessageCounts by viewModel.contactMessageCounts.collectAsState()
+    val exportState by viewModel.exportState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    // Export UI state
+    var showExportSheet by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    // SAF launcher for export
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*"),
+    ) { uri ->
+        uri?.let { viewModel.executeExport(it, context.contentResolver) }
+    }
+
+    // Handle export state changes
+    LaunchedEffect(exportState) {
+        when (val state = exportState) {
+            is ExportState.Success -> {
+                snackbarHostState.showSnackbar("Exported to ${state.fileName}")
+                viewModel.clearExportState()
+            }
+            is ExportState.Error -> {
+                snackbarHostState.showSnackbar("Export failed: ${state.message}")
+                viewModel.clearExportState()
+            }
+            else -> {}
+        }
+    }
 
     // Messages for selected session (collected only when session is selected)
     val messagesFlow = remember(selectedSession) {
@@ -74,6 +113,7 @@ fun SessionHistoryScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Column {
                 LargeTopAppBar(
@@ -89,6 +129,25 @@ fun SessionHistoryScreen(
                                 Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back",
                             )
+                        }
+                    },
+                    actions = {
+                        // Export button - shows format picker
+                        IconButton(
+                            onClick = { showExportSheet = true },
+                            enabled = exportState !is ExportState.Loading,
+                        ) {
+                            if (exportState is ExportState.Loading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.Share,
+                                    contentDescription = "Export",
+                                )
+                            }
                         }
                     },
                     scrollBehavior = scrollBehavior,
@@ -145,6 +204,18 @@ fun SessionHistoryScreen(
                 onDismiss = { viewModel.selectSession(null) },
             )
         }
+    }
+
+    // Export format picker bottom sheet
+    if (showExportSheet) {
+        ExportFormatBottomSheet(
+            onDismiss = { showExportSheet = false },
+            onExport = { format, includeMetadata ->
+                showExportSheet = false
+                val (filename, _) = viewModel.prepareExport(format, includeMetadata)
+                exportLauncher.launch(filename)
+            },
+        )
     }
 }
 
