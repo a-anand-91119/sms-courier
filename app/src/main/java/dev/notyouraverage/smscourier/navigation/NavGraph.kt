@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import dev.notyouraverage.smscourier.composables.screens.AddDeviceScreen
 import dev.notyouraverage.smscourier.composables.screens.ArchiveManagementScreen
 import dev.notyouraverage.smscourier.composables.screens.DeviceHistoryScreen
+import dev.notyouraverage.smscourier.composables.screens.SessionHistoryScreen
 import java.net.URLDecoder
 import dev.notyouraverage.smscourier.composables.screens.ForwardingControlScreen
 import dev.notyouraverage.smscourier.composables.screens.HomeScreen
@@ -30,7 +31,9 @@ import dev.notyouraverage.smscourier.viewmodels.ForwardingControlViewModel
 import dev.notyouraverage.smscourier.viewmodels.HomeViewModel
 import dev.notyouraverage.smscourier.viewmodels.PairedDevicesViewModel
 import dev.notyouraverage.smscourier.viewmodels.PairingRequestsViewModel
+import dev.notyouraverage.smscourier.viewmodels.SessionHistoryViewModel
 import dev.notyouraverage.smscourier.viewmodels.SettingsViewModel
+import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 
 @Composable
 fun SmsCourierNavGraph(
@@ -45,6 +48,14 @@ fun SmsCourierNavGraph(
     val sessionRepository = remember { ForwardingSessionRepository(database.forwardingSessionDao()) }
     val smsSender = remember { SmsSender(context) }
     val settingsRepository = remember { SettingsRepository(context) }
+    val messageRepository = remember {
+        ForwardedMessageRepository(
+            database,
+            database.forwardedMessageDao(),
+            database.forwardingSessionDao(),
+            database.pairedDeviceDao(),
+        )
+    }
 
     NavHost(
         navController = navController,
@@ -154,8 +165,7 @@ fun SmsCourierNavGraph(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToSessionHistory = { phoneNumber, role ->
-                    // Phase 18 will implement Session History screen
-                    // For now, navigation stub
+                    navController.navigate(Screen.SessionHistory.createRoute(phoneNumber, role))
                 },
                 onNavigateToArchiveManagement = { phoneNumber, role ->
                     navController.navigate(Screen.ArchiveManagement.createRoute(phoneNumber, role))
@@ -186,6 +196,35 @@ fun SmsCourierNavGraph(
             )
             ArchiveManagementScreen(
                 viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            route = Screen.SessionHistory.route,
+            arguments = listOf(
+                navArgument("phoneNumber") { type = NavType.StringType },
+                navArgument("role") { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            // URL decode phone number (was encoded in Screen.SessionHistory.createRoute)
+            val phoneNumber = URLDecoder.decode(
+                backStackEntry.arguments?.getString("phoneNumber") ?: return@composable,
+                "UTF-8",
+            )
+            val role = backStackEntry.arguments?.getString("role") ?: return@composable
+
+            val viewModel: SessionHistoryViewModel = viewModel(
+                factory = SessionHistoryViewModel.Factory(
+                    sessionRepository = sessionRepository,
+                    messageRepository = messageRepository,
+                    phoneNumber = phoneNumber,
+                    deviceRole = role,
+                ),
+            )
+            SessionHistoryScreen(
+                viewModel = viewModel,
+                messageRepository = messageRepository,
                 onNavigateBack = { navController.popBackStack() },
             )
         }
