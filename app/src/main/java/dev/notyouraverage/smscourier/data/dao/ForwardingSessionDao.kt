@@ -76,4 +76,11 @@ interface ForwardingSessionDao {
 
     @Query("SELECT COUNT(*) FROM forwarding_sessions WHERE device_phone_number = :phoneNumber")
     suspend fun getSessionCountForDevice(phoneNumber: String): Int
+
+    /**
+     * Get all sessions for a device as a list (for export).
+     * Returns complete session list without pagination.
+     */
+    @Query("SELECT * FROM forwarding_sessions WHERE device_phone_number = :phoneNumber ORDER BY started_at DESC")
+    suspend fun getSessionsForDeviceList(phoneNumber: String): List<ForwardingSession>
 }
