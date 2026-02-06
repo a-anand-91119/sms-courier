@@ -1,5 +1,7 @@
 package dev.notyouraverage.smscourier.composables.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +23,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,12 +35,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,13 +54,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.notyouraverage.smscourier.composables.components.CollapsibleSectionHeader
 import dev.notyouraverage.smscourier.composables.components.DeviceHistoryCard
+import dev.notyouraverage.smscourier.composables.components.ExportFormatBottomSheet
 import dev.notyouraverage.smscourier.composables.components.SkeletonDeviceCard
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
+import dev.notyouraverage.smscourier.export.ExportState
 import dev.notyouraverage.smscourier.viewmodels.DeviceHistoryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,10 +77,37 @@ fun DeviceHistoryScreen(
     val activeDevices by viewModel.activeDevices.collectAsState()
     val removedDevices by viewModel.removedDevices.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val exportState by viewModel.exportState.collectAsState()
     var showRemovedSection by remember { mutableStateOf(false) }
     var selectedActiveDevice by remember { mutableStateOf<PairedDevice?>(null) }
     var selectedRemovedDevice by remember { mutableStateOf<PairedDevice?>(null) }
+    var showExportSheet by remember { mutableStateOf(false) }
+    var deviceToExport by remember { mutableStateOf<PairedDevice?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val context = LocalContext.current
+
+    // SAF launcher for export
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*"),
+    ) { uri ->
+        uri?.let { viewModel.executeExport(it, context.contentResolver) }
+    }
+
+    // Handle export state changes
+    LaunchedEffect(exportState) {
+        when (val state = exportState) {
+            is ExportState.Success -> {
+                snackbarHostState.showSnackbar("Exported to ${state.fileName}")
+                viewModel.clearExportState()
+            }
+            is ExportState.Error -> {
+                snackbarHostState.showSnackbar("Export failed: ${state.message}")
+                viewModel.clearExportState()
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -193,10 +231,16 @@ fun DeviceHistoryScreen(
     selectedActiveDevice?.let { device ->
         DeviceDetailBottomSheet(
             device = device,
+            isExporting = exportState is ExportState.Loading,
             onDismiss = { selectedActiveDevice = null },
             onViewSessions = {
                 selectedActiveDevice = null
                 onNavigateToSessionHistory(device.phoneNumber, device.role.name)
+            },
+            onExport = {
+                deviceToExport = device
+                selectedActiveDevice = null
+                showExportSheet = true
             },
             onUnpair = {
                 // TODO: Phase 18 will implement unpair
@@ -224,6 +268,24 @@ fun DeviceHistoryScreen(
             },
         )
     }
+
+    // Export format picker
+    if (showExportSheet) {
+        ExportFormatBottomSheet(
+            onDismiss = {
+                showExportSheet = false
+                deviceToExport = null
+            },
+            onExport = { format, includeMetadata ->
+                showExportSheet = false
+                deviceToExport?.let { device ->
+                    val (filename, _) = viewModel.prepareExport(device, format, includeMetadata)
+                    exportLauncher.launch(filename)
+                }
+                deviceToExport = null
+            },
+        )
+    }
 }
 
 /**
@@ -234,8 +296,10 @@ fun DeviceHistoryScreen(
 @Composable
 private fun DeviceDetailBottomSheet(
     device: PairedDevice,
+    isExporting: Boolean,
     onDismiss: () -> Unit,
     onViewSessions: () -> Unit,
+    onExport: () -> Unit,
     onUnpair: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -291,6 +355,31 @@ private fun DeviceDetailBottomSheet(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Action buttons
+            OutlinedButton(
+                onClick = onExport,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isExporting,
+            ) {
+                if (isExporting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Exporting...")
+                } else {
+                    Icon(
+                        Icons.Default.Share,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Export History")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             FilledTonalButton(
                 onClick = onViewSessions,
                 modifier = Modifier.fillMaxWidth(),
