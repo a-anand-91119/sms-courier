@@ -146,7 +146,7 @@ Plans:
 - [x] **Phase 15: Database Foundation & Migration** - Add ForwardedMessage table, soft delete columns, and migration testing
 - [x] **Phase 16: Message Storage Integration** - Populate ForwardedMessage during forwarding sessions
 - [x] **Phase 17: Device History UI** - Active/removed device list with statistics
-- [ ] **Phase 18: Session History & Message Detail** - Session list with message-level bottom sheets
+- [x] **Phase 18: Session History & Message Detail** - Session list with message-level bottom sheets
 - [ ] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
 - [ ] **Phase 20: Bidirectional Visibility Indicators** - Home screen directional status (↑↓⇅)
 - [ ] **Phase 21: History Retention Settings** - Configurable retention with manual cleanup
@@ -212,6 +212,7 @@ Plans:
 **Goal**: Users can view session list and drill down to message-level details
 **Depends on**: Phase 17
 **Requirements**: SESS-01, SESS-02, SESS-03, SESS-04, SESS-05, SESS-06, SESS-07, DETAIL-01, DETAIL-02, DETAIL-03, DETAIL-04, DETAIL-05
+**Status**: Complete (2026-02-06)
 **Success Criteria** (what must be TRUE):
   1. Session History screen shows all sessions for selected device with pagination
   2. Session cards display start date, duration, and message count
@@ -224,10 +225,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 18-01-PLAN.md — Data layer: Add Paging 3 dependency, DAO PagingSource queries, repository Pager wrappers, DateTimeFormatters utility
-- [ ] 18-02-PLAN.md — Session History UI: SessionHistoryViewModel with paging, SessionHistoryScreen with tabs, session/contact cards
-- [ ] 18-03-PLAN.md — Message Detail: MessageDetailBottomSheet with expandable rows, pagination, session metadata
-- [ ] 18-04-PLAN.md — Navigation: SessionHistory route, NavGraph integration, DeviceHistoryScreen connection, bottom sheet wiring
+- [x] 18-01-PLAN.md — Data layer: Add Paging 3 dependency, DAO PagingSource queries, repository Pager wrappers, DateTimeFormatters utility
+- [x] 18-02-PLAN.md — Session History UI: SessionHistoryViewModel with paging, SessionHistoryScreen with tabs, session/contact cards
+- [x] 18-03-PLAN.md — Message Detail: MessageDetailBottomSheet with expandable rows, pagination, session metadata
+- [x] 18-04-PLAN.md — Navigation: SessionHistory route, NavGraph integration, DeviceHistoryScreen connection, bottom sheet wiring
 
 #### Phase 19: Export Functionality
 **Goal**: Users can export session/message history in multiple formats to external storage
@@ -317,7 +318,7 @@ Plans:
 | 15. Database Foundation & Migration | v0.0.64 | 2/2 | Complete | 2026-02-05 |
 | 16. Message Storage Integration | v0.0.64 | 2/2 | Complete | 2026-02-06 |
 | 17. Device History UI | v0.0.64 | 3/3 | Complete | 2026-02-06 |
-| 18. Session History & Message Detail | v0.0.64 | 0/TBD | Not started | - |
+| 18. Session History & Message Detail | v0.0.64 | 4/4 | Complete | 2026-02-06 |
 | 19. Export Functionality | v0.0.64 | 0/TBD | Not started | - |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 0/TBD | Not started | - |
 | 21. History Retention Settings | v0.0.64 | 0/TBD | Not started | - |

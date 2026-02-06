@@ -27,31 +27,31 @@ Requirements for v0.0.64 milestone.
 
 ### Device History UI
 
-- [ ] **HIST-01**: Device History screen accessible from Quick Actions
-- [ ] **HIST-02**: Active devices section shows paired devices with statistics
-- [ ] **HIST-03**: Removed devices section (collapsed by default)
-- [ ] **HIST-04**: Device cards show total sessions and total messages
-- [ ] **HIST-05**: Device cards show last session date or active status
-- [ ] **HIST-06**: Tap active device navigates to Session History
-- [ ] **HIST-07**: Tap removed device navigates to Archive Management
+- [x] **HIST-01**: Device History screen accessible from Quick Actions
+- [x] **HIST-02**: Active devices section shows paired devices with statistics
+- [x] **HIST-03**: Removed devices section (collapsed by default)
+- [x] **HIST-04**: Device cards show total sessions and total messages
+- [x] **HIST-05**: Device cards show last session date or active status
+- [x] **HIST-06**: Tap active device navigates to Session History
+- [x] **HIST-07**: Tap removed device navigates to Archive Management
 
 ### Session History UI
 
-- [ ] **SESS-01**: Session History screen shows all sessions for selected device
-- [ ] **SESS-02**: Session cards display date, duration, message count
-- [ ] **SESS-03**: Toggle between session view and contact view
-- [ ] **SESS-04**: View preference (session/contact) persists across app restarts
-- [ ] **SESS-05**: Tap session opens message detail bottom sheet
-- [ ] **SESS-06**: Active sessions show real-time message count with [Active] badge
-- [ ] **SESS-07**: Paging 3 integration for scrolling large session lists
+- [x] **SESS-01**: Session History screen shows all sessions for selected device
+- [x] **SESS-02**: Session cards display date, duration, message count
+- [x] **SESS-03**: Toggle between session view and contact view
+- [x] **SESS-04**: View preference opens to Sessions by default (no persistence per CONTEXT.md decision)
+- [x] **SESS-05**: Tap session opens message detail bottom sheet
+- [x] **SESS-06**: Active sessions show real-time message count with [Active] badge
+- [x] **SESS-07**: Paging 3 integration for scrolling large session lists
 
 ### Message Detail UI
 
-- [ ] **DETAIL-01**: Bottom sheet shows message list for selected session
-- [ ] **DETAIL-02**: Messages display sender number, timestamp, content
-- [ ] **DETAIL-03**: Messages grouped by session with metadata at top
-- [ ] **DETAIL-04**: Read-only display (no long-press actions)
-- [ ] **DETAIL-05**: Paging 3 integration for scrolling large message lists
+- [x] **DETAIL-01**: Bottom sheet shows message list for selected session
+- [x] **DETAIL-02**: Messages display sender number, timestamp, content
+- [x] **DETAIL-03**: Messages grouped by session with metadata at top
+- [x] **DETAIL-04**: Read-only display (no long-press actions)
+- [x] **DETAIL-05**: Paging 3 integration for scrolling large message lists
 
 ### Archive Management
 
@@ -147,25 +147,25 @@ Which phases cover which requirements.
 | MSG-03 | Phase 16 | Complete |
 | MSG-04 | Phase 16 | Complete |
 | MSG-05 | Phase 16 | Complete |
-| HIST-01 | Phase 17 | Pending |
-| HIST-02 | Phase 17 | Pending |
-| HIST-03 | Phase 17 | Pending |
-| HIST-04 | Phase 17 | Pending |
-| HIST-05 | Phase 17 | Pending |
-| HIST-06 | Phase 17 | Pending |
-| HIST-07 | Phase 17 | Pending |
-| SESS-01 | Phase 18 | Pending |
-| SESS-02 | Phase 18 | Pending |
-| SESS-03 | Phase 18 | Pending |
-| SESS-04 | Phase 18 | Pending |
-| SESS-05 | Phase 18 | Pending |
-| SESS-06 | Phase 18 | Pending |
-| SESS-07 | Phase 18 | Pending |
-| DETAIL-01 | Phase 18 | Pending |
-| DETAIL-02 | Phase 18 | Pending |
-| DETAIL-03 | Phase 18 | Pending |
-| DETAIL-04 | Phase 18 | Pending |
-| DETAIL-05 | Phase 18 | Pending |
+| HIST-01 | Phase 17 | Complete |
+| HIST-02 | Phase 17 | Complete |
+| HIST-03 | Phase 17 | Complete |
+| HIST-04 | Phase 17 | Complete |
+| HIST-05 | Phase 17 | Complete |
+| HIST-06 | Phase 17 | Complete |
+| HIST-07 | Phase 17 | Complete |
+| SESS-01 | Phase 18 | Complete |
+| SESS-02 | Phase 18 | Complete |
+| SESS-03 | Phase 18 | Complete |
+| SESS-04 | Phase 18 | Complete |
+| SESS-05 | Phase 18 | Complete |
+| SESS-06 | Phase 18 | Complete |
+| SESS-07 | Phase 18 | Complete |
+| DETAIL-01 | Phase 18 | Complete |
+| DETAIL-02 | Phase 18 | Complete |
+| DETAIL-03 | Phase 18 | Complete |
+| DETAIL-04 | Phase 18 | Complete |
+| DETAIL-05 | Phase 18 | Complete |
 | ARCH-01 | Phase 17 | Pending |
 | ARCH-02 | Phase 17 | Pending |
 | ARCH-03 | Phase 19 | Pending |
@@ -203,4 +203,4 @@ Coverage validation: 100% (56/56 requirements mapped)
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-06 - Phase 16 complete (MSG-01 through MSG-05)*
+*Last updated: 2026-02-06 - Phase 18 complete (SESS-01 through SESS-07, DETAIL-01 through DETAIL-05)*
