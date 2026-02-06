@@ -7,6 +7,15 @@ sealed class Screen(val route: String) {
     data object AddDevice : Screen("add_device")
     data object ForwardingControl : Screen("forwarding_control")
     data object Settings : Screen("settings")
+    data object DeviceHistory : Screen("device_history")
+
+    data object ArchiveManagement : Screen("archive_management/{phoneNumber}/{role}") {
+        fun createRoute(phoneNumber: String, role: String): String {
+            // URL encode phone number to handle '+' and other special characters
+            val encodedPhone = java.net.URLEncoder.encode(phoneNumber, "UTF-8")
+            return "archive_management/$encodedPhone/$role"
+        }
+    }
 
     // Screen with arguments
     data object DeviceDetail : Screen("device_detail/{phoneNumber}") {
