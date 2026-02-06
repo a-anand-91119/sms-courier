@@ -177,16 +177,16 @@ class SmsCommandHandlerTest {
     // ==================== handleUnpair ====================
 
     @Test
-    fun `handleUnpair ends sessions and deletes device`() = runTest {
+    fun `handleUnpair ends sessions and archives device`() = runTest {
         val device = createTestDevice()
         coEvery { deviceRepository.getByPhoneNumber(any()) } returns listOf(device)
         coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
-        coEvery { deviceRepository.deleteByPhoneNumber(any()) } just runs
+        coEvery { deviceRepository.archiveDevice(any(), any(), any()) } just runs
 
         handler.handleUnpair(device.phoneNumber)
 
         coVerify { sessionRepository.endSessionForDevice(device.phoneNumber, "UNPAIR") }
-        coVerify { deviceRepository.deleteByPhoneNumber(device.phoneNumber) }
+        coVerify { deviceRepository.archiveDevice(device.phoneNumber, device.role, "REMOTE") }
     }
 
     @Test
@@ -195,7 +195,7 @@ class SmsCommandHandlerTest {
 
         handler.handleUnpair("+1234567890")
 
-        coVerify(exactly = 0) { deviceRepository.deleteByPhoneNumber(any()) }
+        coVerify(exactly = 0) { deviceRepository.archiveDevice(any(), any(), any()) }
     }
 
     // ==================== handleAuthRequest ====================

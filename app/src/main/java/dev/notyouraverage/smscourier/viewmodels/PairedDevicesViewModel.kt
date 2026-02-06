@@ -107,8 +107,8 @@ class PairedDevicesViewModel(
                 smsSender.sendUnpair(device.phoneNumber, roleToDeleteOnRemote)
             }
 
-            // 3. Delete only this specific role from local database
-            deviceRepository.deleteByPhoneNumberAndRole(device.phoneNumber, device.role)
+            // 3. Archive only this specific role in local database (soft delete)
+            deviceRepository.archiveDevice(device.phoneNumber, device.role, "LOCAL")
         }
     }
 

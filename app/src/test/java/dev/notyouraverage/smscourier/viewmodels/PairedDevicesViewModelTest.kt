@@ -102,11 +102,11 @@ class PairedDevicesViewModelTest {
     }
 
     @Test
-    fun `deleteDevice ends sessions, sends UNPAIR with inverse role, and deletes from DB`() = runTest {
+    fun `deleteDevice ends sessions, sends UNPAIR with inverse role, and archives device`() = runTest {
         // Device has TARGET role by default, so inverse role for remote is SOURCE
         val device = createTestDevice(phoneNumber = "+1234567890", role = DeviceRole.TARGET)
         coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
-        coEvery { deviceRepository.deleteByPhoneNumberAndRole(any(), any()) } just runs
+        coEvery { deviceRepository.archiveDevice(any(), any(), any()) } just runs
 
         viewModel.deleteDevice(device)
 
@@ -114,7 +114,7 @@ class PairedDevicesViewModelTest {
         coVerify { sessionRepository.endSessionForDevice("+1234567890", "USER") }
         // TARGET device -> tell remote to delete SOURCE role (inverse)
         verify { smsSender.sendUnpair("+1234567890", DeviceRole.SOURCE) }
-        coVerify { deviceRepository.deleteByPhoneNumberAndRole("+1234567890", DeviceRole.TARGET) }
+        coVerify { deviceRepository.archiveDevice("+1234567890", DeviceRole.TARGET, "LOCAL") }
     }
 
     @Test

@@ -168,23 +168,25 @@ class SmsCommandHandler(
         Log.i(TAG, "Unpair from: $senderPhone, role: $roleToDelete")
 
         if (roleToDelete != null) {
-            // Role-specific deletion (new protocol)
+            // Role-specific archival (new protocol)
             val device = deviceRepository.getByPhoneNumberAndRole(senderPhone, roleToDelete)
             if (device != null) {
                 sessionRepository.endSessionForDevice(senderPhone, "UNPAIR")
-                deviceRepository.deleteByPhoneNumberAndRole(senderPhone, roleToDelete)
-                Log.i(TAG, "Device $senderPhone unpaired (removed $roleToDelete role)")
+                deviceRepository.archiveDevice(senderPhone, roleToDelete, "REMOTE")
+                Log.i(TAG, "Device $senderPhone unpaired (archived $roleToDelete role)")
             } else {
                 Log.w(TAG, "Unpair: $roleToDelete role not found for $senderPhone")
             }
         } else {
-            // Legacy behavior: delete all roles (backward compatibility)
+            // Legacy behavior: archive all roles (backward compatibility)
             val devices = deviceRepository.getByPhoneNumber(senderPhone)
             if (devices.isNotEmpty()) {
                 sessionRepository.endSessionForDevice(senderPhone, "UNPAIR")
-                // Delete all pairings (both SOURCE and TARGET roles if they exist)
-                deviceRepository.deleteByPhoneNumber(senderPhone)
-                Log.i(TAG, "Device $senderPhone unpaired (removed ${devices.size} role(s) - legacy)")
+                // Archive all pairings (both SOURCE and TARGET roles if they exist)
+                for (device in devices) {
+                    deviceRepository.archiveDevice(senderPhone, device.role, "REMOTE")
+                }
+                Log.i(TAG, "Device $senderPhone unpaired (archived ${devices.size} role(s) - legacy)")
             }
         }
 
