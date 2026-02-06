@@ -25,6 +25,12 @@ class PairedDeviceRepository(
     fun getTargetDevices(): Flow<List<PairedDevice>> =
         pairedDeviceDao.getDevicesByRole(DeviceRole.TARGET)
 
+    fun getActiveDevices(): Flow<List<PairedDevice>> =
+        pairedDeviceDao.getActiveDevices()
+
+    fun getArchivedDevices(): Flow<List<PairedDevice>> =
+        pairedDeviceDao.getArchivedDevices()
+
     fun getPendingRequests(): Flow<List<PairedDevice>> =
         pairedDeviceDao.getPendingRequests()
 
