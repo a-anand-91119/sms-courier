@@ -41,6 +41,9 @@ class SessionHistoryViewModel(
     // Pending export config (set when user confirms format, cleared after SAF picker result)
     private var pendingExportConfig: ExportConfig? = null
 
+    // Pending session for single-session export
+    private var pendingExportSession: ForwardingSession? = null
+
     // Paged sessions flow - cachedIn survives configuration changes
     val sessions: Flow<PagingData<ForwardingSession>> =
         sessionRepository.getSessionsForDevicePaged(phoneNumber)
@@ -126,6 +129,58 @@ class SessionHistoryViewModel(
      */
     fun clearExportState() {
         _exportState.value = ExportState.Idle
+    }
+
+    /**
+     * Prepares export for a single session.
+     * Stores session for SAF picker result.
+     */
+    fun prepareSingleSessionExport(
+        session: ForwardingSession,
+        format: ExportFormat,
+        includeMetadata: Boolean,
+    ): Pair<String, String> {
+        pendingExportConfig = ExportConfig(
+            format = format,
+            includeMetadata = includeMetadata,
+            devicePhone = phoneNumber,
+            deviceRole = deviceRole,
+        )
+        pendingExportSession = session
+        val filename = exportManager.generateFilename(format)
+        return filename to format.mimeType
+    }
+
+    /**
+     * Executes single-session export after SAF picker returns.
+     */
+    fun executeSingleSessionExport(uri: Uri, contentResolver: ContentResolver) {
+        val config = pendingExportConfig ?: return
+        val session = pendingExportSession ?: return
+        pendingExportConfig = null
+        pendingExportSession = null
+
+        _exportState.value = ExportState.Loading
+
+        viewModelScope.launch {
+            try {
+                // Load single session data
+                val data = exportManager.loadSingleSessionData(session, phoneNumber, deviceRole)
+
+                // Format content
+                val content = ExportFormatter.formatToString(data, config)
+
+                // Write to file
+                contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write(content.toByteArray(Charsets.UTF_8))
+                } ?: throw IOException("Failed to open output stream")
+
+                val filename = exportManager.generateFilename(config.format)
+                _exportState.value = ExportState.Success(filename)
+            } catch (e: Exception) {
+                _exportState.value = ExportState.Error(e.message ?: "Export failed")
+            }
+        }
     }
 
     enum class Tab {

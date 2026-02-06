@@ -78,14 +78,22 @@ fun SessionHistoryScreen(
 
     // Export UI state
     var showExportSheet by remember { mutableStateOf(false) }
+    var sessionToExport by remember { mutableStateOf<ForwardingSession?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    // SAF launcher for export
+    // SAF launcher for per-device export
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("*/*"),
     ) { uri ->
         uri?.let { viewModel.executeExport(it, context.contentResolver) }
+    }
+
+    // SAF launcher for single-session export
+    val singleSessionExportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*"),
+    ) { uri ->
+        uri?.let { viewModel.executeSingleSessionExport(it, context.contentResolver) }
     }
 
     // Handle export state changes
@@ -180,6 +188,10 @@ fun SessionHistoryScreen(
                 SessionsList(
                     sessions = sessions,
                     onSessionClick = { viewModel.selectSession(it) },
+                    onSessionExport = { session ->
+                        sessionToExport = session
+                        showExportSheet = true
+                    },
                     modifier = Modifier.padding(paddingValues),
                 )
             }
@@ -202,6 +214,14 @@ fun SessionHistoryScreen(
                 session = session,
                 messages = messages,
                 onDismiss = { viewModel.selectSession(null) },
+                onExport = {
+                    // Store session for single-session export
+                    sessionToExport = session
+                    // Close detail sheet first
+                    viewModel.selectSession(null)
+                    // Show export format picker
+                    showExportSheet = true
+                },
             )
         }
     }
@@ -209,11 +229,27 @@ fun SessionHistoryScreen(
     // Export format picker bottom sheet
     if (showExportSheet) {
         ExportFormatBottomSheet(
-            onDismiss = { showExportSheet = false },
+            onDismiss = {
+                showExportSheet = false
+                sessionToExport = null // Clear session selection
+            },
             onExport = { format, includeMetadata ->
                 showExportSheet = false
-                val (filename, _) = viewModel.prepareExport(format, includeMetadata)
-                exportLauncher.launch(filename)
+                val session = sessionToExport
+                if (session != null) {
+                    // Single session export
+                    sessionToExport = null
+                    val (filename, _) = viewModel.prepareSingleSessionExport(
+                        session,
+                        format,
+                        includeMetadata,
+                    )
+                    singleSessionExportLauncher.launch(filename)
+                } else {
+                    // Per-device export (existing behavior)
+                    val (filename, _) = viewModel.prepareExport(format, includeMetadata)
+                    exportLauncher.launch(filename)
+                }
             },
         )
     }
@@ -223,6 +259,7 @@ fun SessionHistoryScreen(
 private fun SessionsList(
     sessions: LazyPagingItems<ForwardingSession>,
     onSessionClick: (ForwardingSession) -> Unit,
+    onSessionExport: (ForwardingSession) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (sessions.loadState.refresh) {
@@ -273,6 +310,7 @@ private fun SessionsList(
                             SessionCard(
                                 session = session,
                                 onClick = { onSessionClick(session) },
+                                onExport = { onSessionExport(session) },
                             )
                         } else {
                             SkeletonSessionCard()
