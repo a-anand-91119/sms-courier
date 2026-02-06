@@ -221,12 +221,13 @@ Plans:
   6. Active sessions show real-time message count with "[Active]" badge
   7. Message detail bottom sheet displays sender number, timestamp, and content with pagination for large lists
   8. Messages are read-only (no delete/edit actions)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 18-01: TBD
-- [ ] 18-02: TBD
-- [ ] 18-03: TBD
+- [ ] 18-01-PLAN.md — Data layer: Add Paging 3 dependency, DAO PagingSource queries, repository Pager wrappers, DateTimeFormatters utility
+- [ ] 18-02-PLAN.md — Session History UI: SessionHistoryViewModel with paging, SessionHistoryScreen with tabs, session/contact cards
+- [ ] 18-03-PLAN.md — Message Detail: MessageDetailBottomSheet with expandable rows, pagination, session metadata
+- [ ] 18-04-PLAN.md — Navigation: SessionHistory route, NavGraph integration, DeviceHistoryScreen connection, bottom sheet wiring
 
 #### Phase 19: Export Functionality
 **Goal**: Users can export session/message history in multiple formats to external storage
