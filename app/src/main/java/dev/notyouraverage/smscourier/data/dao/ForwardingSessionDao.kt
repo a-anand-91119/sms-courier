@@ -1,5 +1,6 @@
 package dev.notyouraverage.smscourier.data.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -27,6 +28,9 @@ interface ForwardingSessionDao {
 
     @Query("SELECT * FROM forwarding_sessions WHERE device_phone_number = :phoneNumber ORDER BY started_at DESC")
     fun getSessionsForDevice(phoneNumber: String): Flow<List<ForwardingSession>>
+
+    @Query("SELECT * FROM forwarding_sessions WHERE device_phone_number = :phoneNumber ORDER BY started_at DESC")
+    fun getSessionsForDevicePaged(phoneNumber: String): PagingSource<Int, ForwardingSession>
 
     @Insert
     suspend fun insertSession(session: ForwardingSession): Long
