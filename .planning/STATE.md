@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Reliable, secure SMS forwarding between paired devices with minimal user intervention
-**Current focus:** Phase 16 - Message Storage Integration (COMPLETE)
+**Current focus:** Phase 17 - Device History UI
 
 ## Current Position
 

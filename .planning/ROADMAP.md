@@ -143,8 +143,8 @@ Plans:
 
 **Milestone Goal:** Enhanced device management with session history, message-level storage, bidirectional forwarding visibility, and configurable history retention.
 
-- [ ] **Phase 15: Database Foundation & Migration** - Add ForwardedMessage table, soft delete columns, and migration testing
-- [ ] **Phase 16: Message Storage Integration** - Populate ForwardedMessage during forwarding sessions
+- [x] **Phase 15: Database Foundation & Migration** - Add ForwardedMessage table, soft delete columns, and migration testing
+- [x] **Phase 16: Message Storage Integration** - Populate ForwardedMessage during forwarding sessions
 - [ ] **Phase 17: Device History UI** - Active/removed device list with statistics
 - [ ] **Phase 18: Session History & Message Detail** - Session list with message-level bottom sheets
 - [ ] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
@@ -175,6 +175,7 @@ Plans:
 **Goal**: Messages are stored during forwarding with real-time session statistics
 **Depends on**: Phase 15
 **Requirements**: MSG-01, MSG-02, MSG-03, MSG-04, MSG-05
+**Status**: Complete (2026-02-06)
 **Success Criteria** (what must be TRUE):
   1. TARGET device stores full message content (sender, content, timestamp, destinationNumber) when forwarding SMS
   2. SOURCE device stores only session metadata without message content
@@ -185,8 +186,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 16-01-PLAN.md — Schema v7: Add destinationNumber to ForwardedMessage, DAO counter methods, Migration 6->7
-- [ ] 16-02-PLAN.md — Repository + integration: ForwardedMessageRepository, SmsCommandHandler integration, crash recovery
+- [x] 16-01-PLAN.md — Schema v7: Add destinationNumber to ForwardedMessage, DAO counter methods, Migration 6->7
+- [x] 16-02-PLAN.md — Repository + integration: ForwardedMessageRepository, SmsCommandHandler integration, crash recovery
 
 #### Phase 17: Device History UI
 **Goal**: Users can view device list with active/removed sections and aggregate statistics
@@ -311,7 +312,7 @@ Plans:
 | 13. Settings Screen & Main Settings | v0.0.63 | 3/3 | Complete | 2026-01-19 |
 | 14. Advanced Settings & Service Integration | v0.0.63 | 3/3 | Complete | 2026-01-19 |
 | 15. Database Foundation & Migration | v0.0.64 | 2/2 | Complete | 2026-02-05 |
-| 16. Message Storage Integration | v0.0.64 | 0/TBD | Not started | - |
+| 16. Message Storage Integration | v0.0.64 | 2/2 | Complete | 2026-02-06 |
 | 17. Device History UI | v0.0.64 | 0/TBD | Not started | - |
 | 18. Session History & Message Detail | v0.0.64 | 0/TBD | Not started | - |
 | 19. Export Functionality | v0.0.64 | 0/TBD | Not started | - |

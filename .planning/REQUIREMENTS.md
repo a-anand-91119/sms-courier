@@ -19,11 +19,11 @@ Requirements for v0.0.64 milestone.
 
 ### Message Storage
 
-- [ ] **MSG-01**: TARGET device stores full message content on forward
-- [ ] **MSG-02**: SOURCE device only stores session metadata (no message content)
-- [ ] **MSG-03**: Message count updates in real-time during active sessions
-- [ ] **MSG-04**: Session statistics update on session end (totalSessions increment)
-- [ ] **MSG-05**: Messages stored asynchronously (Dispatchers.IO, no service blocking)
+- [x] **MSG-01**: TARGET device stores full message content on forward
+- [x] **MSG-02**: SOURCE device only stores session metadata (no message content)
+- [x] **MSG-03**: Message count updates in real-time during active sessions
+- [x] **MSG-04**: Session statistics update on session end (totalSessions increment)
+- [x] **MSG-05**: Messages stored asynchronously (Dispatchers.IO, no service blocking)
 
 ### Device History UI
 
@@ -142,11 +142,11 @@ Which phases cover which requirements.
 | DATA-05 | Phase 15 | Complete |
 | DATA-06 | Phase 15 | Complete |
 | DATA-07 | Phase 15 | Complete |
-| MSG-01 | Phase 16 | Pending |
-| MSG-02 | Phase 16 | Pending |
-| MSG-03 | Phase 16 | Pending |
-| MSG-04 | Phase 16 | Pending |
-| MSG-05 | Phase 16 | Pending |
+| MSG-01 | Phase 16 | Complete |
+| MSG-02 | Phase 16 | Complete |
+| MSG-03 | Phase 16 | Complete |
+| MSG-04 | Phase 16 | Complete |
+| MSG-05 | Phase 16 | Complete |
 | HIST-01 | Phase 17 | Pending |
 | HIST-02 | Phase 17 | Pending |
 | HIST-03 | Phase 17 | Pending |
@@ -203,4 +203,4 @@ Coverage validation: 100% (56/56 requirements mapped)
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-05 - Phase 15 complete (DATA-01 through DATA-07)*
+*Last updated: 2026-02-06 - Phase 16 complete (MSG-01 through MSG-05)*
