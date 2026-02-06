@@ -7,6 +7,7 @@ import dev.notyouraverage.smscourier.data.SmsCourierDatabase
 import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.handlers.SmsCommandHandler
 import dev.notyouraverage.smscourier.notifications.PairingNotificationManager
+import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
 import dev.notyouraverage.smscourier.repository.SettingsRepository
@@ -50,6 +51,7 @@ abstract class IntegrationTestBase {
     protected lateinit var database: SmsCourierDatabase
     internal lateinit var deviceRepository: PairedDeviceRepository
     internal lateinit var sessionRepository: ForwardingSessionRepository
+    protected lateinit var messageRepository: ForwardedMessageRepository
     protected lateinit var settingsRepository: SettingsRepository
     protected lateinit var capturingSmsSender: CapturingSmsSender
     protected lateinit var securityManager: SecurityManager
@@ -69,6 +71,12 @@ abstract class IntegrationTestBase {
         // Initialize repositories with in-memory database
         deviceRepository = PairedDeviceRepository(database.pairedDeviceDao())
         sessionRepository = ForwardingSessionRepository(database.forwardingSessionDao())
+        messageRepository = ForwardedMessageRepository(
+            database = database,
+            messageDao = database.forwardedMessageDao(),
+            sessionDao = database.forwardingSessionDao(),
+            deviceDao = database.pairedDeviceDao(),
+        )
 
         // Initialize capturing SMS sender (captures outgoing messages for verification)
         capturingSmsSender = CapturingSmsSender()
@@ -89,6 +97,7 @@ abstract class IntegrationTestBase {
         commandHandler = SmsCommandHandler(
             deviceRepository = deviceRepository,
             sessionRepository = sessionRepository,
+            messageRepository = messageRepository,
             smsSender = capturingSmsSender,
             notificationManager = notificationManager,
             securityManager = securityManager,

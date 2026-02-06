@@ -5,6 +5,7 @@ import dev.notyouraverage.smscourier.TestFixtures.createTestSession
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.notifications.PairingNotificationManager
+import dev.notyouraverage.smscourier.repository.ForwardedMessageRepository
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
 import dev.notyouraverage.smscourier.security.SecurityManager
@@ -38,6 +39,9 @@ class SmsCommandHandlerTest {
     private lateinit var sessionRepository: ForwardingSessionRepository
 
     @MockK
+    private lateinit var messageRepository: ForwardedMessageRepository
+
+    @MockK
     private lateinit var smsSender: SmsSender
 
     @MockK
@@ -56,6 +60,7 @@ class SmsCommandHandlerTest {
         handler = SmsCommandHandler(
             deviceRepository = deviceRepository,
             sessionRepository = sessionRepository,
+            messageRepository = messageRepository,
             smsSender = smsSender,
             notificationManager = notificationManager,
             securityManager = securityManager,

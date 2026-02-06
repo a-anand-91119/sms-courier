@@ -593,35 +593,49 @@ class MasterService : Service() {
     }
 
     private suspend fun resumeActiveForwardingSessions() {
-        // Check for any active sessions that haven't expired
         val now = System.currentTimeMillis()
         val activeSessions = sessionRepository.getActiveSessionsList()
 
+        if (activeSessions.isEmpty()) {
+            Log.d(TAG, "No active sessions to recover")
+            return
+        }
+
+        Log.i(TAG, "Found ${activeSessions.size} active session(s), checking for recovery")
+
         activeSessions.forEach { session ->
-            if (session.expiresAt > now) {
-                val remainingMinutes = ((session.expiresAt - now) / 60000).toInt()
-                Log.i(TAG, "Resuming forwarding session for ${session.devicePhoneNumber}, $remainingMinutes min remaining")
-
-                // Set up timeout handler for remaining time
-                val timeoutRunnable = Runnable {
-                    serviceScope.launch {
-                        sessionRepository.endSession(session.id, "TIMEOUT")
-                        notificationManager.cancelForwardingNotification()
-                        sessionHandlers.remove(session.devicePhoneNumber)
-                    }
+            when {
+                // Session expired while service was down
+                session.expiresAt <= now -> {
+                    Log.i(TAG, "Session ${session.id} expired during service downtime, marking EXPIRED")
+                    sessionRepository.endSession(session.id, "EXPIRED")
                 }
-                sessionHandlers[session.devicePhoneNumber] = timeoutRunnable
-                handler.postDelayed(timeoutRunnable, session.expiresAt - now)
+                // Session still valid - resume normal operation
+                else -> {
+                    val remainingMinutes = ((session.expiresAt - now) / 60000).toInt()
+                    Log.i(
+                        TAG,
+                        "Resuming forwarding session ${session.id} for ${session.devicePhoneNumber}, " +
+                            "$remainingMinutes min remaining",
+                    )
 
-                // Show notification
-                notificationManager.showForwardingActiveNotification(
-                    session.devicePhoneNumber,
-                    remainingMinutes,
-                )
-            } else {
-                // Session has expired while app was closed
-                Log.i(TAG, "Ending expired session for ${session.devicePhoneNumber}")
-                sessionRepository.endSession(session.id, "EXPIRED")
+                    // Set up timeout handler for remaining time
+                    val timeoutRunnable = Runnable {
+                        serviceScope.launch {
+                            sessionRepository.endSession(session.id, "TIMEOUT")
+                            notificationManager.cancelForwardingNotification()
+                            sessionHandlers.remove(session.devicePhoneNumber)
+                        }
+                    }
+                    sessionHandlers[session.devicePhoneNumber] = timeoutRunnable
+                    handler.postDelayed(timeoutRunnable, session.expiresAt - now)
+
+                    // Show notification
+                    notificationManager.showForwardingActiveNotification(
+                        session.devicePhoneNumber,
+                        remainingMinutes,
+                    )
+                }
             }
         }
     }
