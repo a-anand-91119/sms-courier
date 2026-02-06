@@ -200,11 +200,12 @@ Plans:
   4. Device cards show last session date or "[Active]" badge for ongoing sessions
   5. Tapping active device navigates to Session History screen for that device
   6. Tapping removed device navigates to Archive Management screen for that device
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 17-01: TBD
-- [ ] 17-02: TBD
+- [ ] 17-01-PLAN.md — Data layer: DAO methods, repository wrappers, DeviceHistoryViewModel, navigation routes
+- [ ] 17-02-PLAN.md — UI components: DeviceHistoryScreen, DeviceHistoryCard, badges, loading/empty states
+- [ ] 17-03-PLAN.md — Navigation: Bottom sheet, removed device dialog, ArchiveManagement screen, NavGraph wiring
 
 #### Phase 18: Session History & Message Detail
 **Goal**: Users can view session list and drill down to message-level details
@@ -313,7 +314,7 @@ Plans:
 | 14. Advanced Settings & Service Integration | v0.0.63 | 3/3 | Complete | 2026-01-19 |
 | 15. Database Foundation & Migration | v0.0.64 | 2/2 | Complete | 2026-02-05 |
 | 16. Message Storage Integration | v0.0.64 | 2/2 | Complete | 2026-02-06 |
-| 17. Device History UI | v0.0.64 | 0/TBD | Not started | - |
+| 17. Device History UI | v0.0.64 | 0/3 | Planned | - |
 | 18. Session History & Message Detail | v0.0.64 | 0/TBD | Not started | - |
 | 19. Export Functionality | v0.0.64 | 0/TBD | Not started | - |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 0/TBD | Not started | - |
