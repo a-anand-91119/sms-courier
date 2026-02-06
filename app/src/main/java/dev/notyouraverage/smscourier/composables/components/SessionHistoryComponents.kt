@@ -6,8 +6,10 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,12 +22,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,56 +48,86 @@ import dev.notyouraverage.smscourier.utils.DateTimeFormatters
 /**
  * Session card showing date, duration, message count, and active status.
  * Per CONTEXT.md: "Cards show metadata only (date, duration, message count)"
+ * Long-press shows context menu with export option.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SessionCard(
     session: ForwardingSession,
     onClick: () -> Unit,
+    onExport: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = { showMenu = true },
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+        Box {
+            Column(
+                modifier = Modifier.padding(16.dp),
             ) {
-                // Date
-                Text(
-                    text = DateTimeFormatters.formatRelativeDate(session.startedAt),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium,
-                )
-
-                // Active badge or duration
-                if (session.isActive) {
-                    ActiveSessionBadge()
-                } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // Date
                     Text(
-                        text = DateTimeFormatters.formatDuration(session.durationMinutes),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = DateTimeFormatters.formatRelativeDate(session.startedAt),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
                     )
+
+                    // Active badge or duration
+                    if (session.isActive) {
+                        ActiveSessionBadge()
+                    } else {
+                        Text(
+                            text = DateTimeFormatters.formatDuration(session.durationMinutes),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Message count
+                Text(
+                    text = "${session.messageCount} messages",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Message count
-            Text(
-                text = "${session.messageCount} messages",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // Long-press context menu
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false },
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Export Session") },
+                    onClick = {
+                        showMenu = false
+                        onExport()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Share,
+                            contentDescription = null,
+                        )
+                    },
+                )
+            }
         }
     }
 }
