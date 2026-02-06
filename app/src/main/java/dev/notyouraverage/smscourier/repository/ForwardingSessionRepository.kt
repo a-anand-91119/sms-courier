@@ -1,5 +1,8 @@
 package dev.notyouraverage.smscourier.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import dev.notyouraverage.smscourier.data.dao.ForwardingSessionDao
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +35,17 @@ class ForwardingSessionRepository(
 
     fun getSessionsForDevice(phoneNumber: String): Flow<List<ForwardingSession>> =
         forwardingSessionDao.getSessionsForDevice(phoneNumber)
+
+    fun getSessionsForDevicePaged(phoneNumber: String): Flow<PagingData<ForwardingSession>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = true,
+                prefetchDistance = 5
+            ),
+            pagingSourceFactory = { forwardingSessionDao.getSessionsForDevicePaged(phoneNumber) }
+        ).flow
+    }
 
     suspend fun startSession(devicePhoneNumber: String, durationMinutes: Int, encryptionKey: String? = null): Long =
         withContext(ioDispatcher) {

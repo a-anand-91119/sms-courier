@@ -3,6 +3,9 @@ package dev.notyouraverage.smscourier.repository
 import android.database.SQLException
 import android.database.sqlite.SQLiteConstraintException
 import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.room.withTransaction
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
 import dev.notyouraverage.smscourier.data.dao.ForwardedMessageDao
@@ -11,6 +14,7 @@ import dev.notyouraverage.smscourier.data.dao.PairedDeviceDao
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.ForwardedMessage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class ForwardedMessageRepository(
@@ -77,4 +81,30 @@ class ForwardedMessageRepository(
             Result.failure(e)
         }
     }
+
+    fun getMessagesForSessionPaged(sessionId: Long): Flow<PagingData<ForwardedMessage>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 30,
+                enablePlaceholders = true,
+                prefetchDistance = 10
+            ),
+            pagingSourceFactory = { messageDao.getMessagesForSessionPaged(sessionId) }
+        ).flow
+    }
+
+    fun getDistinctSendersForDevice(phoneNumber: String): Flow<PagingData<String>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = true
+            ),
+            pagingSourceFactory = { messageDao.getDistinctSendersForDevice(phoneNumber) }
+        ).flow
+    }
+
+    suspend fun getMessageCountForSender(phoneNumber: String, senderNumber: String): Int =
+        withContext(Dispatchers.IO) {
+            messageDao.getMessageCountForSender(phoneNumber, senderNumber)
+        }
 }
