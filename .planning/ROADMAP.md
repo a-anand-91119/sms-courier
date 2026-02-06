@@ -145,7 +145,7 @@ Plans:
 
 - [x] **Phase 15: Database Foundation & Migration** - Add ForwardedMessage table, soft delete columns, and migration testing
 - [x] **Phase 16: Message Storage Integration** - Populate ForwardedMessage during forwarding sessions
-- [ ] **Phase 17: Device History UI** - Active/removed device list with statistics
+- [x] **Phase 17: Device History UI** - Active/removed device list with statistics
 - [ ] **Phase 18: Session History & Message Detail** - Session list with message-level bottom sheets
 - [ ] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
 - [ ] **Phase 20: Bidirectional Visibility Indicators** - Home screen directional status (↑↓⇅)
@@ -193,6 +193,7 @@ Plans:
 **Goal**: Users can view device list with active/removed sections and aggregate statistics
 **Depends on**: Phase 16
 **Requirements**: HIST-01, HIST-02, HIST-03, HIST-04, HIST-05, HIST-06, HIST-07
+**Status**: Complete (2026-02-06)
 **Success Criteria** (what must be TRUE):
   1. Device History screen is accessible from Quick Actions menu on HomeScreen
   2. Active devices section displays all paired devices with total sessions and message counts
@@ -203,9 +204,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — Data layer: DAO methods, repository wrappers, DeviceHistoryViewModel, navigation routes
-- [ ] 17-02-PLAN.md — UI components: DeviceHistoryScreen, DeviceHistoryCard, badges, loading/empty states
-- [ ] 17-03-PLAN.md — Navigation: Bottom sheet, removed device dialog, ArchiveManagement screen, NavGraph wiring
+- [x] 17-01-PLAN.md — Data layer: DAO methods, repository wrappers, DeviceHistoryViewModel, navigation routes
+- [x] 17-02-PLAN.md — UI components: DeviceHistoryScreen, DeviceHistoryCard, badges, loading/empty states
+- [x] 17-03-PLAN.md — Navigation: Bottom sheet, removed device dialog, ArchiveManagement screen, NavGraph wiring
 
 #### Phase 18: Session History & Message Detail
 **Goal**: Users can view session list and drill down to message-level details
@@ -314,7 +315,7 @@ Plans:
 | 14. Advanced Settings & Service Integration | v0.0.63 | 3/3 | Complete | 2026-01-19 |
 | 15. Database Foundation & Migration | v0.0.64 | 2/2 | Complete | 2026-02-05 |
 | 16. Message Storage Integration | v0.0.64 | 2/2 | Complete | 2026-02-06 |
-| 17. Device History UI | v0.0.64 | 0/3 | Planned | - |
+| 17. Device History UI | v0.0.64 | 3/3 | Complete | 2026-02-06 |
 | 18. Session History & Message Detail | v0.0.64 | 0/TBD | Not started | - |
 | 19. Export Functionality | v0.0.64 | 0/TBD | Not started | - |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 0/TBD | Not started | - |
