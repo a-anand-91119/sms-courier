@@ -18,7 +18,8 @@ import androidx.room.PrimaryKey
     ],
     indices = [
         Index(value = ["session_id"]),
-        Index(value = ["timestamp"])
+        Index(value = ["timestamp"]),
+        Index(value = ["destination_number"])
     ]
 )
 data class ForwardedMessage(
@@ -30,6 +31,9 @@ data class ForwardedMessage(
 
     @ColumnInfo(name = "sender_number")
     val senderNumber: String,
+
+    @ColumnInfo(name = "destination_number")
+    val destinationNumber: String = "",
 
     @ColumnInfo(name = "message_content")
     val messageContent: String,

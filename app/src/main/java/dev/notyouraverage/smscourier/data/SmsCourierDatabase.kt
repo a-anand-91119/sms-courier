@@ -16,7 +16,7 @@ import dev.notyouraverage.smscourier.data.entities.PairedDevice
 
 @Database(
     entities = [PairedDevice::class, ForwardingSession::class, ForwardedMessage::class],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -139,6 +139,21 @@ abstract class SmsCourierDatabase : RoomDatabase() {
             }
         }
 
+        // Migration from version 6 to 7: Add destination_number to ForwardedMessage
+        internal val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add destination_number column with default empty string
+                db.execSQL(
+                    "ALTER TABLE forwarded_messages ADD COLUMN destination_number TEXT NOT NULL DEFAULT ''"
+                )
+                // Create index for destination_number queries
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_forwarded_messages_destination_number " +
+                        "ON forwarded_messages(destination_number)"
+                )
+            }
+        }
+
         fun getDatabase(context: Context): SmsCourierDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -146,7 +161,14 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                     SmsCourierDatabase::class.java,
                     DATABASE_NAME,
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(
+                        MIGRATION_1_2,
+                        MIGRATION_2_3,
+                        MIGRATION_3_4,
+                        MIGRATION_4_5,
+                        MIGRATION_5_6,
+                        MIGRATION_6_7
+                    )
                     .build()
                 INSTANCE = instance
                 instance
