@@ -27,6 +27,9 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -68,6 +72,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.notyouraverage.smscourier.BuildConfig
 import dev.notyouraverage.smscourier.constants.AboutLinks
 import dev.notyouraverage.smscourier.data.settings.AppTheme
+import dev.notyouraverage.smscourier.viewmodels.CleanupState
 import dev.notyouraverage.smscourier.viewmodels.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,12 +99,21 @@ fun SettingsScreen(
     val authRequestTimeout by viewModel.authRequestTimeoutMinutes.collectAsState()
     val settingError by viewModel.settingError.collectAsState()
 
+    // Data & Storage settings
+    val historyRetentionDays by viewModel.historyRetentionDays.collectAsState()
+    val cleanupState by viewModel.cleanupState.collectAsState()
+
     // Duration dropdown state
     var durationExpanded by remember { mutableStateOf(false) }
     val durationOptions = listOf(15, 30, 60)
 
     // Advanced section expand/collapse state
     var advancedExpanded by remember { mutableStateOf(false) }
+
+    // Data & Storage UI state
+    var retentionExpanded by remember { mutableStateOf(false) }
+    val retentionOptions = listOf(7, 30, 90, 0) // 0 = Forever
+    var showCleanupConfirmDialog by remember { mutableStateOf(false) }
 
     // Snackbar state for error messages
     val snackbarHostState = remember { SnackbarHostState() }
@@ -245,6 +259,45 @@ fun SettingsScreen(
                         }
                     }
                 }
+            }
+
+            // Data & Storage Section
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                SectionHeader(title = "Data & Storage")
+            }
+
+            // History retention dropdown
+            item {
+                Box {
+                    SettingsSelectionItem(
+                        title = "History retention",
+                        selectedValue = formatRetention(historyRetentionDays),
+                        onClick = { retentionExpanded = true },
+                    )
+                    DropdownMenu(
+                        expanded = retentionExpanded,
+                        onDismissRequest = { retentionExpanded = false },
+                    ) {
+                        retentionOptions.forEach { days ->
+                            DropdownMenuItem(
+                                text = { Text(formatRetention(days)) },
+                                onClick = {
+                                    viewModel.setHistoryRetentionDays(days)
+                                    retentionExpanded = false
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Clean up now button
+            item {
+                CleanupButtonItem(
+                    isLoading = cleanupState is CleanupState.Loading,
+                    onClick = { showCleanupConfirmDialog = true },
+                )
             }
 
             // Advanced section (collapsible)
@@ -448,6 +501,78 @@ fun SettingsScreen(
                 )
             }
         }
+
+        // Cleanup confirmation dialog
+        if (showCleanupConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showCleanupConfirmDialog = false },
+                title = { Text("Clean up history?") },
+                text = {
+                    Text(
+                        if (historyRetentionDays == 0) {
+                            "Retention is set to Forever. No data will be deleted."
+                        } else {
+                            "This will delete sessions and messages older than ${formatRetention(historyRetentionDays)}."
+                        },
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showCleanupConfirmDialog = false
+                            viewModel.cleanupOldHistory()
+                        },
+                    ) {
+                        Text(if (historyRetentionDays == 0) "OK" else "Clean up")
+                    }
+                },
+                dismissButton = {
+                    if (historyRetentionDays != 0) {
+                        TextButton(onClick = { showCleanupConfirmDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                },
+            )
+        }
+
+        // Cleanup result dialog
+        val successState = cleanupState as? CleanupState.Success
+        if (successState != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.resetCleanupState() },
+                title = { Text("Cleanup complete") },
+                text = {
+                    Text(
+                        if (successState.sessionsDeleted == 0 && successState.messagesDeleted == 0) {
+                            "No old data to clean up."
+                        } else {
+                            "Deleted ${successState.sessionsDeleted} session(s) and ${successState.messagesDeleted} message(s)."
+                        },
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = { viewModel.resetCleanupState() }) {
+                        Text("OK")
+                    }
+                },
+            )
+        }
+
+        // Cleanup error dialog
+        val errorState = cleanupState as? CleanupState.Error
+        if (errorState != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.resetCleanupState() },
+                title = { Text("Cleanup failed") },
+                text = { Text(errorState.message) },
+                confirmButton = {
+                    Button(onClick = { viewModel.resetCleanupState() }) {
+                        Text("OK")
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -548,6 +673,14 @@ private fun formatDuration(minutes: Int): String = when (minutes) {
     else -> "$minutes minutes"
 }
 
+private fun formatRetention(days: Int): String = when (days) {
+    0 -> "Forever"
+    7 -> "7 days"
+    30 -> "30 days"
+    90 -> "90 days"
+    else -> "$days days"
+}
+
 @Composable
 private fun PermissionStatusItem(
     label: String,
@@ -606,6 +739,29 @@ private fun AboutItem(
             }
         },
         modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+    )
+}
+
+@Composable
+private fun CleanupButtonItem(
+    isLoading: Boolean,
+    onClick: () -> Unit,
+) {
+    ListItem(
+        headlineContent = { Text("Clean up now") },
+        supportingContent = { Text("Delete old sessions and messages") },
+        trailingContent = {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.width(24.dp).height(24.dp),
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                OutlinedButton(onClick = onClick) {
+                    Text("Clean up")
+                }
+            }
+        },
     )
 }
 
