@@ -102,7 +102,7 @@ Recent decisions affecting current work:
 - DirectionalStatus data class with counts and SessionWithDirection list - Added in 20-01
 - HomeState.directionalStatus for UI consumption - Added in 20-01
 - Bidirectional requires active sessions in both directions, not just paired devices - Added in 20-01
-- Icons.Default.Sync for bidirectional (SwapVert not in default Material Icons) - Added in 20-02
+- Icons.Default.Refresh for bidirectional (SwapVert not in default Material Icons) - Added in 20-02
 - SessionBreakdownBottomSheet groups sessions by direction - Added in 20-03
 - Session stop via sessionRepository.endSession with USER stoppedBy - Added in 20-03
 - DeviceCard DirectionalSubtitle with role-based direction display - Added in 20-04
