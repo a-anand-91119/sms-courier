@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Reliable, secure SMS forwarding between paired devices with minimal user intervention
-**Current focus:** Phase 19 - Export Functionality
+**Current focus:** Phase 20 - Bidirectional Visibility Indicators
 
 ## Current Position
 
-Phase: 19 of 22 (Export Functionality)
-Plan: 07 of 07 complete
-Status: Phase complete
-Last activity: 2026-02-06 - Completed 19-07-PLAN.md (Device History Export)
+Phase: 20 of 22 (Bidirectional Visibility Indicators)
+Plan: 01 of 04 complete
+Status: In progress
+Last activity: 2026-02-08 - Completed 20-01-PLAN.md (Direction Data Models)
 
-Progress: [█████████░] 86% (19/22 phases complete)
+Progress: [█████████░] 86% (19/22 phases complete, 20-01 of 04)
 
 ## Performance Metrics
 
@@ -33,9 +33,10 @@ Progress: [█████████░] 86% (19/22 phases complete)
 | 17 - Device History UI | 4 | 20m 20s | 5m 05s |
 | 18 - Session History UI | 4 | 14m 31s | 3m 38s |
 | 19 - Export Functionality | 7 | 36m 06s | 5m 09s |
+| 20 - Bidirectional Visibility | 1 | 5m 50s | 5m 50s |
 
 **Recent Trend:**
-- Last 5 plans: NavGraph DI wiring, single session export, export trigger points, DeviceHistory export fix, Device History export
+- Last 5 plans: Export trigger points, DeviceHistory export fix, Device History export, Direction Data Models
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -96,6 +97,12 @@ Recent decisions affecting current work:
 - Export button in DeviceDetailBottomSheet before View Sessions - Added in 19-07
 - OutlinedButton for export actions in bottom sheets - Added in 19-07
 
+**Phase 20 - Bidirectional Visibility Indicators (IN PROGRESS):**
+- Direction enum with FORWARDING_TO, RECEIVING_FROM, BIDIRECTIONAL values - Added in 20-01
+- DirectionalStatus data class with counts and SessionWithDirection list - Added in 20-01
+- HomeState.directionalStatus for UI consumption - Added in 20-01
+- Bidirectional requires active sessions in both directions, not just paired devices - Added in 20-01
+
 **Security:**
 - Bcrypt password hashing for device pairing
 - Failed attempt tracking and device lockout
@@ -132,10 +139,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-06 13:32 UTC
-Stopped at: Completed 19-07-PLAN.md (Device History Export) - Phase 19 Export Functionality complete
+Last session: 2026-02-08 09:08 UTC
+Stopped at: Completed 20-01-PLAN.md (Direction Data Models) - Phase 20 in progress
 Resume file: None
 
 **Next actions:**
-- Begin Phase 20 planning
+- Continue Phase 20 with 20-02-PLAN.md (DirectionalStatusCard UI component)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
