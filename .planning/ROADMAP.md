@@ -274,11 +274,13 @@ Plans:
   6. Tapping status indicator opens session breakdown bottom sheet
   7. Session breakdown groups sessions by direction (Forwarding To, Receiving From, Bidirectional)
   8. Paired devices list shows directional arrows next to each device (↑ forwarding, ↓ receiving, ⇅ bidirectional)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 20-01: TBD
-- [ ] 20-02: TBD
+- [ ] 20-01-PLAN.md — Data models and ViewModel: Direction enum, DirectionalStatus data class, HomeViewModel directional calculation
+- [ ] 20-02-PLAN.md — Home screen indicators: DirectionalStatusCard composable with BadgedBox, semantic colors, integration
+- [ ] 20-03-PLAN.md — Session breakdown sheet: SessionBreakdownBottomSheet with grouped sessions, stop actions, NavGraph wiring
+- [ ] 20-04-PLAN.md — Device list directions: PairedDevicesViewModel session tracking, DeviceCard directional subtitle
 
 #### Phase 21: History Retention Settings
 **Goal**: Users can configure history retention and manually clean old data
@@ -334,6 +336,6 @@ Plans:
 | 17. Device History UI | v0.0.64 | 3/3 | Complete | 2026-02-06 |
 | 18. Session History & Message Detail | v0.0.64 | 4/4 | Complete | 2026-02-06 |
 | 19. Export Functionality | v0.0.64 | 7/7 | Complete | 2026-02-06 |
-| 20. Bidirectional Visibility Indicators | v0.0.64 | 0/TBD | Not started | - |
+| 20. Bidirectional Visibility Indicators | v0.0.64 | 0/4 | Not started | - |
 | 21. History Retention Settings | v0.0.64 | 0/TBD | Not started | - |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/TBD | Not started | - |
