@@ -134,6 +134,20 @@ class DeviceHistoryViewModel(
         _exportState.value = ExportState.Idle
     }
 
+    /**
+     * Unpairs a device by archiving it.
+     * The device will move from Active Devices to Removed Devices section.
+     */
+    fun unpairDevice(device: PairedDevice) {
+        viewModelScope.launch {
+            deviceRepository.archiveDevice(
+                phoneNumber = device.phoneNumber,
+                role = device.role,
+                initiatedBy = "USER",
+            )
+        }
+    }
+
     data class DeviceWithActiveSession(
         val device: PairedDevice,
         val hasActiveSession: Boolean,
