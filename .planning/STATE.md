@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 
 ## Current Position
 
-Phase: 21 of 22 (History Retention Settings)
-Plan: 02 of 02 complete
-Status: Phase complete
-Last activity: 2026-02-08 - Completed Phase 21 (History Retention Settings)
+Phase: 22 of 22 (Auto-Cleanup with WorkManager)
+Plan: 01 of 02 complete
+Status: In progress
+Last activity: 2026-02-08 - Completed 22-01-PLAN.md (Data Layer)
 
-Progress: [█████████░] 95% (21/22 phases complete)
+Progress: [█████████░] 97% (22/22 phases, 1/2 plans complete)
 
 ## Performance Metrics
 
@@ -35,9 +35,10 @@ Progress: [█████████░] 95% (21/22 phases complete)
 | 19 - Export Functionality | 7 | 36m 06s | 5m 09s |
 | 20 - Bidirectional Visibility | 4 | ~20m | ~5m |
 | 21 - History Retention Settings | 2 | ~8m | ~4m |
+| 22 - Auto-Cleanup WorkManager | 1/2 | ~5m | ~5m |
 
 **Recent Trend:**
-- Last 5 plans: Device List Direction, Retention Data Layer, Settings UI
+- Last 5 plans: Retention Data Layer, Settings UI, Auto-Cleanup Data Layer
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -117,6 +118,14 @@ Recent decisions affecting current work:
 - Forever (0 days) shows info-only dialog, no cleanup performed - Added in 21-02
 - OutlinedButton for cleanup button consistent with export buttons - Added in 21-02
 
+**Phase 22 - Auto-Cleanup with WorkManager (IN PROGRESS):**
+- Battery not low constraint for background cleanup (lenient but protective) - Added in 22-01
+- 7-day interval with 1-day flex window for battery-efficient scheduling - Added in 22-01
+- AUTO_CLEANUP_ENABLED defaults to true for new installations - Added in 22-01
+- LAST_CLEANUP_TIMESTAMP = 0L means never run - Added in 22-01
+- CleanupWorker pattern: get retention setting, call cleanup, update timestamp - Added in 22-01
+- WorkManagerHelper object for scheduling/canceling unique periodic work - Added in 22-01
+
 **Security:**
 - Bcrypt password hashing for device pairing
 - Failed attempt tracking and device lockout
@@ -153,10 +162,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-08 13:17 UTC
-Stopped at: Completed Phase 21 (History Retention Settings)
+Last session: 2026-02-08 18:05 UTC
+Stopped at: Completed 22-01-PLAN.md (Auto-Cleanup Data Layer)
 Resume file: None
 
 **Next actions:**
-- Begin Phase 22 (Auto-Cleanup with WorkManager)
+- Continue with 22-02-PLAN.md (UI Integration)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
