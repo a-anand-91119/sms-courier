@@ -17,4 +17,7 @@ object PreferenceKeys {
     val MAX_PAIRING_RESEND_ATTEMPTS = intPreferencesKey("max_pairing_resend_attempts")
     val PAIRING_RESEND_COOLDOWN = intPreferencesKey("pairing_resend_cooldown")
     val AUTH_REQUEST_TIMEOUT = intPreferencesKey("auth_request_timeout")
+
+    // Data & Storage Settings
+    val HISTORY_RETENTION_DAYS = intPreferencesKey("history_retention_days")
 }

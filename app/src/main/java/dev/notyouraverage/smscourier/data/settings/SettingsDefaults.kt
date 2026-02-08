@@ -13,4 +13,7 @@ object SettingsDefaults {
     const val MAX_PAIRING_RESEND_ATTEMPTS = 5
     const val PAIRING_RESEND_COOLDOWN = 1 // minute
     const val AUTH_REQUEST_TIMEOUT = 5 // minutes
+
+    // Data & Storage Settings
+    const val HISTORY_RETENTION_DAYS = 30 // days (0 = forever)
 }
