@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Reliable, secure SMS forwarding between paired devices with minimal user intervention
-**Current focus:** Phase 21 - Next phase TBD
+**Current focus:** Phase 21 - History Retention Settings
 
 ## Current Position
 
-Phase: 20 of 22 (Bidirectional Visibility Indicators)
-Plan: 04 of 04 complete
-Status: Phase complete
-Last activity: 2026-02-08 - Completed 20-04-PLAN.md (Device List Direction Indicators)
+Phase: 21 of 22 (History Retention Settings)
+Plan: 01 of 03 complete
+Status: In progress
+Last activity: 2026-02-08 - Completed 21-01-PLAN.md (Retention Data Layer)
 
-Progress: [█████████░] 91% (20/22 phases complete)
+Progress: [█████████░] 91% (20/22 phases complete, 21 in progress)
 
 ## Performance Metrics
 
@@ -34,9 +34,10 @@ Progress: [█████████░] 91% (20/22 phases complete)
 | 18 - Session History UI | 4 | 14m 31s | 3m 38s |
 | 19 - Export Functionality | 7 | 36m 06s | 5m 09s |
 | 20 - Bidirectional Visibility | 4 | ~20m | ~5m |
+| 21 - History Retention Settings | 1/3 | 4m | 4m |
 
 **Recent Trend:**
-- Last 5 plans: Direction Data Models, DirectionalStatusCard, Session Breakdown Bottom Sheet, Device List Direction
+- Last 5 plans: DirectionalStatusCard, Session Breakdown Bottom Sheet, Device List Direction, Retention Data Layer
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -118,6 +119,11 @@ Recent decisions affecting current work:
 - SettingsRepository with typed Flow properties
 - Conservative security defaults matching existing SecurityManager constants
 
+**Phase 21 - History Retention Settings (IN PROGRESS):**
+- Preset values only (0, 7, 30, 90 days) for retention - no custom input - Added in 21-01
+- CleanupResult data class for multi-value cleanup feedback - Added in 21-01
+- Only inactive sessions cleaned (active never deleted) - Added in 21-01
+
 ### Pending Todos
 
 11 todos tracked in `.planning/todos/pending/`
@@ -144,10 +150,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-08 09:17 UTC
-Stopped at: Completed 20-04-PLAN.md (Device List Direction Indicators) - Phase 20 complete
+Last session: 2026-02-08 13:09 UTC
+Stopped at: Completed 21-01-PLAN.md (Retention Data Layer)
 Resume file: None
 
 **Next actions:**
-- Begin Phase 21 (TBD)
+- Continue Phase 21: 21-02-PLAN.md (Settings UI)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
