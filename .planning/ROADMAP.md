@@ -305,15 +305,17 @@ Plans:
 **Depends on**: Phase 21
 **Requirements**: RETENTION-05, RETENTION-06, RETENTION-07, RETENTION-08
 **Success Criteria** (what must be TRUE):
-  1. WorkManager schedules periodic cleanup task with 24-hour interval
+  1. WorkManager schedules periodic cleanup task with 7-day interval and 1-day flex window
   2. Cleanup job respects retention setting (deletes messages older than N days)
   3. WorkManager uses lenient constraints (battery not low only, no idle requirement)
-  4. Last cleanup timestamp is displayed in Settings screen
+  4. Last cleanup timestamp is displayed in Settings screen as relative time
   5. Auto-cleanup only runs when toggle is enabled in settings
-**Plans**: TBD
+  6. Auto-cleanup toggle is hidden when retention is Forever (0 days)
+**Plans**: 2 plans
 
 Plans:
-- [ ] 22-01: TBD
+- [ ] 22-01-PLAN.md — Data layer + CleanupWorker: Preference keys, SettingsRepository methods, CleanupWorker with existing cleanup method, WorkManagerHelper
+- [ ] 22-02-PLAN.md — Settings UI + App Launch: SettingsViewModel auto-cleanup state, toggle in Settings (hidden when Forever), last cleaned display, cleanup scheduling on launch
 
 ## Progress
 
@@ -340,4 +342,4 @@ Plans:
 | 19. Export Functionality | v0.0.64 | 7/7 | Complete | 2026-02-06 |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 4/4 | Complete | 2026-02-08 |
 | 21. History Retention Settings | v0.0.64 | 2/2 | Complete | 2026-02-08 |
-| 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/TBD | Not started | - |
+| 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/2 | Not started | - |
