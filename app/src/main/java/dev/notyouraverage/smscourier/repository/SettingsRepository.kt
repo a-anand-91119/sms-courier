@@ -80,6 +80,13 @@ class SettingsRepository(
                 ?: SettingsDefaults.AUTH_REQUEST_TIMEOUT
         }
 
+    // Data & Storage Settings - Read Flows
+    val historyRetentionDays: Flow<Int> = dataStore.data
+        .map { preferences ->
+            preferences[PreferenceKeys.HISTORY_RETENTION_DAYS]
+                ?: SettingsDefaults.HISTORY_RETENTION_DAYS
+        }
+
     // Main Settings - Write Methods
     suspend fun setNotificationPersistence(enabled: Boolean) {
         dataStore.edit { preferences ->
@@ -140,6 +147,16 @@ class SettingsRepository(
         require(minutes in 1..30) { "Auth request timeout must be between 1 and 30 minutes" }
         dataStore.edit { preferences ->
             preferences[PreferenceKeys.AUTH_REQUEST_TIMEOUT] = minutes
+        }
+    }
+
+    // Data & Storage Settings - Write Methods
+    suspend fun setHistoryRetentionDays(days: Int) {
+        require(days == 0 || days in listOf(7, 30, 90)) {
+            "Retention must be 0 (forever) or one of: 7, 30, 90 days"
+        }
+        dataStore.edit { preferences ->
+            preferences[PreferenceKeys.HISTORY_RETENTION_DAYS] = days
         }
     }
 
