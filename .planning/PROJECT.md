@@ -92,6 +92,7 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 | Settings UI library | Full control over Material3 styling | Custom Compose components |
 | Settings architecture | Reactive updates to services | SettingsRepository with Flow properties |
 | Security defaults | Match existing SecurityManager constants | Conservative defaults |
+| Unpair auto-archives (ARCH-05) | Safer default preserves history; user can delete via Archive Management | Auto-archive without choice dialog |
 
 ---
-*Last updated: 2026-02-04 — milestone v0.0.64 started: device management & visibility*
+*Last updated: 2026-02-08 — v0.0.64 audit complete, pending manual verification*

@@ -55,11 +55,11 @@ Requirements for v0.0.64 milestone.
 
 ### Archive Management
 
-- [ ] **ARCH-01**: Archive Management screen for removed devices (read-only history)
-- [ ] **ARCH-02**: Shows removal reason ("You initiated" or "Other side initiated")
-- [ ] **ARCH-03**: Export history button with format dropdown (CSV, JSON, TXT)
-- [ ] **ARCH-04**: Delete all data button with confirmation dialog
-- [ ] **ARCH-05**: Soft delete on unpair presents archive choice (keep/delete history)
+- [x] **ARCH-01**: Archive Management screen for removed devices (read-only history)
+- [x] **ARCH-02**: Shows removal reason ("You initiated" or "Other side initiated")
+- [x] **ARCH-03**: Export history button with format dropdown (CSV, JSON, TXT)
+- [x] **ARCH-04**: Delete all data button with confirmation dialog
+- [~] **ARCH-05**: Soft delete on unpair presents archive choice (keep/delete history) — SIMPLIFIED: auto-archives (user can delete via Archive Management)
 
 ### Export Functionality
 
@@ -166,11 +166,11 @@ Which phases cover which requirements.
 | DETAIL-03 | Phase 18 | Complete |
 | DETAIL-04 | Phase 18 | Complete |
 | DETAIL-05 | Phase 18 | Complete |
-| ARCH-01 | Phase 17 | Pending |
-| ARCH-02 | Phase 17 | Pending |
+| ARCH-01 | Phase 17 | Complete |
+| ARCH-02 | Phase 17 | Complete |
 | ARCH-03 | Phase 19 | Complete |
-| ARCH-04 | Phase 17 | Pending |
-| ARCH-05 | Phase 17 | Pending |
+| ARCH-04 | Phase 17 | Complete |
+| ARCH-05 | Phase 17 | Simplified |
 | EXP-01 | Phase 19 | Complete |
 | EXP-02 | Phase 19 | Complete |
 | EXP-03 | Phase 19 | Complete |
