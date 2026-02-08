@@ -9,6 +9,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
+/**
+ * Result of a cleanup operation.
+ */
+data class CleanupResult(
+    val sessionCount: Int,
+    val messageCount: Int,
+)
+
 class ForwardingSessionRepository(
     private val forwardingSessionDao: ForwardingSessionDao,
 ) {
@@ -97,4 +105,28 @@ class ForwardingSessionRepository(
         withContext(ioDispatcher) {
             forwardingSessionDao.getSessionsForDeviceList(phoneNumber)
         }
+
+    /**
+     * Clean up old sessions and messages based on retention setting.
+     * @param retentionDays Number of days to retain (0 = forever, skip cleanup)
+     * @return CleanupResult with counts of deleted sessions and messages
+     */
+    suspend fun cleanupOldSessions(retentionDays: Int): CleanupResult = withContext(ioDispatcher) {
+        // Forever setting: nothing to clean
+        if (retentionDays == 0) {
+            return@withContext CleanupResult(0, 0)
+        }
+
+        val thresholdMs = System.currentTimeMillis() - (retentionDays * 24 * 60 * 60 * 1000L)
+
+        // Get sessions to calculate message count before deletion
+        val sessionsToDelete = forwardingSessionDao.getSessionsOlderThan(thresholdMs)
+        val sessionCount = sessionsToDelete.size
+        val messageCount = sessionsToDelete.sumOf { it.messageCount }
+
+        // Delete sessions (messages CASCADE deleted via foreign key)
+        forwardingSessionDao.deleteSessionsOlderThan(thresholdMs)
+
+        CleanupResult(sessionCount, messageCount)
+    }
 }

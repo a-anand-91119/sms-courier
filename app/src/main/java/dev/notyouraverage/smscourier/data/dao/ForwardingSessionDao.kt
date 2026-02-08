@@ -83,4 +83,25 @@ interface ForwardingSessionDao {
      */
     @Query("SELECT * FROM forwarding_sessions WHERE device_phone_number = :phoneNumber ORDER BY started_at DESC")
     suspend fun getSessionsForDeviceList(phoneNumber: String): List<ForwardingSession>
+
+    /**
+     * Count sessions older than threshold that are NOT active.
+     * Used to show preview before cleanup.
+     */
+    @Query("SELECT COUNT(*) FROM forwarding_sessions WHERE started_at < :thresholdMs AND is_active = 0")
+    suspend fun countSessionsOlderThan(thresholdMs: Long): Int
+
+    /**
+     * Get inactive sessions older than threshold.
+     * Used to calculate message count before deletion.
+     */
+    @Query("SELECT * FROM forwarding_sessions WHERE started_at < :thresholdMs AND is_active = 0")
+    suspend fun getSessionsOlderThan(thresholdMs: Long): List<ForwardingSession>
+
+    /**
+     * Delete inactive sessions older than threshold.
+     * Messages are CASCADE deleted via foreign key.
+     */
+    @Query("DELETE FROM forwarding_sessions WHERE started_at < :thresholdMs AND is_active = 0")
+    suspend fun deleteSessionsOlderThan(thresholdMs: Long): Int
 }
