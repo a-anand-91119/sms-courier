@@ -1,5 +1,6 @@
 package dev.notyouraverage.smscourier.viewmodels
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import dev.notyouraverage.smscourier.data.settings.AppTheme
 import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.SettingsRepository
+import dev.notyouraverage.smscourier.utils.WorkManagerHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +27,7 @@ sealed class CleanupState {
 }
 
 class SettingsViewModel(
+    private val application: Application,
     private val settingsRepository: SettingsRepository,
     private val forwardingSessionRepository: ForwardingSessionRepository,
 ) : ViewModel() {
@@ -45,6 +48,21 @@ class SettingsViewModel(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             SettingsDefaults.HISTORY_RETENTION_DAYS,
+        )
+
+    // Auto-cleanup Settings
+    val autoCleanupEnabled: StateFlow<Boolean> = settingsRepository.autoCleanupEnabled
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            SettingsDefaults.AUTO_CLEANUP_ENABLED,
+        )
+
+    val lastCleanupTimestamp: StateFlow<Long> = settingsRepository.lastCleanupTimestamp
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            SettingsDefaults.LAST_CLEANUP_TIMESTAMP,
         )
 
     // Advanced/Security Settings
@@ -204,6 +222,17 @@ class SettingsViewModel(
         }
     }
 
+    fun setAutoCleanupEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setAutoCleanupEnabled(enabled)
+            if (enabled) {
+                WorkManagerHelper.scheduleCleanup(application)
+            } else {
+                WorkManagerHelper.cancelCleanup(application)
+            }
+        }
+    }
+
     fun cleanupOldHistory() {
         viewModelScope.launch {
             _cleanupState.value = CleanupState.Loading
@@ -226,12 +255,13 @@ class SettingsViewModel(
     }
 
     class Factory(
+        private val application: Application,
         private val settingsRepository: SettingsRepository,
         private val forwardingSessionRepository: ForwardingSessionRepository,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SettingsViewModel(settingsRepository, forwardingSessionRepository) as T
+            return SettingsViewModel(application, settingsRepository, forwardingSessionRepository) as T
         }
     }
 }

@@ -40,6 +40,7 @@ import dev.notyouraverage.smscourier.viewmodels.PairedDevicesViewModel
 import dev.notyouraverage.smscourier.viewmodels.PairingRequestsViewModel
 import dev.notyouraverage.smscourier.viewmodels.SessionHistoryViewModel
 import dev.notyouraverage.smscourier.viewmodels.SettingsViewModel
+import android.app.Application
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
 
@@ -176,7 +177,11 @@ fun SmsCourierNavGraph(
 
         composable(Screen.Settings.route) {
             val viewModel: SettingsViewModel = viewModel(
-                factory = SettingsViewModel.Factory(settingsRepository, sessionRepository),
+                factory = SettingsViewModel.Factory(
+                    application = context.applicationContext as Application,
+                    settingsRepository = settingsRepository,
+                    forwardingSessionRepository = sessionRepository,
+                ),
             )
             SettingsScreen(
                 viewModel = viewModel,
