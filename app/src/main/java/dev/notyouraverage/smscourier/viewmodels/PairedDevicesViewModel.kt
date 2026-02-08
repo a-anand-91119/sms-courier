@@ -3,6 +3,9 @@ package dev.notyouraverage.smscourier.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dev.notyouraverage.smscourier.data.Direction
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
+import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -47,6 +51,32 @@ class PairedDevicesViewModel(
     // Devices where this phone is the TARGET (forwards SMS TO these devices)
     val targetDevices: StateFlow<List<PairedDevice>> = deviceRepository.getTargetDevices()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Active sessions mapped by device phone number
+    val activeSessionsMap: StateFlow<Map<String, ForwardingSession>> =
+        sessionRepository.getActiveSessions()
+            .map { sessions ->
+                sessions.associateBy { it.devicePhoneNumber }
+            }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                emptyMap(),
+            )
+
+    /**
+     * Get the direction for a device based on its role and active session.
+     * Returns null if no active session exists.
+     */
+    fun getDirectionForDevice(device: PairedDevice, activeSession: ForwardingSession?): Direction? {
+        if (activeSession == null) return null
+        return when (device.role) {
+            // SOURCE devices request forwarding = they RECEIVE messages (arrow down)
+            DeviceRole.SOURCE -> Direction.FORWARDING_TO
+            // TARGET devices provide forwarding = they SEND messages (arrow up)
+            DeviceRole.TARGET -> Direction.RECEIVING_FROM
+        }
+    }
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
