@@ -25,11 +25,11 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -209,11 +209,12 @@ fun DeviceHistoryScreen(
                                 removedDevices,
                                 key = { "${it.phoneNumber}_${it.role}" },
                             ) { device ->
+                                // Removed devices: no active sessions, lower opacity per CONTEXT.md
                                 DeviceHistoryCard(
                                     device = device,
-                                    hasActiveSession = false, // Removed devices can't have active sessions
+                                    hasActiveSession = false,
                                     onClick = { selectedRemovedDevice = device },
-                                    isMuted = true, // Per CONTEXT.md: lower opacity
+                                    isMuted = true,
                                 )
                             }
                         }

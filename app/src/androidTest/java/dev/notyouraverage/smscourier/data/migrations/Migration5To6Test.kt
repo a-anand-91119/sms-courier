@@ -7,8 +7,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase
 import dev.notyouraverage.smscourier.data.SmsCourierDatabase.Companion.MIGRATION_5_6
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -27,13 +25,13 @@ import org.junit.runner.RunWith
  * - Indexes exist on forwarded_messages table
  */
 @RunWith(AndroidJUnit4::class)
-class Migration_5_6_Test {
+class Migration5To6Test {
 
     @get:Rule
     val helper: MigrationTestHelper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
         SmsCourierDatabase::class.java.canonicalName!!,
-        FrameworkSQLiteOpenHelperFactory()
+        FrameworkSQLiteOpenHelperFactory(),
     )
 
     @Test
@@ -47,7 +45,7 @@ class Migration_5_6_Test {
                 (phoneNumber, device_role, pairing_status, max_forward_duration_minutes,
                  failed_attempts, created_at, last_activity_at, resend_attempt_count)
                 VALUES ('+15551234567', 'SOURCE', 'APPROVED', 30, 0, 1000, 2000, 0)
-                """
+                """,
             )
             close()
         }
@@ -92,7 +90,7 @@ class Migration_5_6_Test {
                 INSERT INTO forwarding_sessions
                 (device_phone_number, started_at, duration_minutes, expires_at, is_active, messages_forwarded)
                 VALUES ('+15551234567', 3000, 30, 4800, 1, 5)
-                """
+                """,
             )
             close()
         }
@@ -133,7 +131,7 @@ class Migration_5_6_Test {
                 INSERT INTO forwarding_sessions
                 (id, device_phone_number, started_at, duration_minutes, expires_at, is_active, messages_forwarded)
                 VALUES (100, '+15551234567', 1000, 30, 2000, 1, 0)
-                """
+                """,
             )
             close()
         }
@@ -151,7 +149,7 @@ class Migration_5_6_Test {
                 """
                 INSERT INTO forwarded_messages (session_id, sender_number, message_content, timestamp)
                 VALUES (100, '+15559876543', 'Test message', 3000)
-                """
+                """,
             )
 
             // Verify message exists
@@ -194,13 +192,13 @@ class Migration_5_6_Test {
                 // Verify session_id index exists
                 assertTrue(
                     "Index on session_id should exist",
-                    indexNames.any { it.contains("session_id") }
+                    indexNames.any { it.contains("session_id") },
                 )
 
                 // Verify timestamp index exists
                 assertTrue(
                     "Index on timestamp should exist",
-                    indexNames.any { it.contains("timestamp") }
+                    indexNames.any { it.contains("timestamp") },
                 )
             }
             close()

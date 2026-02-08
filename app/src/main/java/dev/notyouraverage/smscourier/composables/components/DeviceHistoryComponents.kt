@@ -50,7 +50,8 @@ fun DeviceHistoryCard(
     hasActiveSession: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isMuted: Boolean = false, // For removed devices
+    // For removed devices
+    isMuted: Boolean = false,
 ) {
     val alpha = if (isMuted) 0.6f else 1f
 

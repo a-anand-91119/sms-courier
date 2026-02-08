@@ -372,7 +372,8 @@ class SmsCommandHandler(
                 messageContent = messageBody,
                 destinationNumber = session.devicePhoneNumber,
                 devicePhone = session.devicePhoneNumber,
-                deviceRole = DeviceRole.TARGET, // We are TARGET forwarding to SOURCE
+                // We are TARGET forwarding to SOURCE
+                deviceRole = DeviceRole.TARGET,
             )
 
             if (storeResult.isFailure) {
