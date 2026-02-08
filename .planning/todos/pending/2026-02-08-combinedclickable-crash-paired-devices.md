@@ -11,12 +11,17 @@ App crashes in multiple places due to deprecated `combinedClickable` Indication 
 
 ## Steps to Reproduce
 
-**Crash 1: Paired Devices Page**
+**Crash 1: Settings Icon**
+1. Open app
+2. Click on Settings icon in top bar
+3. App crashes
+
+**Crash 2: Paired Devices Page**
 1. Open app
 2. Click on Paired Devices card on home screen
 3. App crashes immediately
 
-**Crash 2: Device in "I Forward To"**
+**Crash 3: Device in "I Forward To"**
 1. Open app with at least one paired device
 2. Navigate to Paired Devices screen (if it doesn't crash)
 3. Click on a device in "I Forward To" section
@@ -48,8 +53,9 @@ overload that takes an Indication parameter, and explicitly pass LocalIndication
 
 ## Acceptance Criteria
 
+- [ ] Settings screen opens without crash
 - [ ] Paired Devices screen opens without crash
 - [ ] Clicking device in "I Forward To" does not crash
 - [ ] Long-press export functionality still works
 - [ ] Session History screen works (also uses combinedClickable)
-- [ ] All other clickable elements work correctly
+- [ ] All clickable elements work correctly
