@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Reliable, secure SMS forwarding between paired devices with minimal user intervention
-**Current focus:** Phase 20 - Bidirectional Visibility Indicators
+**Current focus:** Phase 21 - Next phase TBD
 
 ## Current Position
 
 Phase: 20 of 22 (Bidirectional Visibility Indicators)
-Plan: 03 of 04 complete
-Status: In progress
-Last activity: 2026-02-08 - Completed 20-03-PLAN.md (Session Breakdown Bottom Sheet)
+Plan: 04 of 04 complete
+Status: Phase complete
+Last activity: 2026-02-08 - Completed 20-04-PLAN.md (Device List Direction Indicators)
 
-Progress: [█████████░] 88% (19/22 phases complete, 20-03 of 04)
+Progress: [█████████░] 91% (20/22 phases complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 33 (from Phases 1-20)
+- Total plans completed: 35 (from Phases 1-20)
 - Average duration: ~4 minutes
 - Total execution time: Not tracked
 
@@ -33,10 +33,10 @@ Progress: [█████████░] 88% (19/22 phases complete, 20-03 of 
 | 17 - Device History UI | 4 | 20m 20s | 5m 05s |
 | 18 - Session History UI | 4 | 14m 31s | 3m 38s |
 | 19 - Export Functionality | 7 | 36m 06s | 5m 09s |
-| 20 - Bidirectional Visibility | 3 | ~15m | ~5m |
+| 20 - Bidirectional Visibility | 4 | ~20m | ~5m |
 
 **Recent Trend:**
-- Last 5 plans: Device History export, Direction Data Models, DirectionalStatusCard, Session Breakdown Bottom Sheet
+- Last 5 plans: Direction Data Models, DirectionalStatusCard, Session Breakdown Bottom Sheet, Device List Direction
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -97,14 +97,16 @@ Recent decisions affecting current work:
 - Export button in DeviceDetailBottomSheet before View Sessions - Added in 19-07
 - OutlinedButton for export actions in bottom sheets - Added in 19-07
 
-**Phase 20 - Bidirectional Visibility Indicators (IN PROGRESS):**
+**Phase 20 - Bidirectional Visibility Indicators (COMPLETE):**
 - Direction enum with FORWARDING_TO, RECEIVING_FROM, BIDIRECTIONAL values - Added in 20-01
 - DirectionalStatus data class with counts and SessionWithDirection list - Added in 20-01
 - HomeState.directionalStatus for UI consumption - Added in 20-01
 - Bidirectional requires active sessions in both directions, not just paired devices - Added in 20-01
-- Refresh icon for bidirectional (SwapVert not in default Material Icons) - Added in 20-03
+- Icons.Default.Sync for bidirectional (SwapVert not in default Material Icons) - Added in 20-02
 - SessionBreakdownBottomSheet groups sessions by direction - Added in 20-03
 - Session stop via sessionRepository.endSession with USER stoppedBy - Added in 20-03
+- DeviceCard DirectionalSubtitle with role-based direction display - Added in 20-04
+- formatLastActive helper for relative time display - Added in 20-04
 
 **Security:**
 - Bcrypt password hashing for device pairing
@@ -142,10 +144,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-08 09:16 UTC
-Stopped at: Completed 20-03-PLAN.md (Session Breakdown Bottom Sheet) - Phase 20 in progress
+Last session: 2026-02-08 09:17 UTC
+Stopped at: Completed 20-04-PLAN.md (Device List Direction Indicators) - Phase 20 complete
 Resume file: None
 
 **Next actions:**
-- Continue Phase 20 with 20-04-PLAN.md (Device list direction indicators)
+- Begin Phase 21 (TBD)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
