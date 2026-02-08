@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 20 of 22 (Bidirectional Visibility Indicators)
-Plan: 01 of 04 complete
+Plan: 03 of 04 complete
 Status: In progress
-Last activity: 2026-02-08 - Completed 20-01-PLAN.md (Direction Data Models)
+Last activity: 2026-02-08 - Completed 20-03-PLAN.md (Session Breakdown Bottom Sheet)
 
-Progress: [█████████░] 86% (19/22 phases complete, 20-01 of 04)
+Progress: [█████████░] 88% (19/22 phases complete, 20-03 of 04)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 31 (from Phases 1-19)
+- Total plans completed: 33 (from Phases 1-20)
 - Average duration: ~4 minutes
 - Total execution time: Not tracked
 
@@ -33,10 +33,10 @@ Progress: [█████████░] 86% (19/22 phases complete, 20-01 of 
 | 17 - Device History UI | 4 | 20m 20s | 5m 05s |
 | 18 - Session History UI | 4 | 14m 31s | 3m 38s |
 | 19 - Export Functionality | 7 | 36m 06s | 5m 09s |
-| 20 - Bidirectional Visibility | 1 | 5m 50s | 5m 50s |
+| 20 - Bidirectional Visibility | 3 | ~15m | ~5m |
 
 **Recent Trend:**
-- Last 5 plans: Export trigger points, DeviceHistory export fix, Device History export, Direction Data Models
+- Last 5 plans: Device History export, Direction Data Models, DirectionalStatusCard, Session Breakdown Bottom Sheet
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -102,6 +102,9 @@ Recent decisions affecting current work:
 - DirectionalStatus data class with counts and SessionWithDirection list - Added in 20-01
 - HomeState.directionalStatus for UI consumption - Added in 20-01
 - Bidirectional requires active sessions in both directions, not just paired devices - Added in 20-01
+- Refresh icon for bidirectional (SwapVert not in default Material Icons) - Added in 20-03
+- SessionBreakdownBottomSheet groups sessions by direction - Added in 20-03
+- Session stop via sessionRepository.endSession with USER stoppedBy - Added in 20-03
 
 **Security:**
 - Bcrypt password hashing for device pairing
@@ -139,10 +142,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-08 09:08 UTC
-Stopped at: Completed 20-01-PLAN.md (Direction Data Models) - Phase 20 in progress
+Last session: 2026-02-08 09:16 UTC
+Stopped at: Completed 20-03-PLAN.md (Session Breakdown Bottom Sheet) - Phase 20 in progress
 Resume file: None
 
 **Next actions:**
-- Continue Phase 20 with 20-02-PLAN.md (DirectionalStatusCard UI component)
+- Continue Phase 20 with 20-04-PLAN.md (Device list direction indicators)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
