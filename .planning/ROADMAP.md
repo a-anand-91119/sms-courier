@@ -290,14 +290,14 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Settings screen has history retention option with range 7-90 days or "Forever" (0)
   2. Default retention is 30 days for new installations
-  3. Advanced Settings section has auto-cleanup toggle
+  3. Advanced Settings section has auto-cleanup toggle (Phase 22)
   4. Settings screen has "Clean up now" button for manual cleanup
   5. Manual cleanup deletes messages and sessions older than retention setting
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 21-01: TBD
-- [ ] 21-02: TBD
+- [ ] 21-01-PLAN.md — Data layer: Retention preference key/default, SettingsRepository Flow/setter, DAO cleanup queries, Repository cleanup method
+- [ ] 21-02-PLAN.md — ViewModel + UI: CleanupState sealed class, SettingsViewModel retention state/actions, "Data & Storage" section with dropdown and cleanup button
 
 #### Phase 22: Auto-Cleanup with WorkManager
 **Goal**: History cleanup runs automatically on schedule based on retention settings
@@ -338,5 +338,5 @@ Plans:
 | 18. Session History & Message Detail | v0.0.64 | 4/4 | Complete | 2026-02-06 |
 | 19. Export Functionality | v0.0.64 | 7/7 | Complete | 2026-02-06 |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 4/4 | Complete | 2026-02-08 |
-| 21. History Retention Settings | v0.0.64 | 0/TBD | Not started | - |
+| 21. History Retention Settings | v0.0.64 | 0/2 | Not started | - |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/TBD | Not started | - |
