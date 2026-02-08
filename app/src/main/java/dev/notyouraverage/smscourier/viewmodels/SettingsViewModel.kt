@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import dev.notyouraverage.smscourier.data.settings.AppTheme
 import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
+import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.SettingsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,8 +14,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/**
+ * State for history cleanup operation.
+ */
+sealed class CleanupState {
+    data object Idle : CleanupState()
+    data object Loading : CleanupState()
+    data class Success(val sessionsDeleted: Int, val messagesDeleted: Int) : CleanupState()
+    data class Error(val message: String) : CleanupState()
+}
+
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
+    private val forwardingSessionRepository: ForwardingSessionRepository,
 ) : ViewModel() {
 
     // Main Settings
@@ -26,6 +38,14 @@ class SettingsViewModel(
 
     val defaultForwardingDurationMinutes: StateFlow<Int> = settingsRepository.defaultForwardingDurationMinutes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 15)
+
+    // Data & Storage Settings
+    val historyRetentionDays: StateFlow<Int> = settingsRepository.historyRetentionDays
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            SettingsDefaults.HISTORY_RETENTION_DAYS,
+        )
 
     // Advanced/Security Settings
     val lockoutDurationMinutes: StateFlow<Int> = settingsRepository.lockoutDurationMinutes
@@ -76,6 +96,14 @@ class SettingsViewModel(
 
     fun clearSettingError() {
         _settingError.value = null
+    }
+
+    // Cleanup state
+    private val _cleanupState = MutableStateFlow<CleanupState>(CleanupState.Idle)
+    val cleanupState: StateFlow<CleanupState> = _cleanupState.asStateFlow()
+
+    fun resetCleanupState() {
+        _cleanupState.value = CleanupState.Idle
     }
 
     // Main Settings Setters
@@ -164,12 +192,46 @@ class SettingsViewModel(
         }
     }
 
+    // Data & Storage Settings Setters
+    fun setHistoryRetentionDays(days: Int) {
+        viewModelScope.launch {
+            try {
+                settingsRepository.setHistoryRetentionDays(days)
+                _settingError.value = null
+            } catch (e: IllegalArgumentException) {
+                _settingError.value = e.message
+            }
+        }
+    }
+
+    fun cleanupOldHistory() {
+        viewModelScope.launch {
+            _cleanupState.value = CleanupState.Loading
+            try {
+                val retentionDays = historyRetentionDays.value
+                if (retentionDays == 0) {
+                    // Forever setting - show info dialog via Success with 0 counts
+                    _cleanupState.value = CleanupState.Success(0, 0)
+                } else {
+                    val result = forwardingSessionRepository.cleanupOldSessions(retentionDays)
+                    _cleanupState.value = CleanupState.Success(
+                        sessionsDeleted = result.sessionCount,
+                        messagesDeleted = result.messageCount,
+                    )
+                }
+            } catch (e: Exception) {
+                _cleanupState.value = CleanupState.Error(e.message ?: "Cleanup failed")
+            }
+        }
+    }
+
     class Factory(
         private val settingsRepository: SettingsRepository,
+        private val forwardingSessionRepository: ForwardingSessionRepository,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SettingsViewModel(settingsRepository) as T
+            return SettingsViewModel(settingsRepository, forwardingSessionRepository) as T
         }
     }
 }
