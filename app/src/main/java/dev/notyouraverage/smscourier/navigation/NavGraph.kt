@@ -176,7 +176,7 @@ fun SmsCourierNavGraph(
 
         composable(Screen.Settings.route) {
             val viewModel: SettingsViewModel = viewModel(
-                factory = SettingsViewModel.Factory(settingsRepository),
+                factory = SettingsViewModel.Factory(settingsRepository, sessionRepository),
             )
             SettingsScreen(
                 viewModel = viewModel,
