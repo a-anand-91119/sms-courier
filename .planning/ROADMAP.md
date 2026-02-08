@@ -147,8 +147,8 @@ Plans:
 - [x] **Phase 16: Message Storage Integration** - Populate ForwardedMessage during forwarding sessions
 - [x] **Phase 17: Device History UI** - Active/removed device list with statistics
 - [x] **Phase 18: Session History & Message Detail** - Session list with message-level bottom sheets
-- [ ] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
-- [ ] **Phase 20: Bidirectional Visibility Indicators** - Home screen directional status (↑↓⇅)
+- [x] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
+- [x] **Phase 20: Bidirectional Visibility Indicators** - Home screen directional status (↑↓⇅)
 - [ ] **Phase 21: History Retention Settings** - Configurable retention with manual cleanup
 - [ ] **Phase 22: Auto-Cleanup with WorkManager** - Periodic background cleanup
 
@@ -265,6 +265,7 @@ Plans:
 **Goal**: Home screen shows directional forwarding status with smart indicators
 **Depends on**: Phase 16
 **Requirements**: BIDIR-01, BIDIR-02, BIDIR-03, BIDIR-04, BIDIR-05, BIDIR-06, BIDIR-07, BIDIR-08
+**Status**: Complete (2026-02-08)
 **Success Criteria** (what must be TRUE):
   1. Home screen calculates active session status (forwarding TO, receiving FROM, bidirectional)
   2. Smart status indicator shows ↑ with count when user is forwarding TO other devices
@@ -277,10 +278,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 20-01-PLAN.md — Data models and ViewModel: Direction enum, DirectionalStatus data class, HomeViewModel directional calculation
-- [ ] 20-02-PLAN.md — Home screen indicators: DirectionalStatusCard composable with BadgedBox, semantic colors, integration
-- [ ] 20-03-PLAN.md — Session breakdown sheet: SessionBreakdownBottomSheet with grouped sessions, stop actions, NavGraph wiring
-- [ ] 20-04-PLAN.md — Device list directions: PairedDevicesViewModel session tracking, DeviceCard directional subtitle
+- [x] 20-01-PLAN.md — Data models and ViewModel: Direction enum, DirectionalStatus data class, HomeViewModel directional calculation
+- [x] 20-02-PLAN.md — Home screen indicators: DirectionalStatusCard composable with BadgedBox, semantic colors, integration
+- [x] 20-03-PLAN.md — Session breakdown sheet: SessionBreakdownBottomSheet with grouped sessions, stop actions, NavGraph wiring
+- [x] 20-04-PLAN.md — Device list directions: PairedDevicesViewModel session tracking, DeviceCard directional subtitle
 
 #### Phase 21: History Retention Settings
 **Goal**: Users can configure history retention and manually clean old data
@@ -336,6 +337,6 @@ Plans:
 | 17. Device History UI | v0.0.64 | 3/3 | Complete | 2026-02-06 |
 | 18. Session History & Message Detail | v0.0.64 | 4/4 | Complete | 2026-02-06 |
 | 19. Export Functionality | v0.0.64 | 7/7 | Complete | 2026-02-06 |
-| 20. Bidirectional Visibility Indicators | v0.0.64 | 0/4 | Not started | - |
+| 20. Bidirectional Visibility Indicators | v0.0.64 | 4/4 | Complete | 2026-02-08 |
 | 21. History Retention Settings | v0.0.64 | 0/TBD | Not started | - |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/TBD | Not started | - |

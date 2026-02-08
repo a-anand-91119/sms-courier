@@ -72,14 +72,14 @@ Requirements for v0.0.64 milestone.
 
 ### Bidirectional Visibility
 
-- [ ] **BIDIR-01**: Home screen calculates active session status (forwarding TO, receiving FROM, bidirectional)
-- [ ] **BIDIR-02**: Smart status indicator shows ↑ (forwarding TO count)
-- [ ] **BIDIR-03**: Smart status indicator shows ↓ (receiving FROM count)
-- [ ] **BIDIR-04**: Smart status indicator shows ⇅ (bidirectional count)
-- [ ] **BIDIR-05**: Status indicator only shows active directions (hides if zero)
-- [ ] **BIDIR-06**: Tap status indicator opens session breakdown bottom sheet
-- [ ] **BIDIR-07**: Session breakdown groups by direction (Forwarding To, Receiving From, Bidirectional)
-- [ ] **BIDIR-08**: Paired devices list shows directional arrows (↑ forwarding, ↓ receiving, ⇅ bidirectional)
+- [x] **BIDIR-01**: Home screen calculates active session status (forwarding TO, receiving FROM, bidirectional)
+- [x] **BIDIR-02**: Smart status indicator shows ↑ (forwarding TO count)
+- [x] **BIDIR-03**: Smart status indicator shows ↓ (receiving FROM count)
+- [x] **BIDIR-04**: Smart status indicator shows ⇅ (bidirectional count)
+- [x] **BIDIR-05**: Status indicator only shows active directions (hides if zero)
+- [x] **BIDIR-06**: Tap status indicator opens session breakdown bottom sheet
+- [x] **BIDIR-07**: Session breakdown groups by direction (Forwarding To, Receiving From, Bidirectional)
+- [x] **BIDIR-08**: Paired devices list shows directional arrows (↑ forwarding, ↓ receiving, ⇅ bidirectional)
 
 ### History Retention
 
@@ -177,14 +177,14 @@ Which phases cover which requirements.
 | EXP-04 | Phase 19 | Complete |
 | EXP-05 | Phase 19 | Complete |
 | EXP-06 | Phase 19 | Complete |
-| BIDIR-01 | Phase 20 | Pending |
-| BIDIR-02 | Phase 20 | Pending |
-| BIDIR-03 | Phase 20 | Pending |
-| BIDIR-04 | Phase 20 | Pending |
-| BIDIR-05 | Phase 20 | Pending |
-| BIDIR-06 | Phase 20 | Pending |
-| BIDIR-07 | Phase 20 | Pending |
-| BIDIR-08 | Phase 20 | Pending |
+| BIDIR-01 | Phase 20 | Complete |
+| BIDIR-02 | Phase 20 | Complete |
+| BIDIR-03 | Phase 20 | Complete |
+| BIDIR-04 | Phase 20 | Complete |
+| BIDIR-05 | Phase 20 | Complete |
+| BIDIR-06 | Phase 20 | Complete |
+| BIDIR-07 | Phase 20 | Complete |
+| BIDIR-08 | Phase 20 | Complete |
 | RETENTION-01 | Phase 21 | Pending |
 | RETENTION-02 | Phase 21 | Pending |
 | RETENTION-03 | Phase 21 | Pending |
