@@ -83,6 +83,7 @@ fun DeviceHistoryScreen(
     var selectedRemovedDevice by remember { mutableStateOf<PairedDevice?>(null) }
     var showExportSheet by remember { mutableStateOf(false) }
     var deviceToExport by remember { mutableStateOf<PairedDevice?>(null) }
+    var deviceToUnpair by remember { mutableStateOf<PairedDevice?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
@@ -245,8 +246,7 @@ fun DeviceHistoryScreen(
                 showExportSheet = true
             },
             onUnpair = {
-                // TODO: Phase 18 will implement unpair
-                selectedActiveDevice = null
+                deviceToUnpair = selectedActiveDevice
             },
         )
     }
@@ -267,6 +267,33 @@ fun DeviceHistoryScreen(
             onDelete = {
                 // TODO: Implement delete with confirmation
                 selectedRemovedDevice = null
+            },
+        )
+    }
+
+    // Unpair confirmation dialog
+    deviceToUnpair?.let { device ->
+        AlertDialog(
+            onDismissRequest = { deviceToUnpair = null },
+            title = { Text("Unpair Device") },
+            text = {
+                Text("Remove ${device.displayName ?: device.phoneNumber} from your paired devices? You can re-pair later.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.unpairDevice(device)
+                        deviceToUnpair = null
+                        selectedActiveDevice = null
+                    },
+                ) {
+                    Text("Unpair", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deviceToUnpair = null }) {
+                    Text("Cancel")
+                }
             },
         )
     }
