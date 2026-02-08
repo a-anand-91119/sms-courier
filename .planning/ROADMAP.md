@@ -149,7 +149,7 @@ Plans:
 - [x] **Phase 18: Session History & Message Detail** - Session list with message-level bottom sheets
 - [x] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
 - [x] **Phase 20: Bidirectional Visibility Indicators** - Home screen directional status (↑↓⇅)
-- [ ] **Phase 21: History Retention Settings** - Configurable retention with manual cleanup
+- [x] **Phase 21: History Retention Settings** - Configurable retention with manual cleanup
 - [ ] **Phase 22: Auto-Cleanup with WorkManager** - Periodic background cleanup
 
 #### Phase 15: Database Foundation & Migration
@@ -287,6 +287,7 @@ Plans:
 **Goal**: Users can configure history retention and manually clean old data
 **Depends on**: Phase 16
 **Requirements**: RETENTION-01, RETENTION-02, RETENTION-03, RETENTION-04
+**Status**: Complete (2026-02-08)
 **Success Criteria** (what must be TRUE):
   1. Settings screen has history retention option with range 7-90 days or "Forever" (0)
   2. Default retention is 30 days for new installations
@@ -296,8 +297,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — Data layer: Retention preference key/default, SettingsRepository Flow/setter, DAO cleanup queries, Repository cleanup method
-- [ ] 21-02-PLAN.md — ViewModel + UI: CleanupState sealed class, SettingsViewModel retention state/actions, "Data & Storage" section with dropdown and cleanup button
+- [x] 21-01-PLAN.md — Data layer: Retention preference key/default, SettingsRepository Flow/setter, DAO cleanup queries, Repository cleanup method
+- [x] 21-02-PLAN.md — ViewModel + UI: CleanupState sealed class, SettingsViewModel retention state/actions, "Data & Storage" section with dropdown and cleanup button
 
 #### Phase 22: Auto-Cleanup with WorkManager
 **Goal**: History cleanup runs automatically on schedule based on retention settings
@@ -338,5 +339,5 @@ Plans:
 | 18. Session History & Message Detail | v0.0.64 | 4/4 | Complete | 2026-02-06 |
 | 19. Export Functionality | v0.0.64 | 7/7 | Complete | 2026-02-06 |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 4/4 | Complete | 2026-02-08 |
-| 21. History Retention Settings | v0.0.64 | 0/2 | Not started | - |
+| 21. History Retention Settings | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/TBD | Not started | - |

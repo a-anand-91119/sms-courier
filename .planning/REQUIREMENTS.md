@@ -83,10 +83,10 @@ Requirements for v0.0.64 milestone.
 
 ### History Retention
 
-- [ ] **RETENTION-01**: Settings option for history retention days (range: 7-90, or 0 for forever)
-- [ ] **RETENTION-02**: Default retention: 30 days
+- [x] **RETENTION-01**: Settings option for history retention days (range: 7-90, or 0 for forever)
+- [x] **RETENTION-02**: Default retention: 30 days
 - [ ] **RETENTION-03**: Auto-cleanup toggle in Advanced Settings
-- [ ] **RETENTION-04**: Manual "Clean up now" button in settings
+- [x] **RETENTION-04**: Manual "Clean up now" button in settings
 - [ ] **RETENTION-05**: WorkManager periodic cleanup (24-hour interval)
 - [ ] **RETENTION-06**: Cleanup respects retention setting (deletes messages older than N days)
 - [ ] **RETENTION-07**: Lenient WorkManager constraints (battery not low only)
@@ -185,10 +185,10 @@ Which phases cover which requirements.
 | BIDIR-06 | Phase 20 | Complete |
 | BIDIR-07 | Phase 20 | Complete |
 | BIDIR-08 | Phase 20 | Complete |
-| RETENTION-01 | Phase 21 | Pending |
-| RETENTION-02 | Phase 21 | Pending |
-| RETENTION-03 | Phase 21 | Pending |
-| RETENTION-04 | Phase 21 | Pending |
+| RETENTION-01 | Phase 21 | Complete |
+| RETENTION-02 | Phase 21 | Complete |
+| RETENTION-03 | Phase 22 | Pending |
+| RETENTION-04 | Phase 21 | Complete |
 | RETENTION-05 | Phase 22 | Pending |
 | RETENTION-06 | Phase 22 | Pending |
 | RETENTION-07 | Phase 22 | Pending |
@@ -203,4 +203,4 @@ Coverage validation: 100% (56/56 requirements mapped)
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-06 - Phase 19 complete (EXP-01 through EXP-06, ARCH-03)*
+*Last updated: 2026-02-08 - Phase 21 complete (RETENTION-01, RETENTION-02, RETENTION-04)*
