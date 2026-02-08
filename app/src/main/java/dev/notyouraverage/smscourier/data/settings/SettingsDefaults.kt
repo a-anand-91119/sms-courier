@@ -16,4 +16,6 @@ object SettingsDefaults {
 
     // Data & Storage Settings
     const val HISTORY_RETENTION_DAYS = 30 // days (0 = forever)
+    const val AUTO_CLEANUP_ENABLED = true // ON by default for new installations
+    const val LAST_CLEANUP_TIMESTAMP = 0L // 0 = never run
 }

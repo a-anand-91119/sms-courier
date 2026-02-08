@@ -2,6 +2,7 @@ package dev.notyouraverage.smscourier.data.settings
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 
 object PreferenceKeys {
@@ -20,4 +21,6 @@ object PreferenceKeys {
 
     // Data & Storage Settings
     val HISTORY_RETENTION_DAYS = intPreferencesKey("history_retention_days")
+    val AUTO_CLEANUP_ENABLED = booleanPreferencesKey("auto_cleanup_enabled")
+    val LAST_CLEANUP_TIMESTAMP = longPreferencesKey("last_cleanup_timestamp")
 }
