@@ -318,6 +318,17 @@ Plans:
 - [x] 22-01-PLAN.md — Data layer + CleanupWorker: Preference keys, SettingsRepository methods, CleanupWorker with existing cleanup method, WorkManagerHelper
 - [x] 22-02-PLAN.md — Settings UI + App Launch: SettingsViewModel auto-cleanup state, toggle in Settings (hidden when Forever), last cleaned display, cleanup scheduling on launch
 
+#### Phase 23: UAT Bug Fixes
+**Goal**: Fix critical bugs found during manual verification before milestone ship
+**Depends on**: Phase 22
+**Requirements**: None (bug fixes)
+**Status**: Pending
+**Success Criteria** (what must be TRUE):
+  1. combinedClickable crashes fixed — all clickable elements work without crash
+  2. Unpair button in Device History bottom sheet triggers confirmation and unpairs device
+  3. Active forwarding UI consolidated into main status card (single location)
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans | Status | Completed |
@@ -344,3 +355,4 @@ Plans:
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 4/4 | Complete | 2026-02-08 |
 | 21. History Retention Settings | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 2/2 | Complete | 2026-02-08 |
+| 23. UAT Bug Fixes | v0.0.64 | 0/? | Pending | - |
