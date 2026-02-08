@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -102,6 +103,8 @@ fun SettingsScreen(
     // Data & Storage settings
     val historyRetentionDays by viewModel.historyRetentionDays.collectAsState()
     val cleanupState by viewModel.cleanupState.collectAsState()
+    val autoCleanupEnabled by viewModel.autoCleanupEnabled.collectAsState()
+    val lastCleanupTimestamp by viewModel.lastCleanupTimestamp.collectAsState()
 
     // Duration dropdown state
     var durationExpanded by remember { mutableStateOf(false) }
@@ -298,6 +301,22 @@ fun SettingsScreen(
                     isLoading = cleanupState is CleanupState.Loading,
                     onClick = { showCleanupConfirmDialog = true },
                 )
+            }
+
+            // Auto-cleanup toggle (hidden when retention = Forever)
+            if (historyRetentionDays != 0) {
+                item {
+                    SettingsSwitchItem(
+                        title = "Auto-cleanup",
+                        subtitle = if (autoCleanupEnabled) {
+                            "Last cleaned: ${formatLastCleanup(lastCleanupTimestamp)}"
+                        } else {
+                            "Clean up old data automatically every 7 days"
+                        },
+                        checked = autoCleanupEnabled,
+                        onCheckedChange = { viewModel.setAutoCleanupEnabled(it) },
+                    )
+                }
             }
 
             // Advanced section (collapsible)
@@ -679,6 +698,18 @@ private fun formatRetention(days: Int): String = when (days) {
     30 -> "30 days"
     90 -> "90 days"
     else -> "$days days"
+}
+
+private fun formatLastCleanup(timestampMs: Long): String {
+    if (timestampMs == 0L) {
+        return "Never"
+    }
+    return DateUtils.getRelativeTimeSpanString(
+        timestampMs,
+        System.currentTimeMillis(),
+        DateUtils.DAY_IN_MILLIS,
+        DateUtils.FORMAT_ABBREV_RELATIVE,
+    ).toString()
 }
 
 @Composable
