@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -62,6 +61,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.notyouraverage.smscourier.data.Direction
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
+import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.viewmodels.PairedDevicesViewModel
@@ -77,6 +79,7 @@ fun PairedDevicesScreen(
 ) {
     val sourceDevices by viewModel.sourceDevices.collectAsState()
     val targetDevices by viewModel.targetDevices.collectAsState()
+    val activeSessionsMap by viewModel.activeSessionsMap.collectAsState()
     val resendingDevice by viewModel.resendingDevice.collectAsState()
     val snackbarMessage by viewModel.snackbarMessage.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -204,6 +207,7 @@ fun PairedDevicesScreen(
             when (selectedTab) {
                 0 -> DeviceList(
                     devices = sourceDevices,
+                    activeSessionsMap = activeSessionsMap,
                     emptyTitle = "No devices yet",
                     emptyMessage = "Add a device to receive forwarded SMS from them.",
                     onDeviceClick = onDeviceClick,
@@ -216,6 +220,7 @@ fun PairedDevicesScreen(
                 )
                 1 -> DeviceList(
                     devices = targetDevices,
+                    activeSessionsMap = activeSessionsMap,
                     emptyTitle = "No devices yet",
                     emptyMessage = "Other devices can request pairing with you.",
                     onDeviceClick = onDeviceClick,
@@ -234,6 +239,7 @@ fun PairedDevicesScreen(
 @Composable
 fun DeviceList(
     devices: List<PairedDevice>,
+    activeSessionsMap: Map<String, ForwardingSession>,
     emptyTitle: String,
     emptyMessage: String,
     onDeviceClick: (PairedDevice) -> Unit,
@@ -292,6 +298,7 @@ fun DeviceList(
                 Box {
                     DeviceCard(
                         device = device,
+                        activeSession = activeSessionsMap[device.phoneNumber],
                         onClick = { onDeviceClick(device) },
                         onLongClick = { onLongPressDevice(device) },
                         isResending = resendingDevice == device.phoneNumber,
@@ -348,6 +355,7 @@ fun DeviceList(
 @Composable
 fun DeviceCard(
     device: PairedDevice,
+    activeSession: ForwardingSession?,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     isResending: Boolean = false,
@@ -409,6 +417,19 @@ fun DeviceCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                // Directional subtitle
+                val direction = if (activeSession != null) {
+                    when (device.role) {
+                        DeviceRole.SOURCE -> Direction.FORWARDING_TO
+                        DeviceRole.TARGET -> Direction.RECEIVING_FROM
+                    }
+                } else {
+                    null
+                }
+                DirectionalSubtitle(
+                    direction = direction,
+                    lastActivityAt = device.lastActivityAt,
+                )
             }
 
             // Loading indicator or Status Badge
@@ -461,5 +482,57 @@ fun StatusBadge(status: PairingStatus) {
             fontWeight = FontWeight.Medium,
             color = textColor,
         )
+    }
+}
+
+/**
+ * Displays directional status subtitle for a device.
+ *
+ * Shows:
+ * - "Receiving - Active now" (primary color) for SOURCE devices with active session
+ * - "Forwarding - Active now" (tertiary color) for TARGET devices with active session
+ * - "Bidirectional - Active now" (secondary color) for bidirectional sessions
+ * - "Idle - Last active: X ago" (gray) for inactive devices
+ */
+@Composable
+fun DirectionalSubtitle(
+    direction: Direction?,
+    lastActivityAt: Long?,
+    modifier: Modifier = Modifier,
+) {
+    val (text, color) = when (direction) {
+        // SOURCE device receiving messages from remote TARGET
+        Direction.FORWARDING_TO -> "Receiving - Active now" to MaterialTheme.colorScheme.primary
+        // TARGET device forwarding messages to remote SOURCE
+        Direction.RECEIVING_FROM -> "Forwarding - Active now" to MaterialTheme.colorScheme.tertiary
+        // Both directions active
+        Direction.BIDIRECTIONAL -> "Bidirectional - Active now" to MaterialTheme.colorScheme.secondary
+        // No active session
+        null -> {
+            val timeText = lastActivityAt?.let { formatLastActive(it) } ?: "Never"
+            "Idle - Last active: $timeText" to MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    }
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = color,
+        modifier = modifier,
+    )
+}
+
+/**
+ * Formats a timestamp into human-readable relative time.
+ */
+private fun formatLastActive(timestamp: Long): String {
+    val now = System.currentTimeMillis()
+    val diffMs = now - timestamp
+    val diffMinutes = diffMs / (60 * 1000)
+    return when {
+        diffMinutes < 1 -> "Just now"
+        diffMinutes < 60 -> "$diffMinutes min ago"
+        diffMinutes < 1440 -> "${diffMinutes / 60} hours ago"
+        else -> "${diffMinutes / 1440} days ago"
     }
 }
