@@ -1,4 +1,4 @@
-# UAT Issue: Crash on "I Forward To" Click in Paired Devices
+# UAT Issue: combinedClickable Crashes (Multiple Locations)
 
 **Created:** 2026-02-08
 **Source:** Manual verification of v0.0.64
@@ -7,15 +7,20 @@
 
 ## Problem
 
-App crashes when clicking on a device in the "I Forward To" section of the Paired Devices screen.
+App crashes in multiple places due to deprecated `combinedClickable` Indication API.
 
 ## Steps to Reproduce
 
+**Crash 1: Paired Devices Page**
+1. Open app
+2. Click on Paired Devices card on home screen
+3. App crashes immediately
+
+**Crash 2: Device in "I Forward To"**
 1. Open app with at least one paired device
-2. Click on Paired Devices card
-3. See "I Forward To" section with one device
-4. Click on the device
-5. App crashes
+2. Navigate to Paired Devices screen (if it doesn't crash)
+3. Click on a device in "I Forward To" section
+4. App crashes
 
 ## Stack Trace
 
@@ -43,6 +48,8 @@ overload that takes an Indication parameter, and explicitly pass LocalIndication
 
 ## Acceptance Criteria
 
+- [ ] Paired Devices screen opens without crash
 - [ ] Clicking device in "I Forward To" does not crash
 - [ ] Long-press export functionality still works
+- [ ] Session History screen works (also uses combinedClickable)
 - [ ] All other clickable elements work correctly
