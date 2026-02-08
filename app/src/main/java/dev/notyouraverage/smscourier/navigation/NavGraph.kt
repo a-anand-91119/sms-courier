@@ -1,5 +1,6 @@
 package dev.notyouraverage.smscourier.navigation
 
+import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,7 +41,6 @@ import dev.notyouraverage.smscourier.viewmodels.PairedDevicesViewModel
 import dev.notyouraverage.smscourier.viewmodels.PairingRequestsViewModel
 import dev.notyouraverage.smscourier.viewmodels.SessionHistoryViewModel
 import dev.notyouraverage.smscourier.viewmodels.SettingsViewModel
-import android.app.Application
 import kotlinx.coroutines.launch
 import java.net.URLDecoder
 

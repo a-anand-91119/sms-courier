@@ -21,6 +21,11 @@ import dev.notyouraverage.smscourier.navigation.SmsCourierNavGraph
 import dev.notyouraverage.smscourier.receivers.PairingActionReceiver
 import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.ui.theme.smscourierTheme
+import dev.notyouraverage.smscourier.utils.WorkManagerHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -32,6 +37,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         requestSmsPermission()
+
+        // Schedule cleanup on app launch if enabled
+        CoroutineScope(Dispatchers.IO).launch {
+            val settingsRepository = SettingsRepository(applicationContext)
+            val autoCleanupEnabled = settingsRepository.autoCleanupEnabled.first()
+            val retentionDays = settingsRepository.historyRetentionDays.first()
+
+            // Only schedule if auto-cleanup is enabled AND retention is not Forever
+            if (autoCleanupEnabled && retentionDays != 0) {
+                WorkManagerHelper.scheduleCleanup(applicationContext)
+            }
+        }
 
         // Determine start destination from deep link intent
         val startDestination = getStartDestinationFromIntent(intent)
