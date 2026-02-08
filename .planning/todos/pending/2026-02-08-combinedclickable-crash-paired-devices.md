@@ -32,6 +32,11 @@ App crashes in multiple places due to deprecated `combinedClickable` Indication 
 2. Click Export History
 3. App crashes
 
+**Crash 5: Share Button in Session History**
+1. Navigate to Session History
+2. Click Share button
+3. App crashes
+
 ## Stack Trace
 
 ```
