@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 21 of 22 (History Retention Settings)
-Plan: 01 of 03 complete
+Plan: 02 of 03 complete
 Status: In progress
-Last activity: 2026-02-08 - Completed 21-01-PLAN.md (Retention Data Layer)
+Last activity: 2026-02-08 - Completed 21-02-PLAN.md (Settings UI)
 
 Progress: [█████████░] 91% (20/22 phases complete, 21 in progress)
 
@@ -34,10 +34,10 @@ Progress: [█████████░] 91% (20/22 phases complete, 21 in pro
 | 18 - Session History UI | 4 | 14m 31s | 3m 38s |
 | 19 - Export Functionality | 7 | 36m 06s | 5m 09s |
 | 20 - Bidirectional Visibility | 4 | ~20m | ~5m |
-| 21 - History Retention Settings | 1/3 | 4m | 4m |
+| 21 - History Retention Settings | 2/3 | 8m | 4m |
 
 **Recent Trend:**
-- Last 5 plans: DirectionalStatusCard, Session Breakdown Bottom Sheet, Device List Direction, Retention Data Layer
+- Last 5 plans: Session Breakdown Bottom Sheet, Device List Direction, Retention Data Layer, Settings UI
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -123,6 +123,9 @@ Recent decisions affecting current work:
 - Preset values only (0, 7, 30, 90 days) for retention - no custom input - Added in 21-01
 - CleanupResult data class for multi-value cleanup feedback - Added in 21-01
 - Only inactive sessions cleaned (active never deleted) - Added in 21-01
+- CleanupState sealed class pattern for async cleanup (Idle/Loading/Success/Error) - Added in 21-02
+- Forever (0 days) shows info-only dialog, no cleanup performed - Added in 21-02
+- OutlinedButton for cleanup button consistent with export buttons - Added in 21-02
 
 ### Pending Todos
 
@@ -150,10 +153,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-08 13:09 UTC
-Stopped at: Completed 21-01-PLAN.md (Retention Data Layer)
+Last session: 2026-02-08 13:17 UTC
+Stopped at: Completed 21-02-PLAN.md (Settings UI)
 Resume file: None
 
 **Next actions:**
-- Continue Phase 21: 21-02-PLAN.md (Settings UI)
+- Continue Phase 21: 21-03-PLAN.md (Cleanup Trigger)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
