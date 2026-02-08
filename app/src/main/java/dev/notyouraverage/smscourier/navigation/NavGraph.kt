@@ -1,7 +1,12 @@
 package dev.notyouraverage.smscourier.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -9,6 +14,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import dev.notyouraverage.smscourier.composables.components.SessionBreakdownBottomSheet
 import dev.notyouraverage.smscourier.composables.screens.AddDeviceScreen
 import dev.notyouraverage.smscourier.composables.screens.ArchiveManagementScreen
 import dev.notyouraverage.smscourier.composables.screens.DeviceHistoryScreen
@@ -34,6 +40,7 @@ import dev.notyouraverage.smscourier.viewmodels.PairedDevicesViewModel
 import dev.notyouraverage.smscourier.viewmodels.PairingRequestsViewModel
 import dev.notyouraverage.smscourier.viewmodels.SessionHistoryViewModel
 import dev.notyouraverage.smscourier.viewmodels.SettingsViewModel
+import kotlinx.coroutines.launch
 import java.net.URLDecoder
 
 @Composable
@@ -66,11 +73,29 @@ fun SmsCourierNavGraph(
         startDestination = startDestination,
     ) {
         composable(Screen.Home.route) {
-            val viewModel: HomeViewModel = viewModel(
+            var showSessionBreakdown by remember { mutableStateOf(false) }
+            val scope = rememberCoroutineScope()
+
+            val homeViewModel: HomeViewModel = viewModel(
                 factory = HomeViewModel.Factory(deviceRepository, sessionRepository),
             )
+
+            // Session breakdown bottom sheet
+            if (showSessionBreakdown) {
+                val homeState by homeViewModel.homeState.collectAsState()
+                SessionBreakdownBottomSheet(
+                    sessions = homeState.directionalStatus.activeSessions,
+                    onDismiss = { showSessionBreakdown = false },
+                    onStopSession = { session ->
+                        scope.launch {
+                            sessionRepository.endSession(session.id, "USER")
+                        }
+                    },
+                )
+            }
+
             HomeScreen(
-                viewModel = viewModel,
+                viewModel = homeViewModel,
                 onNavigateToPairedDevices = {
                     navController.navigate(Screen.PairedDevices.route)
                 },
@@ -89,6 +114,7 @@ fun SmsCourierNavGraph(
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
                 },
+                onShowSessionBreakdown = { showSessionBreakdown = true },
             )
         }
 

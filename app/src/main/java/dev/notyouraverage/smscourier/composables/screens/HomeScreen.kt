@@ -59,6 +59,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.notyouraverage.smscourier.composables.components.DirectionalStatusCard
 import dev.notyouraverage.smscourier.services.foreground.MasterService
 import dev.notyouraverage.smscourier.viewmodels.HomeViewModel
 import kotlinx.coroutines.delay
@@ -74,6 +75,7 @@ fun HomeScreen(
     onNavigateToDeviceHistory: () -> Unit,
     onNavigateToForwardingControl: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onShowSessionBreakdown: () -> Unit,
 ) {
     val context = LocalContext.current
     val homeState by viewModel.homeState.collectAsState()
@@ -188,6 +190,16 @@ fun HomeScreen(
                     onClick = onNavigateToForwardingControl,
                 )
             }
+
+            // Directional Status Card - Always shown (grays out inactive directions internally)
+            // Per CONTEXT.md: "Show all directions but gray out/dim inactive ones (zero count)"
+            // and "Sheet always opens when tapped, even with zero count"
+            DirectionalStatusCard(
+                forwardingToCount = homeState.directionalStatus.forwardingToCount,
+                receivingFromCount = homeState.directionalStatus.receivingFromCount,
+                bidirectionalCount = homeState.directionalStatus.bidirectionalCount,
+                onCardClick = onShowSessionBreakdown,
+            )
 
             // Quick Actions Section
             Text(
