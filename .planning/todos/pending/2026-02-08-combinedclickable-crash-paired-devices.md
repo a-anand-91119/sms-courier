@@ -27,6 +27,11 @@ App crashes in multiple places due to deprecated `combinedClickable` Indication 
 3. Click on a device in "I Forward To" section
 4. App crashes
 
+**Crash 4: Export History from Device History**
+1. Navigate to Device History
+2. Click Export History
+3. App crashes
+
 ## Stack Trace
 
 ```
