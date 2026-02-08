@@ -13,14 +13,14 @@ import androidx.room.PrimaryKey
             entity = ForwardingSession::class,
             parentColumns = ["id"],
             childColumns = ["session_id"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
     indices = [
         Index(value = ["session_id"]),
         Index(value = ["timestamp"]),
-        Index(value = ["destination_number"])
-    ]
+        Index(value = ["destination_number"]),
+    ],
 )
 data class ForwardedMessage(
     @PrimaryKey(autoGenerate = true)
@@ -39,5 +39,5 @@ data class ForwardedMessage(
     val messageContent: String,
 
     @ColumnInfo(name = "timestamp")
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
 )

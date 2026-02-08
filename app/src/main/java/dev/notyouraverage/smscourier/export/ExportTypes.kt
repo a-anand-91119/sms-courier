@@ -5,11 +5,11 @@ package dev.notyouraverage.smscourier.export
  */
 enum class ExportFormat(
     val extension: String,
-    val mimeType: String
+    val mimeType: String,
 ) {
     CSV(".csv", "text/csv"),
     JSON(".json", "application/json"),
-    TXT(".txt", "text/plain")
+    TXT(".txt", "text/plain"),
 }
 
 /**
@@ -24,7 +24,7 @@ data class ExportConfig(
     val format: ExportFormat,
     val includeMetadata: Boolean,
     val devicePhone: String,
-    val deviceRole: String
+    val deviceRole: String,
 )
 
 /**
@@ -39,7 +39,7 @@ data class ExportData(
     val sessions: List<SessionExportData>,
     val exportedAt: Long,
     val devicePhone: String,
-    val deviceRole: String
+    val deviceRole: String,
 )
 
 /**
@@ -58,7 +58,7 @@ data class SessionExportData(
     val durationMinutes: Int,
     val messageCount: Int,
     val isActive: Boolean,
-    val messages: List<MessageExportData>
+    val messages: List<MessageExportData>,
 )
 
 /**
@@ -71,5 +71,5 @@ data class SessionExportData(
 data class MessageExportData(
     val senderNumber: String,
     val messageContent: String,
-    val timestamp: Long
+    val timestamp: Long,
 )

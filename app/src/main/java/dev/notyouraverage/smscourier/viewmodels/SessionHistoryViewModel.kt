@@ -184,7 +184,8 @@ class SessionHistoryViewModel(
     }
 
     enum class Tab {
-        SESSIONS, CONTACTS
+        SESSIONS,
+        CONTACTS,
     }
 
     class Factory(

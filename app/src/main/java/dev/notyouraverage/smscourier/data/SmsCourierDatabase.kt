@@ -53,7 +53,8 @@ abstract class SmsCourierDatabase : RoomDatabase() {
         private val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Step 1: Create new table with composite primary key
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE paired_devices_new (
                         phoneNumber TEXT NOT NULL,
                         displayName TEXT,
@@ -70,13 +71,16 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                         last_activity_at INTEGER NOT NULL,
                         PRIMARY KEY (phoneNumber, device_role)
                     )
-                """)
+                """,
+                )
 
                 // Step 2: Copy existing data from old table
-                db.execSQL("""
+                db.execSQL(
+                    """
                     INSERT INTO paired_devices_new
                     SELECT * FROM paired_devices
-                """)
+                """,
+                )
 
                 // Step 3: Drop old table
                 db.execSQL("DROP TABLE paired_devices")
@@ -98,7 +102,8 @@ abstract class SmsCourierDatabase : RoomDatabase() {
         internal val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Step 1: Create ForwardedMessage table with foreign key CASCADE
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE IF NOT EXISTS forwarded_messages (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         session_id INTEGER NOT NULL,
@@ -108,17 +113,22 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                         FOREIGN KEY(session_id) REFERENCES forwarding_sessions(id)
                             ON DELETE CASCADE
                     )
-                """)
+                """,
+                )
 
                 // Step 2: Create indexes for query performance
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE INDEX IF NOT EXISTS index_forwarded_messages_session_id
                     ON forwarded_messages(session_id)
-                """)
-                db.execSQL("""
+                """,
+                )
+                db.execSQL(
+                    """
                     CREATE INDEX IF NOT EXISTS index_forwarded_messages_timestamp
                     ON forwarded_messages(timestamp)
-                """)
+                """,
+                )
 
                 // Step 3: Add soft delete columns to PairedDevice
                 db.execSQL("ALTER TABLE paired_devices ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0")
@@ -144,12 +154,12 @@ abstract class SmsCourierDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Add destination_number column with default empty string
                 db.execSQL(
-                    "ALTER TABLE forwarded_messages ADD COLUMN destination_number TEXT NOT NULL DEFAULT ''"
+                    "ALTER TABLE forwarded_messages ADD COLUMN destination_number TEXT NOT NULL DEFAULT ''",
                 )
                 // Create index for destination_number queries
                 db.execSQL(
                     "CREATE INDEX IF NOT EXISTS index_forwarded_messages_destination_number " +
-                        "ON forwarded_messages(destination_number)"
+                        "ON forwarded_messages(destination_number)",
                 )
             }
         }
@@ -160,7 +170,8 @@ abstract class SmsCourierDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // SQLite doesn't support DROP FOREIGN KEY, must recreate table
                 // Step 1: Create new table without the FK
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE TABLE forwarding_sessions_new (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         device_phone_number TEXT NOT NULL,
@@ -174,10 +185,12 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                         message_count INTEGER NOT NULL DEFAULT 0,
                         updated_at INTEGER NOT NULL DEFAULT 0
                     )
-                """)
+                """,
+                )
 
                 // Step 2: Copy data from old table
-                db.execSQL("""
+                db.execSQL(
+                    """
                     INSERT INTO forwarding_sessions_new (
                         id, device_phone_number, started_at, duration_minutes,
                         expires_at, is_active, stopped_by, messages_forwarded,
@@ -187,7 +200,8 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                            expires_at, is_active, stopped_by, messages_forwarded,
                            encryption_key, message_count, updated_at
                     FROM forwarding_sessions
-                """)
+                """,
+                )
 
                 // Step 3: Drop old table
                 db.execSQL("DROP TABLE forwarding_sessions")
@@ -196,10 +210,12 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE forwarding_sessions_new RENAME TO forwarding_sessions")
 
                 // Step 5: Recreate index
-                db.execSQL("""
+                db.execSQL(
+                    """
                     CREATE INDEX IF NOT EXISTS index_forwarding_sessions_device_phone_number
                     ON forwarding_sessions(device_phone_number)
-                """)
+                """,
+                )
             }
         }
 
@@ -217,7 +233,7 @@ abstract class SmsCourierDatabase : RoomDatabase() {
                         MIGRATION_4_5,
                         MIGRATION_5_6,
                         MIGRATION_6_7,
-                        MIGRATION_7_8
+                        MIGRATION_7_8,
                     )
                     .build()
                 INSTANCE = instance

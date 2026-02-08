@@ -41,9 +41,9 @@ class ForwardingSessionRepository(
             config = PagingConfig(
                 pageSize = 20,
                 enablePlaceholders = true,
-                prefetchDistance = 5
+                prefetchDistance = 5,
             ),
-            pagingSourceFactory = { forwardingSessionDao.getSessionsForDevicePaged(phoneNumber) }
+            pagingSourceFactory = { forwardingSessionDao.getSessionsForDevicePaged(phoneNumber) },
         ).flow
     }
 

@@ -21,7 +21,7 @@ class ForwardedMessageRepository(
     private val database: SmsCourierDatabase,
     private val messageDao: ForwardedMessageDao,
     private val sessionDao: ForwardingSessionDao,
-    private val deviceDao: PairedDeviceDao
+    private val deviceDao: PairedDeviceDao,
 ) {
     companion object {
         private const val TAG = "SMSC:MessageRepository"
@@ -46,7 +46,7 @@ class ForwardedMessageRepository(
         messageContent: String,
         destinationNumber: String,
         devicePhone: String,
-        deviceRole: DeviceRole
+        deviceRole: DeviceRole,
     ): Result<Long> = withContext(Dispatchers.IO) {
         try {
             database.withTransaction {
@@ -56,8 +56,8 @@ class ForwardedMessageRepository(
                         sessionId = sessionId,
                         senderNumber = senderNumber,
                         messageContent = messageContent,
-                        destinationNumber = destinationNumber
-                    )
+                        destinationNumber = destinationNumber,
+                    ),
                 )
 
                 // Update session counter
@@ -87,9 +87,9 @@ class ForwardedMessageRepository(
             config = PagingConfig(
                 pageSize = 30,
                 enablePlaceholders = true,
-                prefetchDistance = 10
+                prefetchDistance = 10,
             ),
-            pagingSourceFactory = { messageDao.getMessagesForSessionPaged(sessionId) }
+            pagingSourceFactory = { messageDao.getMessagesForSessionPaged(sessionId) },
         ).flow
     }
 
@@ -97,9 +97,9 @@ class ForwardedMessageRepository(
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
-                enablePlaceholders = true
+                enablePlaceholders = true,
             ),
-            pagingSourceFactory = { messageDao.getDistinctSendersForDevice(phoneNumber) }
+            pagingSourceFactory = { messageDao.getDistinctSendersForDevice(phoneNumber) },
         ).flow
     }
 

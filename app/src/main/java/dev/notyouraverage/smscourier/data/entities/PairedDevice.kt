@@ -2,7 +2,6 @@ package dev.notyouraverage.smscourier.data.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 enum class DeviceRole {
     // This device requests forwarding FROM the paired device
@@ -28,7 +27,7 @@ enum class PairingStatus {
 
 @Entity(
     tableName = "paired_devices",
-    primaryKeys = ["phoneNumber", "device_role"]
+    primaryKeys = ["phoneNumber", "device_role"],
 )
 data class PairedDevice(
     // Normalized E.164 format
@@ -97,5 +96,5 @@ data class PairedDevice(
     val totalSessions: Int = 0,
 
     @ColumnInfo(name = "total_messages_forwarded", defaultValue = "0")
-    val totalMessagesForwarded: Int = 0
+    val totalMessagesForwarded: Int = 0,
 )

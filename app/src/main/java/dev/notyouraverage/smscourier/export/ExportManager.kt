@@ -61,8 +61,8 @@ class ExportManager(
                     durationMinutes = session.durationMinutes,
                     messageCount = session.messageCount,
                     isActive = session.isActive,
-                    messages = messages.map { it.toExportData() }
-                )
+                    messages = messages.map { it.toExportData() },
+                ),
             ),
             exportedAt = System.currentTimeMillis(),
             devicePhone = devicePhone,
@@ -90,7 +90,7 @@ class ExportManager(
                 durationMinutes = session.durationMinutes,
                 messageCount = session.messageCount,
                 isActive = session.isActive,
-                messages = messages.map { it.toExportData() }
+                messages = messages.map { it.toExportData() },
             )
         }
 

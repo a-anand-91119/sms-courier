@@ -44,5 +44,5 @@ data class ForwardingSession(
     val messageCount: Int = 0,
 
     @ColumnInfo(name = "updated_at", defaultValue = "0")
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
 )

@@ -51,7 +51,7 @@ interface ForwardedMessageDao {
         INNER JOIN forwarding_sessions s ON m.session_id = s.id
         WHERE s.device_phone_number = :phoneNumber
         ORDER BY m.session_id, m.timestamp ASC
-        """
+        """,
     )
     suspend fun getMessagesForDeviceList(phoneNumber: String): List<ForwardedMessage>
 }

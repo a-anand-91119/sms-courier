@@ -142,7 +142,7 @@ object ExportFormatter {
 
             for (message in session.messages) {
                 val messageTime = DateTimeFormatters.formatExportDateTime(message.timestamp)
-                appendLine("[${messageTime}] ${message.senderNumber}: ${message.messageContent}")
+                appendLine("[$messageTime] ${message.senderNumber}: ${message.messageContent}")
             }
 
             if (index < data.sessions.lastIndex) {
@@ -178,13 +178,13 @@ object ExportFormatter {
      */
     private fun escapeJsonString(value: String): String {
         return value
-            .replace("\\", "\\\\")  // Backslash first!
+            .replace("\\", "\\\\") // Backslash first!
             .replace("\"", "\\\"")
             .replace("\n", "\\n")
             .replace("\r", "\\r")
             .replace("\t", "\\t")
             .replace("\b", "\\b")
-            .replace("\u000C", "\\f")  // Form feed
+            .replace("\u000C", "\\f") // Form feed
     }
 
     /**
