@@ -161,7 +161,7 @@ fun HomeScreen(
                 },
             )
 
-            // Stats Row
+            // Stats Row (Active sessions shown in DirectionalStatusCard below)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -181,19 +181,11 @@ fun HomeScreen(
                     highlighted = homeState.pendingRequestsCount > 0,
                     onClick = onNavigateToPairingRequests,
                 )
-                StatCard(
-                    modifier = Modifier.weight(1f),
-                    value = homeState.activeSessionsCount.toString(),
-                    label = "Active",
-                    icon = Icons.Default.PlayArrow,
-                    highlighted = homeState.activeSessionsCount > 0,
-                    onClick = onNavigateToForwardingControl,
-                )
             }
 
-            // Directional Status Card - Always shown (grays out inactive directions internally)
-            // Per CONTEXT.md: "Show all directions but gray out/dim inactive ones (zero count)"
-            // and "Sheet always opens when tapped, even with zero count"
+            // Active Forwarding Status - consolidated view of all active sessions by direction
+            // This is the single source of active session info (Active StatCard removed from stats row)
+            // Always shown; grays out inactive directions. Sheet opens on tap even with zero count.
             DirectionalStatusCard(
                 forwardingToCount = homeState.directionalStatus.forwardingToCount,
                 receivingFromCount = homeState.directionalStatus.receivingFromCount,
