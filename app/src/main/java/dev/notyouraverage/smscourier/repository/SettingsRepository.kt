@@ -87,6 +87,18 @@ class SettingsRepository(
                 ?: SettingsDefaults.HISTORY_RETENTION_DAYS
         }
 
+    val autoCleanupEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferenceKeys.AUTO_CLEANUP_ENABLED]
+                ?: SettingsDefaults.AUTO_CLEANUP_ENABLED
+        }
+
+    val lastCleanupTimestamp: Flow<Long> = dataStore.data
+        .map { preferences ->
+            preferences[PreferenceKeys.LAST_CLEANUP_TIMESTAMP]
+                ?: SettingsDefaults.LAST_CLEANUP_TIMESTAMP
+        }
+
     // Main Settings - Write Methods
     suspend fun setNotificationPersistence(enabled: Boolean) {
         dataStore.edit { preferences ->
@@ -157,6 +169,18 @@ class SettingsRepository(
         }
         dataStore.edit { preferences ->
             preferences[PreferenceKeys.HISTORY_RETENTION_DAYS] = days
+        }
+    }
+
+    suspend fun setAutoCleanupEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferenceKeys.AUTO_CLEANUP_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setLastCleanupTimestamp(timestampMs: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferenceKeys.LAST_CLEANUP_TIMESTAMP] = timestampMs
         }
     }
 
