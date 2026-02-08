@@ -85,12 +85,12 @@ Requirements for v0.0.64 milestone.
 
 - [x] **RETENTION-01**: Settings option for history retention days (range: 7-90, or 0 for forever)
 - [x] **RETENTION-02**: Default retention: 30 days
-- [ ] **RETENTION-03**: Auto-cleanup toggle in Advanced Settings
+- [x] **RETENTION-03**: Auto-cleanup toggle in Advanced Settings
 - [x] **RETENTION-04**: Manual "Clean up now" button in settings
-- [ ] **RETENTION-05**: WorkManager periodic cleanup (24-hour interval)
-- [ ] **RETENTION-06**: Cleanup respects retention setting (deletes messages older than N days)
-- [ ] **RETENTION-07**: Lenient WorkManager constraints (battery not low only)
-- [ ] **RETENTION-08**: Last cleanup timestamp displayed in settings
+- [x] **RETENTION-05**: WorkManager periodic cleanup (7-day interval with 1-day flex)
+- [x] **RETENTION-06**: Cleanup respects retention setting (deletes messages older than N days)
+- [x] **RETENTION-07**: Lenient WorkManager constraints (battery not low only)
+- [x] **RETENTION-08**: Last cleanup timestamp displayed in settings
 
 ## v2 Requirements
 
@@ -187,12 +187,12 @@ Which phases cover which requirements.
 | BIDIR-08 | Phase 20 | Complete |
 | RETENTION-01 | Phase 21 | Complete |
 | RETENTION-02 | Phase 21 | Complete |
-| RETENTION-03 | Phase 22 | Pending |
+| RETENTION-03 | Phase 22 | Complete |
 | RETENTION-04 | Phase 21 | Complete |
-| RETENTION-05 | Phase 22 | Pending |
-| RETENTION-06 | Phase 22 | Pending |
-| RETENTION-07 | Phase 22 | Pending |
-| RETENTION-08 | Phase 22 | Pending |
+| RETENTION-05 | Phase 22 | Complete |
+| RETENTION-06 | Phase 22 | Complete |
+| RETENTION-07 | Phase 22 | Complete |
+| RETENTION-08 | Phase 22 | Complete |
 
 **Coverage:**
 - v1 requirements: 56 total

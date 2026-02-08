@@ -15,7 +15,7 @@ None (Android app development patterns already established in codebase)
 - [**v0.0.62 Testing**](milestones/v0.0.62-ROADMAP.md) - Phases 9-11 (shipped 2026-01-18)
 - [**v0.0.63 Settings**](milestones/v0.0.63-settings/ROADMAP.md) - Phases 12-14 (shipped 2026-01-19)
 - **Play Store Launch** - Phases 1-4 (parallel)
-- 🚧 **v0.0.64 Device Management & Visibility** - Phases 15-22 (in progress)
+- [**v0.0.64 Device Management & Visibility**](milestones/v0.0.64-device-management/ROADMAP.md) - Phases 15-22 (shipped 2026-02-08)
 
 ## Completed Milestones
 
@@ -139,7 +139,7 @@ Plans:
 - [ ] 04-01: TBD (promote to open testing)
 - [ ] 04-02: TBD (promote to production)
 
-### 🚧 v0.0.64 Device Management & Visibility (In Progress)
+### ✓ v0.0.64 Device Management & Visibility (Complete)
 
 **Milestone Goal:** Enhanced device management with session history, message-level storage, bidirectional forwarding visibility, and configurable history retention.
 
@@ -150,7 +150,7 @@ Plans:
 - [x] **Phase 19: Export Functionality** - CSV/JSON/TXT export via Storage Access Framework
 - [x] **Phase 20: Bidirectional Visibility Indicators** - Home screen directional status (↑↓⇅)
 - [x] **Phase 21: History Retention Settings** - Configurable retention with manual cleanup
-- [ ] **Phase 22: Auto-Cleanup with WorkManager** - Periodic background cleanup
+- [x] **Phase 22: Auto-Cleanup with WorkManager** - Periodic background cleanup
 
 #### Phase 15: Database Foundation & Migration
 **Goal**: Database schema supports message-level storage and device archiving with validated migration
@@ -304,6 +304,7 @@ Plans:
 **Goal**: History cleanup runs automatically on schedule based on retention settings
 **Depends on**: Phase 21
 **Requirements**: RETENTION-05, RETENTION-06, RETENTION-07, RETENTION-08
+**Status**: Complete (2026-02-08)
 **Success Criteria** (what must be TRUE):
   1. WorkManager schedules periodic cleanup task with 7-day interval and 1-day flex window
   2. Cleanup job respects retention setting (deletes messages older than N days)
@@ -314,8 +315,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 22-01-PLAN.md — Data layer + CleanupWorker: Preference keys, SettingsRepository methods, CleanupWorker with existing cleanup method, WorkManagerHelper
-- [ ] 22-02-PLAN.md — Settings UI + App Launch: SettingsViewModel auto-cleanup state, toggle in Settings (hidden when Forever), last cleaned display, cleanup scheduling on launch
+- [x] 22-01-PLAN.md — Data layer + CleanupWorker: Preference keys, SettingsRepository methods, CleanupWorker with existing cleanup method, WorkManagerHelper
+- [x] 22-02-PLAN.md — Settings UI + App Launch: SettingsViewModel auto-cleanup state, toggle in Settings (hidden when Forever), last cleaned display, cleanup scheduling on launch
 
 ## Progress
 
@@ -342,4 +343,4 @@ Plans:
 | 19. Export Functionality | v0.0.64 | 7/7 | Complete | 2026-02-06 |
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 4/4 | Complete | 2026-02-08 |
 | 21. History Retention Settings | v0.0.64 | 2/2 | Complete | 2026-02-08 |
-| 22. Auto-Cleanup with WorkManager | v0.0.64 | 0/2 | Not started | - |
+| 22. Auto-Cleanup with WorkManager | v0.0.64 | 2/2 | Complete | 2026-02-08 |
