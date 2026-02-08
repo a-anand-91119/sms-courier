@@ -322,7 +322,7 @@ Plans:
 **Goal**: Fix critical bugs found during manual verification before milestone ship
 **Depends on**: Phase 22
 **Requirements**: None (bug fixes)
-**Status**: Planned
+**Status**: Complete (2026-02-08)
 **Success Criteria** (what must be TRUE):
   1. combinedClickable crashes fixed — all clickable elements work without crash
   2. Unpair button in Device History bottom sheet triggers confirmation and unpairs device
@@ -330,9 +330,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 23-01-PLAN.md — Fix combinedClickable crashes: Add explicit interactionSource and LocalIndication.current to PairedDevicesScreen and SessionHistoryComponents
-- [ ] 23-02-PLAN.md — Fix unpair button: Add confirmation dialog and wire to archiveDevice via DeviceHistoryViewModel
-- [ ] 23-03-PLAN.md — Consolidate active forwarding UI: Remove Active StatCard from HomeScreen stats row
+- [x] 23-01-PLAN.md — Fix combinedClickable crashes: Add explicit interactionSource and LocalIndication.current to PairedDevicesScreen and SessionHistoryComponents
+- [x] 23-02-PLAN.md — Fix unpair button: Add confirmation dialog and wire to archiveDevice via DeviceHistoryViewModel
+- [x] 23-03-PLAN.md — Consolidate active forwarding UI: Remove Active StatCard from HomeScreen stats row
 
 ## Progress
 
@@ -360,4 +360,4 @@ Plans:
 | 20. Bidirectional Visibility Indicators | v0.0.64 | 4/4 | Complete | 2026-02-08 |
 | 21. History Retention Settings | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 2/2 | Complete | 2026-02-08 |
-| 23. UAT Bug Fixes | v0.0.64 | 0/3 | Planned | - |
+| 23. UAT Bug Fixes | v0.0.64 | 3/3 | Complete | 2026-02-08 |
