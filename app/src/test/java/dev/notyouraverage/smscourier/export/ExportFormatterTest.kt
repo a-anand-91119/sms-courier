@@ -257,7 +257,7 @@ class ExportFormatterTest {
         // Format: YYYY-MM-DDTHH:MM:SS+HH:MM or similar
         assertTrue("Should have startedAt with ISO 8601 format", json.contains("\"startedAt\":"))
         // Check for ISO 8601 pattern (contains T separator and timezone)
-        val timestampPattern = Regex("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[+-]\\d{2}:\\d{2}")
+        val timestampPattern = Regex("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([+-]\\d{2}:\\d{2}|Z)")
         assertTrue("Should match ISO 8601 pattern", timestampPattern.containsMatchIn(json))
     }
 
