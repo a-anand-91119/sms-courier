@@ -158,7 +158,11 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-11 todos tracked in `.planning/todos/pending/`
+20 todos tracked in `.planning/todos/pending/`
+
+**UAT Issues (v0.0.64):**
+- Settings default duration should be slider not dropdown
+- Unpair from device history should send SMS to remote device
 
 **Feature Backlog:**
 - Forward to email or chat apps
