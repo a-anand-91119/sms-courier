@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-02-04)
 ## Current Position
 
 Phase: 23 of 23 (UAT Bug Fixes)
-Plan: 03 of 3 complete
+Plan: 03 of 3 complete + UAT Round 2 fixes
 Status: Phase complete
-Last activity: 2026-02-08 - Completed 23-03-PLAN.md (Consolidate Active Forwarding UI)
+Last activity: 2026-02-09 - UAT Round 2 bug fixes (9 issues addressed)
 
 Progress: [██████████] 100% (v0.0.64 milestone complete)
 
@@ -137,6 +137,15 @@ Recent decisions affecting current work:
 - DirectionalStatusCard is single source for active session info - Consolidated in 23-03
 - Stats row shows only device status (Paired/Pending), not session status - Changed in 23-03
 
+**UAT Round 2 Fixes (2026-02-09):**
+- Phone number normalization in ForwardingSessionRepository and ForwardedMessageRepository - Fixed message counters
+- Default forwarding duration uses SettingsDefaults.DEFAULT_FORWARDING_DURATION (5 min) - Fixed 30m default bug
+- Unpair ends active sessions before archiving device - Fixed orphan session bug
+- Active session warning in unpair confirmation dialog - UX improvement
+- Service toggle switch colors improved for better contrast - UI fix
+- Permanent delete functionality for archived devices with cascade delete - Feature complete
+- Slider range changed to 5-30 minutes with MAX_FORWARDING_DURATION constant - Settings consistency
+
 **Security:**
 - Bcrypt password hashing for device pairing
 - Failed attempt tracking and device lockout
@@ -173,10 +182,11 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-08 18:53 UTC
-Stopped at: Phase 23 verified complete - v0.0.64 milestone ready for audit
+Last session: 2026-02-09 15:05 UTC
+Stopped at: UAT Round 2 fixes complete - 9 issues addressed
 Resume file: None
 
 **Next actions:**
+- Further UAT testing to verify fixes
 - Audit milestone before shipping: `/gsd:audit-milestone`
 - Parallel: Play Store Launch Phase 4 awaiting Google review
