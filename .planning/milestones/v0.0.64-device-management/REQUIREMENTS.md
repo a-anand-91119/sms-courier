@@ -1,3 +1,13 @@
+# Requirements Archive: v0.0.64 Device Management & Visibility
+
+**Archived:** 2026-02-09
+**Status:** ✅ SHIPPED
+
+This is the archived requirements specification for v0.0.64.
+For current requirements, see `.planning/REQUIREMENTS.md` (created for next milestone).
+
+---
+
 # Requirements: SMS Courier v0.0.64 Device Management & Visibility
 
 **Defined:** 2026-02-04
@@ -59,7 +69,7 @@ Requirements for v0.0.64 milestone.
 - [x] **ARCH-02**: Shows removal reason ("You initiated" or "Other side initiated")
 - [x] **ARCH-03**: Export history button with format dropdown (CSV, JSON, TXT)
 - [x] **ARCH-04**: Delete all data button with confirmation dialog
-- [~] **ARCH-05**: Soft delete on unpair presents archive choice (keep/delete history) — SIMPLIFIED: auto-archives (user can delete via Archive Management)
+- [x] **ARCH-05**: Soft delete on unpair auto-archives (SIMPLIFIED: user can delete via Archive Management)
 
 ### Export Functionality
 
@@ -202,5 +212,15 @@ Which phases cover which requirements.
 Coverage validation: 100% (56/56 requirements mapped)
 
 ---
-*Requirements defined: 2026-02-04*
-*Last updated: 2026-02-08 - Phase 21 complete (RETENTION-01, RETENTION-02, RETENTION-04)*
+
+## Milestone Summary
+
+**Shipped:** 56 of 56 v1 requirements
+
+**Adjusted:**
+- ARCH-05: Changed from choice dialog to auto-archive (safer default, user can delete later)
+
+**Dropped:** None
+
+---
+*Archived: 2026-02-09 as part of v0.0.64 milestone completion*

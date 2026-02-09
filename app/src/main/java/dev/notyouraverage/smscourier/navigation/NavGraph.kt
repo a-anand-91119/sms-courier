@@ -167,6 +167,7 @@ fun SmsCourierNavGraph(
                     deviceRepository,
                     sessionRepository,
                     smsSender,
+                    settingsRepository,
                 ),
             )
             ForwardingControlScreen(
@@ -195,6 +196,7 @@ fun SmsCourierNavGraph(
                     deviceRepository,
                     sessionRepository,
                     exportManager,
+                    smsSender,
                 ),
             )
             DeviceHistoryScreen(

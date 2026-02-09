@@ -21,6 +21,9 @@ object TestFixtures {
         lockedUntil: Long? = null,
         createdAt: Long = System.currentTimeMillis(),
         lastActivityAt: Long = System.currentTimeMillis(),
+        isArchived: Boolean = false,
+        archivedAt: Long? = null,
+        archivalInitiatedBy: String? = null,
     ) = PairedDevice(
         phoneNumber = phoneNumber,
         displayName = displayName,
@@ -35,6 +38,9 @@ object TestFixtures {
         lockedUntil = lockedUntil,
         createdAt = createdAt,
         lastActivityAt = lastActivityAt,
+        isArchived = isArchived,
+        archivedAt = archivedAt,
+        archivalInitiatedBy = archivalInitiatedBy,
     )
 
     fun createTestSession(

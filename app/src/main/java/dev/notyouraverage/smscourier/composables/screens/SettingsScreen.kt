@@ -8,7 +8,9 @@ import android.net.Uri
 import android.provider.Settings
 import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +48,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
@@ -75,6 +79,7 @@ import dev.notyouraverage.smscourier.constants.AboutLinks
 import dev.notyouraverage.smscourier.data.settings.AppTheme
 import dev.notyouraverage.smscourier.viewmodels.CleanupState
 import dev.notyouraverage.smscourier.viewmodels.SettingsViewModel
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,10 +110,6 @@ fun SettingsScreen(
     val cleanupState by viewModel.cleanupState.collectAsState()
     val autoCleanupEnabled by viewModel.autoCleanupEnabled.collectAsState()
     val lastCleanupTimestamp by viewModel.lastCleanupTimestamp.collectAsState()
-
-    // Duration dropdown state
-    var durationExpanded by remember { mutableStateOf(false) }
-    val durationOptions = listOf(15, 30, 60)
 
     // Advanced section expand/collapse state
     var advancedExpanded by remember { mutableStateOf(false) }
@@ -208,27 +209,49 @@ fun SettingsScreen(
                 )
             }
 
-            // Default forwarding duration selector
+            // Default forwarding duration slider
             item {
-                Box {
-                    SettingsSelectionItem(
-                        title = "Default forwarding duration",
-                        selectedValue = formatDuration(defaultDuration),
-                        onClick = { durationExpanded = true },
-                    )
-                    DropdownMenu(
-                        expanded = durationExpanded,
-                        onDismissRequest = { durationExpanded = false },
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        durationOptions.forEach { minutes ->
-                            DropdownMenuItem(
-                                text = { Text(formatDuration(minutes)) },
-                                onClick = {
-                                    viewModel.setDefaultForwardingDuration(minutes)
-                                    durationExpanded = false
-                                },
-                            )
-                        }
+                        Text(
+                            text = "Default forwarding duration",
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Text(
+                            text = "$defaultDuration minutes",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
+                    Slider(
+                        value = defaultDuration.toFloat(),
+                        onValueChange = { viewModel.setDefaultForwardingDuration(it.roundToInt()) },
+                        valueRange = 5f..30f,
+                        steps = 4,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "5 min",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = "30 min",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -324,7 +347,11 @@ fun SettingsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { advancedExpanded = !advancedExpanded }
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = LocalIndication.current,
+                            onClick = { advancedExpanded = !advancedExpanded },
+                        )
                         .padding(top = 8.dp, bottom = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
@@ -638,7 +665,11 @@ private fun SettingsSelectionItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         },
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = Modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = LocalIndication.current,
+            onClick = onClick,
+        ),
     )
 }
 
@@ -769,7 +800,15 @@ private fun AboutItem(
                 )
             }
         },
-        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier,
+        modifier = if (onClick != null) {
+            Modifier.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = LocalIndication.current,
+                onClick = onClick,
+            )
+        } else {
+            Modifier
+        },
     )
 }
 

@@ -104,4 +104,11 @@ interface ForwardingSessionDao {
      */
     @Query("DELETE FROM forwarding_sessions WHERE started_at < :thresholdMs AND is_active = 0")
     suspend fun deleteSessionsOlderThan(thresholdMs: Long): Int
+
+    /**
+     * Delete all sessions for a device.
+     * Messages are CASCADE deleted via foreign key.
+     */
+    @Query("DELETE FROM forwarding_sessions WHERE device_phone_number = :phoneNumber")
+    suspend fun deleteAllForDevice(phoneNumber: String)
 }

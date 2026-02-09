@@ -83,6 +83,15 @@ class PairedDeviceRepository(
         )
     }
 
+    suspend fun unarchiveDevice(phoneNumber: String, role: DeviceRole) = withContext(ioDispatcher) {
+        pairedDeviceDao.unarchiveDevice(normalizePhoneNumber(phoneNumber), role)
+    }
+
+    suspend fun getByPhoneNumberAndRoleIncludingArchived(phoneNumber: String, role: DeviceRole): PairedDevice? =
+        withContext(ioDispatcher) {
+            pairedDeviceDao.getDeviceByPhoneNumberAndRoleIncludingArchived(normalizePhoneNumber(phoneNumber), role)
+        }
+
     suspend fun updatePairingStatus(phoneNumber: String, role: DeviceRole, status: PairingStatus) = withContext(ioDispatcher) {
         pairedDeviceDao.updatePairingStatus(normalizePhoneNumber(phoneNumber), role, status)
     }

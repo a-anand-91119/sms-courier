@@ -28,6 +28,16 @@ class ForwardedMessageRepository(
     }
 
     /**
+     * Normalizes phone numbers to match PairedDeviceRepository normalization.
+     * Must match PairedDeviceRepository.normalizePhoneNumber() to ensure lookups work.
+     */
+    private fun normalizePhoneNumber(phoneNumber: String): String {
+        return phoneNumber
+            .replace(Regex("[\\s\\-().]"), "")
+            .let { if (it.startsWith("+")) it else "+$it" }
+    }
+
+    /**
      * Stores a forwarded message and updates all counters atomically.
      * Called by TARGET device when forwarding SMS to SOURCE.
      *
@@ -48,6 +58,7 @@ class ForwardedMessageRepository(
         devicePhone: String,
         deviceRole: DeviceRole,
     ): Result<Long> = withContext(Dispatchers.IO) {
+        val normalizedDevicePhone = normalizePhoneNumber(devicePhone)
         try {
             database.withTransaction {
                 // Insert message
@@ -63,8 +74,8 @@ class ForwardedMessageRepository(
                 // Update session counter
                 sessionDao.incrementMessageCount(sessionId)
 
-                // Update device statistics
-                deviceDao.incrementTotalMessagesForwarded(devicePhone, deviceRole)
+                // Update device statistics (use normalized phone to match device records)
+                deviceDao.incrementTotalMessagesForwarded(normalizedDevicePhone, deviceRole)
 
                 messageId
             }.let { Result.success(it) }
@@ -94,18 +105,19 @@ class ForwardedMessageRepository(
     }
 
     fun getDistinctSendersForDevice(phoneNumber: String): Flow<PagingData<String>> {
+        val normalized = normalizePhoneNumber(phoneNumber)
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
                 enablePlaceholders = true,
             ),
-            pagingSourceFactory = { messageDao.getDistinctSendersForDevice(phoneNumber) },
+            pagingSourceFactory = { messageDao.getDistinctSendersForDevice(normalized) },
         ).flow
     }
 
     suspend fun getMessageCountForSender(phoneNumber: String, senderNumber: String): Int =
         withContext(Dispatchers.IO) {
-            messageDao.getMessageCountForSender(phoneNumber, senderNumber)
+            messageDao.getMessageCountForSender(normalizePhoneNumber(phoneNumber), senderNumber)
         }
 
     /**
@@ -121,6 +133,6 @@ class ForwardedMessageRepository(
      */
     suspend fun getMessagesForDeviceList(phoneNumber: String): List<ForwardedMessage> =
         withContext(Dispatchers.IO) {
-            messageDao.getMessagesForDeviceList(phoneNumber)
+            messageDao.getMessagesForDeviceList(normalizePhoneNumber(phoneNumber))
         }
 }

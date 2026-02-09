@@ -22,6 +22,16 @@ class ForwardingSessionRepository(
 ) {
     private val ioDispatcher = Dispatchers.IO
 
+    /**
+     * Normalizes phone numbers to match PairedDeviceRepository normalization.
+     * Must match PairedDeviceRepository.normalizePhoneNumber() to ensure lookups work.
+     */
+    private fun normalizePhoneNumber(phoneNumber: String): String {
+        return phoneNumber
+            .replace(Regex("[\\s\\-().]"), "")
+            .let { if (it.startsWith("+")) it else "+$it" }
+    }
+
     fun getActiveSessions(): Flow<List<ForwardingSession>> =
         forwardingSessionDao.getActiveSessions()
 
@@ -31,7 +41,7 @@ class ForwardingSessionRepository(
 
     suspend fun getActiveSessionForDevice(phoneNumber: String): ForwardingSession? =
         withContext(ioDispatcher) {
-            forwardingSessionDao.getActiveSessionForDevice(phoneNumber)
+            forwardingSessionDao.getActiveSessionForDevice(normalizePhoneNumber(phoneNumber))
         }
 
     suspend fun getSessionById(sessionId: Long): ForwardingSession? = withContext(ioDispatcher) {
@@ -42,16 +52,17 @@ class ForwardingSessionRepository(
         forwardingSessionDao.getAllSessions()
 
     fun getSessionsForDevice(phoneNumber: String): Flow<List<ForwardingSession>> =
-        forwardingSessionDao.getSessionsForDevice(phoneNumber)
+        forwardingSessionDao.getSessionsForDevice(normalizePhoneNumber(phoneNumber))
 
     fun getSessionsForDevicePaged(phoneNumber: String): Flow<PagingData<ForwardingSession>> {
+        val normalized = normalizePhoneNumber(phoneNumber)
         return Pager(
             config = PagingConfig(
                 pageSize = 20,
                 enablePlaceholders = true,
                 prefetchDistance = 5,
             ),
-            pagingSourceFactory = { forwardingSessionDao.getSessionsForDevicePaged(phoneNumber) },
+            pagingSourceFactory = { forwardingSessionDao.getSessionsForDevicePaged(normalized) },
         ).flow
     }
 
@@ -60,7 +71,7 @@ class ForwardingSessionRepository(
             val now = System.currentTimeMillis()
             val expiresAt = now + (durationMinutes * 60 * 1000L)
             val session = ForwardingSession(
-                devicePhoneNumber = devicePhoneNumber,
+                devicePhoneNumber = normalizePhoneNumber(devicePhoneNumber),
                 startedAt = now,
                 durationMinutes = durationMinutes,
                 expiresAt = expiresAt,
@@ -75,7 +86,7 @@ class ForwardingSessionRepository(
     }
 
     suspend fun endSessionForDevice(phoneNumber: String, stoppedBy: String) = withContext(ioDispatcher) {
-        forwardingSessionDao.endSessionForDevice(phoneNumber, stoppedBy)
+        forwardingSessionDao.endSessionForDevice(normalizePhoneNumber(phoneNumber), stoppedBy)
     }
 
     suspend fun expireSessions() = withContext(ioDispatcher) {
@@ -95,7 +106,7 @@ class ForwardingSessionRepository(
     }
 
     suspend fun getSessionCountForDevice(phoneNumber: String): Int = withContext(ioDispatcher) {
-        forwardingSessionDao.getSessionCountForDevice(phoneNumber)
+        forwardingSessionDao.getSessionCountForDevice(normalizePhoneNumber(phoneNumber))
     }
 
     /**
@@ -103,7 +114,7 @@ class ForwardingSessionRepository(
      */
     suspend fun getSessionsForDeviceList(phoneNumber: String): List<ForwardingSession> =
         withContext(ioDispatcher) {
-            forwardingSessionDao.getSessionsForDeviceList(phoneNumber)
+            forwardingSessionDao.getSessionsForDeviceList(normalizePhoneNumber(phoneNumber))
         }
 
     /**
@@ -128,5 +139,13 @@ class ForwardingSessionRepository(
         forwardingSessionDao.deleteSessionsOlderThan(thresholdMs)
 
         CleanupResult(sessionCount, messageCount)
+    }
+
+    /**
+     * Delete all sessions for a device.
+     * Messages are CASCADE deleted via foreign key.
+     */
+    suspend fun deleteAllForDevice(phoneNumber: String) = withContext(ioDispatcher) {
+        forwardingSessionDao.deleteAllForDevice(normalizePhoneNumber(phoneNumber))
     }
 }

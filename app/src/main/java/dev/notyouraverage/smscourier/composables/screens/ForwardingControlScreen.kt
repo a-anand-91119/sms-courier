@@ -470,8 +470,8 @@ fun StartForwardingSheet(
                 Slider(
                     value = duration.toFloat(),
                     onValueChange = { onDurationChange(it.roundToInt()) },
-                    valueRange = 5f..60f,
-                    steps = 10,
+                    valueRange = 5f..30f,
+                    steps = 4,
                     modifier = Modifier.fillMaxWidth(),
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
@@ -488,7 +488,7 @@ fun StartForwardingSheet(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = "60 min",
+                        text = "30 min",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

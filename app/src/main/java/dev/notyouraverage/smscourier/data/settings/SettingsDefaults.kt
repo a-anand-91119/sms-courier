@@ -3,7 +3,8 @@ package dev.notyouraverage.smscourier.data.settings
 object SettingsDefaults {
     // Main Settings
     const val NOTIFICATION_PERSISTENCE = true
-    const val DEFAULT_FORWARDING_DURATION = 15 // minutes
+    const val DEFAULT_FORWARDING_DURATION = 5 // minutes
+    const val MAX_FORWARDING_DURATION = 30 // minutes
     val THEME = AppTheme.SYSTEM
 
     // Advanced/Security Settings (conservative defaults matching existing SecurityManager)

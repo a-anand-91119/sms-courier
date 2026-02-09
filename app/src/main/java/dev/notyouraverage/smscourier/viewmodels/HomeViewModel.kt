@@ -30,6 +30,8 @@ class HomeViewModel(
             approvedDevicesCount = approved.size,
             pendingRequestsCount = pending.size,
             activeSessionsCount = sessions.size,
+            approvedDevices = approved,
+            pendingDevices = pending,
             activeSessions = sessions,
             directionalStatus = calculateDirectionalStatus(approved, sessions),
         )
@@ -131,6 +133,8 @@ class HomeViewModel(
         val approvedDevicesCount: Int = 0,
         val pendingRequestsCount: Int = 0,
         val activeSessionsCount: Int = 0,
+        val approvedDevices: List<PairedDevice> = emptyList(),
+        val pendingDevices: List<PairedDevice> = emptyList(),
         val activeSessions: List<ForwardingSession> = emptyList(),
         val directionalStatus: DirectionalStatus = DirectionalStatus(),
     )

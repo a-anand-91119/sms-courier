@@ -9,8 +9,10 @@ import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.services.SmsSender
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
@@ -22,6 +24,7 @@ import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
@@ -51,6 +54,9 @@ class ForwardingControlViewModelTest {
     @MockK
     private lateinit var smsSender: SmsSender
 
+    @MockK
+    private lateinit var settingsRepository: SettingsRepository
+
     private val approvedSourceDevicesFlow = MutableStateFlow(emptyList<PairedDevice>())
     private val activeSessionsFlow = MutableStateFlow(emptyList<ForwardingSession>())
 
@@ -61,8 +67,9 @@ class ForwardingControlViewModelTest {
         MockKAnnotations.init(this, relaxed = true)
         every { deviceRepository.getDevicesByRoleAndStatus(DeviceRole.SOURCE, PairingStatus.APPROVED) } returns approvedSourceDevicesFlow
         every { sessionRepository.getActiveSessions() } returns activeSessionsFlow
+        every { settingsRepository.defaultForwardingDurationMinutes } returns flowOf(SettingsDefaults.DEFAULT_FORWARDING_DURATION)
 
-        viewModel = ForwardingControlViewModel(context, deviceRepository, sessionRepository, smsSender)
+        viewModel = ForwardingControlViewModel(context, deviceRepository, sessionRepository, smsSender, settingsRepository)
     }
 
     @Test
@@ -70,10 +77,35 @@ class ForwardingControlViewModelTest {
         viewModel.uiState.test {
             val state = awaitItem()
             assertEquals("", state.password)
-            assertEquals(30, state.durationMinutes)
+            assertEquals(SettingsDefaults.DEFAULT_FORWARDING_DURATION, state.durationMinutes)
             assertFalse(state.isLoading)
             assertNull(state.error)
             assertFalse(state.success)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `duration is loaded from settings on init`() = runTest {
+        val customDuration = 15
+        every { settingsRepository.defaultForwardingDurationMinutes } returns flowOf(customDuration)
+
+        val customViewModel = ForwardingControlViewModel(
+            context,
+            deviceRepository,
+            sessionRepository,
+            smsSender,
+            settingsRepository,
+        )
+
+        customViewModel.uiState.test {
+            // Skip initial default state if present
+            var state = awaitItem()
+            // If we got the initial state, wait for the loaded state
+            if (state.durationMinutes != customDuration) {
+                state = awaitItem()
+            }
+            assertEquals(customDuration, state.durationMinutes)
             cancelAndIgnoreRemainingEvents()
         }
     }

@@ -1,5 +1,36 @@
 # Project Milestones: SMS Courier
 
+## v0.0.64 Device Management & Visibility (Shipped: 2026-02-09)
+
+**Delivered:** Enhanced device management with session history, message-level storage, bidirectional visibility indicators, export functionality, and configurable history retention with auto-cleanup.
+
+**Phases completed:** 15-23 (29 plans total)
+
+**Key accomplishments:**
+- Database foundation with ForwardedMessage table, soft delete for devices, and foreign key CASCADE
+- Transaction-based message storage with real-time counter updates and non-blocking failure handling
+- Device History UI with active/removed sections, statistics badges, and navigation to Session History
+- Session History with Paging 3, session/contact toggle, and MessageDetailBottomSheet
+- Export functionality (CSV/JSON/TXT) via Storage Access Framework for API 29-35 compatibility
+- Bidirectional visibility indicators (↑↓⇅) on Home screen with session breakdown bottom sheet
+- Configurable history retention (7-90 days or Forever) with manual cleanup button
+- Auto-cleanup with WorkManager (7-day periodic schedule with lenient constraints)
+- UAT bug fixes for combinedClickable crashes and unpair button functionality
+
+**Stats:**
+- 51 files modified
+- +5,920 lines of Kotlin (net +5,525)
+- 22,261 total lines of code
+- 9 phases, 29 plans executed
+- 5 days from start to ship (2026-02-05 → 2026-02-09)
+- 161 commits
+
+**Git range:** Phase 15 → Phase 23
+
+**What's next:** Next milestone TBD
+
+---
+
 ## v0.0.7–v0.0.10 Feature Improvements (Shipped: 2026-01-15)
 
 **Delivered:** Bidirectional pairing architecture, improved pending state UX with rate limiting and contextual menus, and UI polish for production readiness.

@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PairedDeviceDao {
 
-    @Query("SELECT * FROM paired_devices WHERE device_role = :role")
+    @Query("SELECT * FROM paired_devices WHERE device_role = :role AND is_archived = 0")
     fun getDevicesByRole(role: DeviceRole): Flow<List<PairedDevice>>
 
     @Query("SELECT * FROM paired_devices WHERE phoneNumber = :phoneNumber AND is_archived = 0")
@@ -23,7 +23,7 @@ interface PairedDeviceDao {
     @Query("SELECT * FROM paired_devices WHERE phoneNumber = :phoneNumber AND device_role = :role AND is_archived = 0")
     suspend fun getDeviceByPhoneNumberAndRole(phoneNumber: String, role: DeviceRole): PairedDevice?
 
-    @Query("SELECT * FROM paired_devices WHERE device_role = :role AND pairing_status = :status")
+    @Query("SELECT * FROM paired_devices WHERE device_role = :role AND pairing_status = :status AND is_archived = 0")
     fun getDevicesByRoleAndStatus(role: DeviceRole, status: PairingStatus): Flow<List<PairedDevice>>
 
     @Query(
@@ -32,14 +32,15 @@ interface PairedDeviceDao {
         WHERE device_role = 'TARGET'
         AND pairing_status = 'APPROVED'
         AND phoneNumber = :phoneNumber
+        AND is_archived = 0
         """,
     )
     suspend fun getApprovedSourceDevice(phoneNumber: String): PairedDevice?
 
-    @Query("SELECT * FROM paired_devices WHERE pairing_status = 'PENDING_RECEIVED'")
+    @Query("SELECT * FROM paired_devices WHERE pairing_status = 'PENDING_RECEIVED' AND is_archived = 0")
     fun getPendingRequests(): Flow<List<PairedDevice>>
 
-    @Query("SELECT * FROM paired_devices WHERE pairing_status = 'APPROVED'")
+    @Query("SELECT * FROM paired_devices WHERE pairing_status = 'APPROVED' AND is_archived = 0")
     fun getApprovedDevices(): Flow<List<PairedDevice>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -150,4 +151,16 @@ interface PairedDeviceDao {
         """,
     )
     suspend fun archiveDevice(phoneNumber: String, role: DeviceRole, timestamp: Long, initiatedBy: String)
+
+    @Query(
+        """
+        UPDATE paired_devices
+        SET is_archived = 0, archived_at = NULL, archival_initiated_by = NULL
+        WHERE phoneNumber = :phoneNumber AND device_role = :role
+        """,
+    )
+    suspend fun unarchiveDevice(phoneNumber: String, role: DeviceRole)
+
+    @Query("SELECT * FROM paired_devices WHERE phoneNumber = :phoneNumber AND device_role = :role")
+    suspend fun getDeviceByPhoneNumberAndRoleIncludingArchived(phoneNumber: String, role: DeviceRole): PairedDevice?
 }

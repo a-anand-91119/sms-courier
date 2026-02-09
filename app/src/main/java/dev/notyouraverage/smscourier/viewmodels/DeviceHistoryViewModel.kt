@@ -5,7 +5,9 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
+import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.export.ExportConfig
 import dev.notyouraverage.smscourier.export.ExportFormat
 import dev.notyouraverage.smscourier.export.ExportFormatter
@@ -13,6 +15,7 @@ import dev.notyouraverage.smscourier.export.ExportManager
 import dev.notyouraverage.smscourier.export.ExportState
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.services.SmsSender
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +29,7 @@ class DeviceHistoryViewModel(
     private val deviceRepository: PairedDeviceRepository,
     private val sessionRepository: ForwardingSessionRepository,
     private val exportManager: ExportManager,
+    private val smsSender: SmsSender,
 ) : ViewModel() {
 
     // Active devices combined with session status
@@ -135,16 +139,50 @@ class DeviceHistoryViewModel(
     }
 
     /**
-     * Unpairs a device by archiving it.
+     * Checks if a device has an active session.
+     */
+    suspend fun hasActiveSession(device: PairedDevice): Boolean {
+        return sessionRepository.getActiveSessionForDevice(device.phoneNumber) != null
+    }
+
+    /**
+     * Unpairs a device by ending any active sessions, notifying the remote device, and archiving it.
      * The device will move from Active Devices to Removed Devices section.
      */
     fun unpairDevice(device: PairedDevice) {
         viewModelScope.launch {
+            // End any active sessions for this device
+            sessionRepository.endSessionForDevice(device.phoneNumber, "UNPAIR")
+
+            // Only send UNPAIR SMS if pairing was actually established (APPROVED status)
+            if (device.status == PairingStatus.APPROVED) {
+                // Send role-specific UNPAIR - tell other device to delete the inverse role
+                val roleToDeleteOnRemote = when (device.role) {
+                    DeviceRole.SOURCE -> DeviceRole.TARGET
+                    DeviceRole.TARGET -> DeviceRole.SOURCE
+                }
+                smsSender.sendUnpair(device.phoneNumber, roleToDeleteOnRemote)
+            }
+
+            // Archive the device
             deviceRepository.archiveDevice(
                 phoneNumber = device.phoneNumber,
                 role = device.role,
                 initiatedBy = "USER",
             )
+        }
+    }
+
+    /**
+     * Permanently deletes a device and all its history.
+     * This removes all sessions (messages cascade delete) and the device record.
+     */
+    fun permanentlyDeleteDevice(device: PairedDevice) {
+        viewModelScope.launch {
+            // Delete all sessions (messages cascade via FK)
+            sessionRepository.deleteAllForDevice(device.phoneNumber)
+            // Delete the device record
+            deviceRepository.delete(device)
         }
     }
 
@@ -157,10 +195,11 @@ class DeviceHistoryViewModel(
         private val deviceRepository: PairedDeviceRepository,
         private val sessionRepository: ForwardingSessionRepository,
         private val exportManager: ExportManager,
+        private val smsSender: SmsSender,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return DeviceHistoryViewModel(deviceRepository, sessionRepository, exportManager) as T
+            return DeviceHistoryViewModel(deviceRepository, sessionRepository, exportManager, smsSender) as T
         }
     }
 }

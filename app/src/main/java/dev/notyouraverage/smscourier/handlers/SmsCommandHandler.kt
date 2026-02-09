@@ -103,7 +103,22 @@ class SmsCommandHandler(
                 return
             }
             null -> {
-                // No existing TARGET pairing
+                // No active TARGET pairing - check for archived device
+                val archivedTarget = deviceRepository.getByPhoneNumberAndRoleIncludingArchived(
+                    senderPhone,
+                    DeviceRole.TARGET,
+                )
+
+                if (archivedTarget != null && archivedTarget.isArchived) {
+                    // Unarchive the device and set to pending
+                    Log.d(TAG, "Re-pairing archived TARGET: $senderPhone - unarchiving")
+                    deviceRepository.unarchiveDevice(senderPhone, DeviceRole.TARGET)
+                    deviceRepository.updatePairingStatus(senderPhone, DeviceRole.TARGET, PairingStatus.PENDING_RECEIVED)
+                    deviceRepository.updateLastActivity(senderPhone, DeviceRole.TARGET)
+                    notificationManager.showPairingRequestNotification(senderPhone)
+                    return
+                }
+
                 // Check if SOURCE role exists (bidirectional scenario)
                 val existingSource = deviceRepository.getByPhoneNumberAndRole(
                     senderPhone,
@@ -402,6 +417,23 @@ class SmsCommandHandler(
 
         if (existingSource != null) {
             Log.w(TAG, "SOURCE pairing already exists for $targetPhoneNumber with status ${existingSource.status}")
+            return
+        }
+
+        // Check for archived SOURCE device - re-pair scenario
+        val archivedSource = deviceRepository.getByPhoneNumberAndRoleIncludingArchived(
+            targetPhoneNumber,
+            DeviceRole.SOURCE,
+        )
+
+        if (archivedSource != null && archivedSource.isArchived) {
+            // Unarchive the device and set to pending
+            Log.d(TAG, "Re-pairing archived SOURCE: $targetPhoneNumber - unarchiving")
+            deviceRepository.unarchiveDevice(targetPhoneNumber, DeviceRole.SOURCE)
+            deviceRepository.updatePairingStatus(targetPhoneNumber, DeviceRole.SOURCE, PairingStatus.PENDING_SENT)
+            deviceRepository.updateLastActivity(targetPhoneNumber, DeviceRole.SOURCE)
+            smsSender.sendPairRequest(targetPhoneNumber)
+            Log.i(TAG, "Sent pairing request to $targetPhoneNumber (re-pair)")
             return
         }
 

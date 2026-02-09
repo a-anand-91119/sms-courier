@@ -9,13 +9,16 @@ import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
+import dev.notyouraverage.smscourier.data.settings.SettingsDefaults
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
+import dev.notyouraverage.smscourier.repository.SettingsRepository
 import dev.notyouraverage.smscourier.services.SmsSender
 import dev.notyouraverage.smscourier.services.foreground.MasterService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -24,6 +27,7 @@ class ForwardingControlViewModel(
     private val deviceRepository: PairedDeviceRepository,
     private val sessionRepository: ForwardingSessionRepository,
     private val smsSender: SmsSender,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     // Approved source devices (devices we can request forwarding from)
@@ -37,6 +41,14 @@ class ForwardingControlViewModel(
 
     private val _uiState = MutableStateFlow(ForwardingUiState())
     val uiState: StateFlow<ForwardingUiState> = _uiState
+
+    init {
+        // Load user's saved default duration from settings
+        viewModelScope.launch {
+            val savedDuration = settingsRepository.defaultForwardingDurationMinutes.first()
+            _uiState.value = _uiState.value.copy(durationMinutes = savedDuration)
+        }
+    }
 
     fun updatePassword(password: String) {
         _uiState.value = _uiState.value.copy(password = password, error = null)
@@ -109,7 +121,7 @@ class ForwardingControlViewModel(
 
     data class ForwardingUiState(
         val password: String = "",
-        val durationMinutes: Int = 30,
+        val durationMinutes: Int = SettingsDefaults.DEFAULT_FORWARDING_DURATION,
         val isLoading: Boolean = false,
         val error: String? = null,
         val success: Boolean = false,
@@ -120,10 +132,17 @@ class ForwardingControlViewModel(
         private val deviceRepository: PairedDeviceRepository,
         private val sessionRepository: ForwardingSessionRepository,
         private val smsSender: SmsSender,
+        private val settingsRepository: SettingsRepository,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ForwardingControlViewModel(context, deviceRepository, sessionRepository, smsSender) as T
+            return ForwardingControlViewModel(
+                context,
+                deviceRepository,
+                sessionRepository,
+                smsSender,
+                settingsRepository,
+            ) as T
         }
     }
 }

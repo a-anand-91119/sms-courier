@@ -84,6 +84,8 @@ fun DeviceHistoryScreen(
     var showExportSheet by remember { mutableStateOf(false) }
     var deviceToExport by remember { mutableStateOf<PairedDevice?>(null) }
     var deviceToUnpair by remember { mutableStateOf<PairedDevice?>(null) }
+    var deviceToUnpairHasActiveSession by remember { mutableStateOf(false) }
+    var deviceToDelete by remember { mutableStateOf<PairedDevice?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
@@ -247,6 +249,12 @@ fun DeviceHistoryScreen(
             },
             onUnpair = {
                 deviceToUnpair = selectedActiveDevice
+                // Check if device has active session
+                deviceToUnpairHasActiveSession = activeDevices.any {
+                    it.device.phoneNumber == selectedActiveDevice?.phoneNumber &&
+                        it.device.role == selectedActiveDevice?.role &&
+                        it.hasActiveSession
+                }
             },
         )
     }
@@ -260,12 +268,8 @@ fun DeviceHistoryScreen(
                 selectedRemovedDevice = null
                 onNavigateToArchiveManagement(device.phoneNumber, device.role.name)
             },
-            onRestore = {
-                // TODO: Implement restore
-                selectedRemovedDevice = null
-            },
             onDelete = {
-                // TODO: Implement delete with confirmation
+                deviceToDelete = device
                 selectedRemovedDevice = null
             },
         )
@@ -277,13 +281,18 @@ fun DeviceHistoryScreen(
             onDismissRequest = { deviceToUnpair = null },
             title = { Text("Unpair Device") },
             text = {
-                Text("Remove ${device.displayName ?: device.phoneNumber} from your paired devices? You can re-pair later.")
+                if (deviceToUnpairHasActiveSession) {
+                    Text("This device has an active forwarding session. Unpairing will end the session and remove ${device.displayName ?: device.phoneNumber} from your paired devices.")
+                } else {
+                    Text("Remove ${device.displayName ?: device.phoneNumber} from your paired devices? You can re-pair later.")
+                }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.unpairDevice(device)
                         deviceToUnpair = null
+                        deviceToUnpairHasActiveSession = false
                         selectedActiveDevice = null
                     },
                 ) {
@@ -291,7 +300,36 @@ fun DeviceHistoryScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { deviceToUnpair = null }) {
+                TextButton(onClick = {
+                    deviceToUnpair = null
+                    deviceToUnpairHasActiveSession = false
+                }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
+    // Permanent delete confirmation dialog
+    deviceToDelete?.let { device ->
+        AlertDialog(
+            onDismissRequest = { deviceToDelete = null },
+            title = { Text("Delete Device Permanently") },
+            text = {
+                Text("This will permanently delete ${device.displayName ?: device.phoneNumber} and all its message history. This action cannot be undone.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.permanentlyDeleteDevice(device)
+                        deviceToDelete = null
+                    },
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deviceToDelete = null }) {
                     Text("Cancel")
                 }
             },
@@ -445,14 +483,13 @@ private fun DeviceDetailBottomSheet(
 
 /**
  * Dialog for removed device options.
- * Per CONTEXT.md: "Tapping removed device shows confirmation dialog: View history, Restore, Delete"
+ * Actions: View history, Delete (permanently removes device and all history)
  */
 @Composable
 private fun RemovedDeviceDialog(
     device: PairedDevice,
     onDismiss: () -> Unit,
     onViewHistory: () -> Unit,
-    onRestore: () -> Unit,
     onDelete: () -> Unit,
 ) {
     AlertDialog(
@@ -465,18 +502,13 @@ private fun RemovedDeviceDialog(
             }
         },
         dismissButton = {
-            Row {
-                TextButton(onClick = onRestore) {
-                    Text("Restore")
-                }
-                TextButton(
-                    onClick = onDelete,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error,
-                    ),
-                ) {
-                    Text("Delete")
-                }
+            TextButton(
+                onClick = onDelete,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
+            ) {
+                Text("Delete")
             }
         },
     )
