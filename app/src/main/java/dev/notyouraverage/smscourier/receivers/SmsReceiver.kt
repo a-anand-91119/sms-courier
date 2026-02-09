@@ -7,15 +7,7 @@ import android.provider.Telephony
 import android.util.Log
 import dev.notyouraverage.smscourier.commands.CommandParser
 import dev.notyouraverage.smscourier.commands.ParsedCommand
-import dev.notyouraverage.smscourier.data.SmsCourierDatabase
-import dev.notyouraverage.smscourier.data.entities.DeviceRole
-import dev.notyouraverage.smscourier.data.entities.PairingStatus
-import dev.notyouraverage.smscourier.enums.SmsCommand
-import dev.notyouraverage.smscourier.models.SmsMessageData
 import dev.notyouraverage.smscourier.services.foreground.MasterService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * SmsReceiver processes ALL incoming SMS messages.
@@ -126,53 +118,14 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun handleRegularSms(context: Context, sender: String, message: String) {
-        // Check if there's an active forwarding session for this sender
-        // This runs async but we don't block the receiver
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val database = SmsCourierDatabase.getDatabase(context)
-                val sessionDao = database.forwardingSessionDao()
-                val deviceDao = database.pairedDeviceDao()
-
-                // Check for active sessions where we are the TARGET (sending SMS to this device)
-                val activeSessions = sessionDao.getActiveSessionsList()
-
-                if (activeSessions.isNotEmpty()) {
-                    // We have active forwarding sessions - forward this SMS to all active sources
-                    activeSessions.forEach { session ->
-                        // Get the source device that requested forwarding (we are TARGET, they are SOURCE)
-                        val sourceDevice = deviceDao.getDeviceByPhoneNumberAndRole(
-                            session.devicePhoneNumber,
-                            DeviceRole.SOURCE,
-                        )
-
-                        if (sourceDevice != null && sourceDevice.status == PairingStatus.APPROVED) {
-                            Log.i(TAG, "Forwarding SMS from $sender to ${session.devicePhoneNumber} (encrypted=${session.encryptionKey != null})")
-
-                            // Create forwarded message with encryption key
-                            val smsData = SmsMessageData(
-                                sender = sender,
-                                command = SmsCommand.FORWARD_SMS.toString(),
-                                rawMessage = message,
-                                secretPassword = "",
-                                targetPhoneNumber = session.devicePhoneNumber,
-                                encryptionKey = session.encryptionKey,
-                            )
-
-                            Intent(context, MasterService::class.java).also {
-                                it.action = MasterService.FORWARD_SMS
-                                it.putExtra(MasterService.SMS_DATA, smsData)
-                                context.startService(it)
-                            }
-
-                            // Increment forwarded message count
-                            sessionDao.incrementMessagesForwarded(session.id)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error checking forwarding sessions", e)
-            }
+        // Delegate to MasterService which handles forwarding logic,
+        // message storage, and counter updates via commandHandler
+        Log.d(TAG, "Sending regular SMS to MasterService for processing")
+        Intent(context, MasterService::class.java).also {
+            it.action = MasterService.PROCESS_REGULAR_SMS
+            it.putExtra(MasterService.EXTRA_SENDER, sender)
+            it.putExtra(MasterService.EXTRA_MESSAGE_BODY, message)
+            context.startService(it)
         }
     }
 }

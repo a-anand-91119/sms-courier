@@ -125,6 +125,35 @@ class SmsCommandHandlerTest {
         coVerify(exactly = 0) { deviceRepository.insert(any()) }
     }
 
+    @Test
+    fun `handlePairRequest unarchives previously archived device`() = runTest {
+        val phone = "+1234567890"
+        val archivedDevice = createTestDevice(
+            phoneNumber = phone,
+            role = DeviceRole.TARGET,
+            status = PairingStatus.APPROVED,
+            isArchived = true,
+            archivedAt = System.currentTimeMillis() - 86400000L,
+            archivalInitiatedBy = "LOCAL",
+        )
+        // No active device exists (archived is filtered out)
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, DeviceRole.TARGET) } returns null
+        // But archived device exists
+        coEvery { deviceRepository.getByPhoneNumberAndRoleIncludingArchived(phone, DeviceRole.TARGET) } returns archivedDevice
+        coEvery { deviceRepository.unarchiveDevice(any(), any()) } just runs
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateLastActivity(any(), any()) } just runs
+
+        handler.handlePairRequest(phone)
+
+        // Should unarchive and update status instead of inserting new device
+        coVerify { deviceRepository.unarchiveDevice(phone, DeviceRole.TARGET) }
+        coVerify { deviceRepository.updatePairingStatus(phone, DeviceRole.TARGET, PairingStatus.PENDING_RECEIVED) }
+        coVerify { deviceRepository.updateLastActivity(phone, DeviceRole.TARGET) }
+        coVerify(exactly = 0) { deviceRepository.insert(any()) }
+        verify { notificationManager.showPairingRequestNotification(phone) }
+    }
+
     // ==================== handlePairApproved ====================
 
     @Test
@@ -241,6 +270,39 @@ class SmsCommandHandlerTest {
         handler.handleAuthRequest("+1234567890")
 
         verify(exactly = 0) { securityManager.generateChallenge(any()) }
+    }
+
+    @Test
+    fun `handleAuthRequest fails for archived device (filtered by repository)`() = runTest {
+        // When device is archived, getByPhoneNumberAndRole returns null because it filters is_archived = 0
+        coEvery { deviceRepository.getByPhoneNumberAndRole(any(), DeviceRole.TARGET) } returns null
+
+        handler.handleAuthRequest("+1234567890")
+
+        // Should not generate challenge for archived (effectively unknown) device
+        verify(exactly = 0) { securityManager.generateChallenge(any()) }
+        verify(exactly = 0) { smsSender.sendAuthChallenge(any(), any()) }
+    }
+
+    @Test
+    fun `handleAuthRequest works after device is unarchived and approved`() = runTest {
+        val phone = "+1234567890"
+        // After unarchiving, device is found with is_archived = 0 and status = APPROVED
+        val device = createTestDevice(
+            phoneNumber = phone,
+            status = PairingStatus.APPROVED,
+            role = DeviceRole.TARGET,
+            // Explicitly not archived
+            isArchived = false,
+        )
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, DeviceRole.TARGET) } returns device
+        every { securityManager.isDeviceLocked(device) } returns false
+        every { securityManager.generateChallenge(any()) } returns "testNonce456"
+
+        handler.handleAuthRequest(phone)
+
+        verify { securityManager.generateChallenge(phone) }
+        verify { smsSender.sendAuthChallenge(phone, "testNonce456") }
     }
 
     // ==================== handleStartForward ====================
@@ -417,6 +479,46 @@ class SmsCommandHandlerTest {
         coVerify { sessionRepository.recordForwardedMessage(5L) }
     }
 
+    @Test
+    fun `handleIncomingSms stores message and updates counters`() = runTest {
+        val session = createTestSession(id = 5L, devicePhoneNumber = "+1111111111")
+        coEvery { sessionRepository.getActiveSessionsList() } returns listOf(session)
+        coEvery { sessionRepository.recordForwardedMessage(any()) } just runs
+        coEvery {
+            messageRepository.storeMessageWithCounters(any(), any(), any(), any(), any(), any())
+        } returns Result.success(1L)
+
+        handler.handleIncomingSms("+5555555555", "Test message content")
+
+        coVerify {
+            messageRepository.storeMessageWithCounters(
+                sessionId = 5L,
+                senderNumber = "+5555555555",
+                messageContent = "Test message content",
+                destinationNumber = "+1111111111",
+                devicePhone = "+1111111111",
+                deviceRole = DeviceRole.TARGET,
+            )
+        }
+    }
+
+    @Test
+    fun `handleIncomingSms continues forwarding even if storage fails`() = runTest {
+        val session = createTestSession(id = 5L, devicePhoneNumber = "+1111111111")
+        coEvery { sessionRepository.getActiveSessionsList() } returns listOf(session)
+        coEvery { sessionRepository.recordForwardedMessage(any()) } just runs
+        // Storage fails
+        coEvery {
+            messageRepository.storeMessageWithCounters(any(), any(), any(), any(), any(), any())
+        } returns Result.failure(RuntimeException("Database error"))
+
+        handler.handleIncomingSms("+5555555555", "Test message")
+
+        // Should still forward the SMS even though storage failed
+        verify { smsSender.sendForwardedSms("+1111111111", "+5555555555", "Test message") }
+        coVerify { sessionRepository.recordForwardedMessage(5L) }
+    }
+
     // ==================== initiatePairing ====================
 
     @Test
@@ -449,6 +551,35 @@ class SmsCommandHandlerTest {
 
         coVerify(exactly = 0) { deviceRepository.insert(any()) }
         verify(exactly = 0) { smsSender.sendPairRequest(any()) }
+    }
+
+    @Test
+    fun `initiatePairing unarchives previously archived SOURCE device`() = runTest {
+        val phone = "+1234567890"
+        val archivedDevice = createTestDevice(
+            phoneNumber = phone,
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.APPROVED,
+            isArchived = true,
+            archivedAt = System.currentTimeMillis() - 86400000L,
+            archivalInitiatedBy = "LOCAL",
+        )
+        // No active device exists
+        coEvery { deviceRepository.getByPhoneNumberAndRole(phone, DeviceRole.SOURCE) } returns null
+        // But archived device exists
+        coEvery { deviceRepository.getByPhoneNumberAndRoleIncludingArchived(phone, DeviceRole.SOURCE) } returns archivedDevice
+        coEvery { deviceRepository.unarchiveDevice(any(), any()) } just runs
+        coEvery { deviceRepository.updatePairingStatus(any(), any(), any()) } just runs
+        coEvery { deviceRepository.updateLastActivity(any(), any()) } just runs
+
+        handler.initiatePairing(phone)
+
+        // Should unarchive and update status instead of inserting new device
+        coVerify { deviceRepository.unarchiveDevice(phone, DeviceRole.SOURCE) }
+        coVerify { deviceRepository.updatePairingStatus(phone, DeviceRole.SOURCE, PairingStatus.PENDING_SENT) }
+        coVerify { deviceRepository.updateLastActivity(phone, DeviceRole.SOURCE) }
+        coVerify(exactly = 0) { deviceRepository.insert(any()) }
+        verify { smsSender.sendPairRequest(phone) }
     }
 
     // ==================== approvePairing ====================

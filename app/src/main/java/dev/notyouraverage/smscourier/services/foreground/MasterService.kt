@@ -107,7 +107,9 @@ class MasterService : Service() {
 
         // Command processing actions
         const val PROCESS_COMMAND = "PROCESS_COMMAND"
+        const val PROCESS_REGULAR_SMS = "PROCESS_REGULAR_SMS"
         const val FORWARD_SMS = "FORWARD_SMS"
+        const val EXTRA_MESSAGE_BODY = "EXTRA_MESSAGE_BODY"
         const val EXTRA_SENDER = "EXTRA_SENDER"
         const val EXTRA_RAW_MESSAGE = "EXTRA_RAW_MESSAGE"
         const val EXTRA_COMMAND_TYPE = "EXTRA_COMMAND_TYPE"
@@ -269,6 +271,10 @@ class MasterService : Service() {
             )
             // Command processing from SmsReceiver
             PROCESS_COMMAND -> handleProcessCommand(intent)
+            PROCESS_REGULAR_SMS -> handleRegularSms(
+                intent.getStringExtra(EXTRA_SENDER),
+                intent.getStringExtra(EXTRA_MESSAGE_BODY),
+            )
             FORWARD_SMS -> handleForwardSms(
                 intent.getParcelableExtra(SMS_DATA, SmsMessageData::class.java),
             )
@@ -419,6 +425,25 @@ class MasterService : Service() {
         Log.i(TAG, "Received forwarded SMS from $sender, original sender: $originalSender")
         // Display notification or store the message
         notificationManager.showForwardedMessageNotification(originalSender, content, sender)
+    }
+
+    /**
+     * Handles regular (non-SMSC) SMS received on TARGET device.
+     * Delegates to commandHandler which stores messages and updates all counters atomically.
+     */
+    private fun handleRegularSms(sender: String?, messageBody: String?) {
+        if (sender.isNullOrBlank() || messageBody.isNullOrBlank()) {
+            Log.e(TAG, "handleRegularSms: Missing sender or message body")
+            return
+        }
+
+        serviceScope.launch {
+            try {
+                commandHandler.handleIncomingSms(sender, messageBody)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error handling regular SMS: ${e.message}", e)
+            }
+        }
     }
 
     private fun handleForwardSms(smsData: SmsMessageData?) {
