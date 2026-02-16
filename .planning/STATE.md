@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 26 (third of 5 in v0.0.65) — Session Management Fixes
-Plan: 1 of 2 complete
-Status: In progress
-Last activity: 2026-02-16 — Completed 26-01-PLAN.md (backend session management fixes)
+Plan: 2 of 2 complete
+Status: Phase complete
+Last activity: 2026-02-16 — Completed 26-02-PLAN.md (UI session list with confirmation dialogs)
 
-Progress: [█████░░░░░] 50% (1/2 Phase 26 plans complete)
+Progress: [██████████] 100% (2/2 Phase 26 plans complete)
 
 ## Performance Metrics
 
@@ -55,6 +55,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - Idempotent session termination: endSessionForDevice handles all sessions, always notify
 - Confirmation state: nullable String in UiState (null = no dialog, non-null = show dialog)
 - Session notifications use CHANNEL_FORWARDING (low priority) not CHANNEL_MESSAGES (high priority)
+- Role-based UI sections: partition devices by role, cross-reference with active sessions
+- Bidirectional detection: count > 1 for same phone with active sessions in different roles
+- Device list key includes role: phoneNumber_role to handle bidirectional entries
 
 **UAT fixes (v0.0.65 progress):**
 - HOME-01: ✓ FIXED (Phase 25-01) - Direction mapping corrected at data/ViewModel layer
@@ -62,6 +65,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - SESS-01: ✓ FIXED (Phase 26-01) - ViewModel now queries both SOURCE and TARGET devices
 - SESS-02: ✓ FIXED (Phase 26-01) - stopForwarding clears encryption keys for both roles
 - SESS-03: ✓ FIXED (Phase 26-01) - stopForwarding sends STOP_FORWARD SMS with graceful degradation
+- SESS-04: ✓ FIXED (Phase 26-02) - UI now shows role-based sections with bidirectional awareness
 - DEVH-01: Pending (Phase 27) - Archived device history visibility
 - DEVH-02: Pending (Phase 27) - No archiveDevice method exists
 - HIST-01: Pending (Phase 28) - Wrong icon in Session History
@@ -80,10 +84,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16T14:30:21Z
-Stopped at: Completed 26-01-PLAN.md (backend session management fixes)
+Last session: 2026-02-16T14:57:33Z
+Stopped at: Completed 26-02-PLAN.md (UI session list with confirmation dialogs)
 Resume file: None
 
 **Next actions:**
-- Continue Phase 26: Plan 26-02 (UI session list with confirmation dialogs)
+- Begin Phase 27: Device History fixes (DEVH-01, DEVH-02)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
