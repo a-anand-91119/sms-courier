@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 
 ## Current Position
 
-Phase: 25 (second of 5 in v0.0.65) — Home Screen Fixes
-Plan: 2 of 2 complete (all plans done)
-Status: Phase complete
-Last activity: 2026-02-16 — Completed 25-02-PLAN.md (UI labels and responsive layout)
+Phase: 26 (third of 5 in v0.0.65) — Session Management Fixes
+Plan: 1 of 2 complete
+Status: In progress
+Last activity: 2026-02-16 — Completed 26-01-PLAN.md (backend session management fixes)
 
-Progress: [██████████] 100% (2/2 Phase 25 plans complete)
+Progress: [█████░░░░░] 50% (1/2 Phase 26 plans complete)
 
 ## Performance Metrics
 
@@ -49,12 +49,19 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - Bidirectional merged into both counts (no separate UI indicator)
 - Consistent terminology: "Forwarding to" (tertiary), "Receiving from" (primary), "Forwarding & Receiving" (secondary)
 
+**Phase 26 patterns (established):**
+- Query both roles pattern: combine(SOURCE flow, TARGET flow) for bidirectional session visibility
+- Graceful SMS degradation: try SMS, always clean up locally, warn user on failure
+- Idempotent session termination: endSessionForDevice handles all sessions, always notify
+- Confirmation state: nullable String in UiState (null = no dialog, non-null = show dialog)
+- Session notifications use CHANNEL_FORWARDING (low priority) not CHANNEL_MESSAGES (high priority)
+
 **UAT fixes (v0.0.65 progress):**
 - HOME-01: ✓ FIXED (Phase 25-01) - Direction mapping corrected at data/ViewModel layer
 - HOME-02: ✓ FIXED (Phase 25-02) - Responsive layout with 400dp breakpoint
-- SESS-01: Pending (Phase 26) - SOURCE device doesn't see active sessions (no protocol ack)
-- SESS-02: Pending (Phase 26) - stopForwarding uses wrong DeviceRole for encryption key
-- SESS-03: Pending (Phase 26) - stopForwarding doesn't send STOP_FORWARD SMS
+- SESS-01: ✓ FIXED (Phase 26-01) - ViewModel now queries both SOURCE and TARGET devices
+- SESS-02: ✓ FIXED (Phase 26-01) - stopForwarding clears encryption keys for both roles
+- SESS-03: ✓ FIXED (Phase 26-01) - stopForwarding sends STOP_FORWARD SMS with graceful degradation
 - DEVH-01: Pending (Phase 27) - Archived device history visibility
 - DEVH-02: Pending (Phase 27) - No archiveDevice method exists
 - HIST-01: Pending (Phase 28) - Wrong icon in Session History
@@ -73,10 +80,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16T13:15:00Z
-Stopped at: Completed Phase 25 (both plans + verification)
+Last session: 2026-02-16T14:30:21Z
+Stopped at: Completed 26-01-PLAN.md (backend session management fixes)
 Resume file: None
 
 **Next actions:**
-- Begin Phase 26: Session Management Fixes (SESS-01/02/03)
+- Continue Phase 26: Plan 26-02 (UI session list with confirmation dialogs)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
