@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 24 (first of 5 in v0.0.65) — Reproduce UAT Issues
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-16 — Roadmap revised: inserted Phase 24 (test-first), shifted fix phases to 25-28
+Plan: 2 of 4 complete (24-01 UAT infrastructure, 24-02 Device History tests)
+Status: In progress
+Last activity: 2026-02-16 — Completed 24-02 (DEVH-01/02 failing tests)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20% (2/10 Phase 24 plans)
 
 ## Performance Metrics
 
@@ -41,6 +41,15 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - Test-driven: write failing tests first (Phase 24), then fix in subsequent phases
 - HOME-02 and HIST-01 are UI/icon issues not reproducible in unit/integration tests -- manual verification only
 
+**Phase 24 test patterns (established):**
+- Repository-layer test pattern with mocked DAO and Flow assertions (Turbine)
+- Stub extension function pattern for missing ViewModel methods in TDD red phase
+- @Category(UATTest::class) for grouped UAT test execution via `./gradlew uatTest`
+
+**DEVH bugs identified:**
+- DEVH-01: Repository correctly returns session data for archived devices (bug is at UI/ViewModel layer)
+- DEVH-02: No archiveDevice method exists on DeviceHistoryViewModel (users must unpair to archive)
+
 ### Pending Todos
 
 11 todos tracked in `.planning/todos/pending/`
@@ -59,10 +68,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16
-Stopped at: Roadmap revised -- inserted Phase 24 (reproduce UAT issues with failing tests), shifted fix phases to 25-28
+Last session: 2026-02-16T07:19:08Z
+Stopped at: Completed 24-02-PLAN.md (DEVH-01/02 failing tests)
 Resume file: None
 
 **Next actions:**
-- Plan Phase 24 (Reproduce UAT Issues -- write failing tests)
+- Continue Phase 24: Plans 03-04 (HOME-01, SESS-01/02/03, NOTF-01 failing tests)
 - Parallel: Play Store Launch Phase 4 awaiting Google review

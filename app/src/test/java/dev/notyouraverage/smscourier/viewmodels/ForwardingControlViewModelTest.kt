@@ -30,9 +30,11 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.experimental.categories.Category
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import dev.notyouraverage.smscourier.UATTest
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -263,5 +265,26 @@ class ForwardingControlViewModelTest {
             assertEquals(2, result.size)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Category(UATTest::class)
+    @Test
+    fun `UAT SESS-03 - stopForwarding sends STOP_FORWARD SMS to other device`() = runTest {
+        val devicePhoneNumber = "+5559876543"
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
+        coEvery { deviceRepository.updateEncryptionKey(any(), any(), any()) } just runs
+
+        viewModel.stopForwarding(devicePhoneNumber)
+
+        // SESS-03 BUG: When stopping forwarding, the other device should be notified
+        // via STOP_FORWARD SMS so they know the session has ended.
+        // Currently, the code only ends the local session and clears the encryption key,
+        // but does NOT send any SMS notification.
+        //
+        // After fix in Phase 26:
+        // - stopForwarding will call smsSender.sendStopForward(devicePhoneNumber)
+        //
+        // THIS TEST WILL FAIL until Phase 26 adds the SMS notification.
+        verify { smsSender.sendStopForward(devicePhoneNumber) }
     }
 }

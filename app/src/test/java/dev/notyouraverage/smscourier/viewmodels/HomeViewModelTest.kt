@@ -17,6 +17,10 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.experimental.categories.Category
+import dev.notyouraverage.smscourier.UATTest
+import dev.notyouraverage.smscourier.data.Direction
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 
 @ExperimentalCoroutinesApi
 class HomeViewModelTest {
@@ -153,6 +157,53 @@ class HomeViewModelTest {
             assertEquals(2, state.pendingRequestsCount)
             assertEquals(3, state.activeSessionsCount)
             assertEquals(3, state.activeSessions.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Category(UATTest::class)
+    @Test
+    fun `UAT HOME-01 - TARGET device with active session should show FORWARDING_TO direction not RECEIVING_FROM`() = runTest {
+        // Setup: TARGET device (forwards messages TO the source device)
+        val targetDevice = createTestDevice(
+            phoneNumber = "+5551234567",
+            role = DeviceRole.TARGET,
+            status = PairingStatus.APPROVED,
+        )
+        val session = createTestSession(
+            id = 1L,
+            devicePhoneNumber = "+5551234567",
+        )
+
+        viewModel.homeState.test {
+            // Initial state
+            awaitItem()
+
+            // Emit device and session
+            approvedDevicesFlow.value = listOf(targetDevice)
+            activeSessionsFlow.value = listOf(session)
+
+            // Skip intermediate states and get final combined state
+            var state = awaitItem()
+            while (state.activeSessions.isEmpty() || state.approvedDevicesCount == 0) {
+                state = awaitItem()
+            }
+
+            // HOME-01 BUG: TARGET device should show "Forwarding" direction (FORWARDING_TO)
+            // because it's forwarding messages TO the source device.
+            // But currently shows "Receiving" (RECEIVING_FROM) which is semantically wrong.
+            //
+            // After fix in Phase 25:
+            // - TARGET role should map to FORWARDING_TO direction
+            // - forwardingToCount should be 1
+            // - receivingFromCount should be 0
+            //
+            // THIS TEST WILL FAIL until Phase 25 fixes the direction mapping.
+            assertFalse(state.directionalStatus.activeSessions.isEmpty())
+            assertEquals(Direction.FORWARDING_TO, state.directionalStatus.activeSessions[0].direction)
+            assertEquals(1, state.directionalStatus.forwardingToCount)
+            assertEquals(0, state.directionalStatus.receivingFromCount)
+
             cancelAndIgnoreRemainingEvents()
         }
     }
