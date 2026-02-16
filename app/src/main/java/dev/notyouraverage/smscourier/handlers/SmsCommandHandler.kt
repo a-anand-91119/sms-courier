@@ -309,12 +309,14 @@ class SmsCommandHandler(
     suspend fun handleStopForward(senderPhone: String) {
         Log.i(TAG, "Stop forward from: $senderPhone")
 
-        val activeSession = sessionRepository.getActiveSessionForDevice(senderPhone)
-        if (activeSession != null) {
-            sessionRepository.endSession(activeSession.id, "REMOTE")
-            onForwardingStateChanged(ForwardingState.Stopped(senderPhone, "REMOTE"))
-            Log.i(TAG, "Stopped forwarding session for $senderPhone by remote request")
-        }
+        // End ALL active sessions for this device (handles bidirectional)
+        sessionRepository.endSessionForDevice(senderPhone, "REMOTE")
+
+        // Show notification that remote device stopped the session
+        notificationManager.showSessionStoppedNotification(senderPhone)
+
+        onForwardingStateChanged(ForwardingState.Stopped(senderPhone, "REMOTE"))
+        Log.i(TAG, "Stopped all forwarding sessions for $senderPhone by remote request")
     }
 
     private suspend fun handleForwardedData(

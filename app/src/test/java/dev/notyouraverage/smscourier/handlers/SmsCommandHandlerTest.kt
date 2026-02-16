@@ -399,25 +399,28 @@ class SmsCommandHandlerTest {
 
     @Test
     fun `handleStopForward ends active session`() = runTest {
-        val session = createTestSession(id = 5L)
-        coEvery { sessionRepository.getActiveSessionForDevice(any()) } returns session
-        coEvery { sessionRepository.endSession(any(), any()) } just runs
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
 
         handler.handleStopForward("+1234567890")
 
-        coVerify { sessionRepository.endSession(5L, "REMOTE") }
+        coVerify { sessionRepository.endSessionForDevice("+1234567890", "REMOTE") }
+        verify { notificationManager.showSessionStoppedNotification("+1234567890") }
         assertEquals(1, forwardingStateChanges.size)
         assertTrue(forwardingStateChanges[0] is SmsCommandHandler.ForwardingState.Stopped)
     }
 
     @Test
     fun `handleStopForward does nothing when no active session`() = runTest {
-        coEvery { sessionRepository.getActiveSessionForDevice(any()) } returns null
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
 
         handler.handleStopForward("+1234567890")
 
-        coVerify(exactly = 0) { sessionRepository.endSession(any(), any()) }
-        assertTrue(forwardingStateChanges.isEmpty())
+        // Now always calls endSessionForDevice (idempotent) and shows notification
+        coVerify { sessionRepository.endSessionForDevice("+1234567890", "REMOTE") }
+        verify { notificationManager.showSessionStoppedNotification("+1234567890") }
+        // State change callback is still called (idempotent behavior)
+        assertEquals(1, forwardingStateChanges.size)
+        assertTrue(forwardingStateChanges[0] is SmsCommandHandler.ForwardingState.Stopped)
     }
 
     // ==================== handleForwardedDataEncrypted ====================

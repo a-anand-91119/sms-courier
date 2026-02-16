@@ -31,6 +31,7 @@ class PairingNotificationManager(private val context: Context) {
         private const val NOTIFICATION_ID_PAIRING_BASE = 1001
         private const val NOTIFICATION_ID_FORWARDING = 2001
         private const val NOTIFICATION_ID_MESSAGE_BASE = 3001
+        private const val NOTIFICATION_ID_SESSION_STOPPED_BASE = 4001
     }
 
     private fun hasNotificationPermission(): Boolean {
@@ -192,6 +193,30 @@ class PairingNotificationManager(private val context: Context) {
             .build()
 
         notifySafely(getNotificationIdForPhone(phoneNumber), notification)
+    }
+
+    fun showSessionStoppedNotification(phoneNumber: String) {
+        val intent = Intent(context, dev.notyouraverage.smscourier.activities.MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        // Offset request code to avoid collision with pairing notifications
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            phoneNumber.hashCode() + 100,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_FORWARDING)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Forwarding Stopped")
+            .setContentText("$phoneNumber ended the forwarding session")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        notifySafely(NOTIFICATION_ID_SESSION_STOPPED_BASE + phoneNumber.hashCode().and(0xFFFF), notification)
     }
 
     private fun getNotificationIdForPhone(phoneNumber: String): Int {
