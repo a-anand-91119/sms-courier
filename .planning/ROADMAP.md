@@ -232,10 +232,11 @@ Plans:
   4. When one device stops a session, the other device receives an SMS notification that the session was stopped
   5. Session status updates to "Stopped" on both devices after either side stops it
   6. Phase 24 tests for SESS-01, SESS-02, SESS-03 now PASS (no code changes to the tests)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 26-01: TBD
+- [ ] 26-01-PLAN.md — Fix ViewModel (SESS-01/02/03), handleStopForward, and session stopped notification
+- [ ] 26-02-PLAN.md — Update ForwardingControlScreen UI for combined device list and improved stop dialog
 
 ### Phase 27: Device History Fixes
 
@@ -296,6 +297,6 @@ Plans:
 | 23. UAT Bug Fixes | v0.0.64 | 3/3 | Complete | 2026-02-08 |
 | 24. Reproduce UAT Issues | v0.0.65 | 3/3 | Complete | 2026-02-16 |
 | 25. Home Screen Fixes | v0.0.65 | 2/2 | Complete | 2026-02-16 |
-| 26. Session Management Fixes | v0.0.65 | 0/TBD | Not started | - |
+| 26. Session Management Fixes | v0.0.65 | 0/2 | Not started | - |
 | 27. Device History Fixes | v0.0.65 | 0/TBD | Not started | - |
 | 28. UI & Notification Quick Fixes | v0.0.65 | 0/TBD | Not started | - |
