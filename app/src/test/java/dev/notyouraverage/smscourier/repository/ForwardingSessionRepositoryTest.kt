@@ -57,11 +57,12 @@ class ForwardingSessionRepositoryTest {
         // of the device's archived status.
 
         val archivedDevicePhone = "+5551234567"
+        // Archived devices typically have ended sessions
         val sessions = listOf(
             createTestSession(
                 id = 1,
                 devicePhoneNumber = archivedDevicePhone,
-                isActive = false, // Archived devices typically have ended sessions
+                isActive = false,
                 messagesForwarded = 10,
             ),
             createTestSession(

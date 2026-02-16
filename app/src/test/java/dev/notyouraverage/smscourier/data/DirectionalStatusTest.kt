@@ -31,15 +31,15 @@ class DirectionalStatusTest {
     }
 
     @Test
-    fun `FORWARDING_TO represents SOURCE role - device receives messages`() {
-        // SOURCE devices REQUEST forwarding = they RECEIVE messages
+    fun `FORWARDING_TO represents TARGET role - device forwards messages`() {
+        // TARGET devices FORWARD messages to others
         val direction = Direction.FORWARDING_TO
         assertEquals("FORWARDING_TO", direction.name)
     }
 
     @Test
-    fun `RECEIVING_FROM represents TARGET role - device sends messages`() {
-        // TARGET devices PROVIDE forwarding = they SEND messages
+    fun `RECEIVING_FROM represents SOURCE role - device receives messages`() {
+        // SOURCE devices RECEIVE messages from others
         val direction = Direction.RECEIVING_FROM
         assertEquals("RECEIVING_FROM", direction.name)
     }
@@ -82,12 +82,12 @@ class DirectionalStatusTest {
         val sessionWithDirection = SessionWithDirection(
             session = session,
             device = device,
-            direction = Direction.FORWARDING_TO,
+            direction = Direction.RECEIVING_FROM,
         )
 
         assertEquals(session, sessionWithDirection.session)
         assertEquals(device, sessionWithDirection.device)
-        assertEquals(Direction.FORWARDING_TO, sessionWithDirection.direction)
+        assertEquals(Direction.RECEIVING_FROM, sessionWithDirection.direction)
     }
 
     @Test
@@ -108,7 +108,7 @@ class DirectionalStatusTest {
         val sessionWithDirection = SessionWithDirection(
             session = session,
             device = device,
-            direction = Direction.RECEIVING_FROM,
+            direction = Direction.FORWARDING_TO,
         )
 
         assertEquals(42L, sessionWithDirection.session.id)
@@ -126,7 +126,7 @@ class DirectionalStatusTest {
     // =========================================================================
 
     @Test
-    fun `only SOURCE sessions results in forwardingToCount greater than zero`() {
+    fun `only SOURCE sessions results in receivingFromCount greater than zero`() {
         val device = createTestDevice(
             phoneNumber = "+1111111111",
             role = DeviceRole.SOURCE,
@@ -138,15 +138,15 @@ class DirectionalStatusTest {
 
         val status = calculateDirectionalStatus(listOf(device), listOf(session))
 
-        assertEquals(1, status.forwardingToCount)
-        assertEquals(0, status.receivingFromCount)
+        assertEquals(0, status.forwardingToCount)
+        assertEquals(1, status.receivingFromCount)
         assertEquals(0, status.bidirectionalCount)
         assertEquals(1, status.activeSessions.size)
-        assertEquals(Direction.FORWARDING_TO, status.activeSessions[0].direction)
+        assertEquals(Direction.RECEIVING_FROM, status.activeSessions[0].direction)
     }
 
     @Test
-    fun `only TARGET sessions results in receivingFromCount greater than zero`() {
+    fun `only TARGET sessions results in forwardingToCount greater than zero`() {
         val device = createTestDevice(
             phoneNumber = "+2222222222",
             role = DeviceRole.TARGET,
@@ -158,11 +158,11 @@ class DirectionalStatusTest {
 
         val status = calculateDirectionalStatus(listOf(device), listOf(session))
 
-        assertEquals(0, status.forwardingToCount)
-        assertEquals(1, status.receivingFromCount)
+        assertEquals(1, status.forwardingToCount)
+        assertEquals(0, status.receivingFromCount)
         assertEquals(0, status.bidirectionalCount)
         assertEquals(1, status.activeSessions.size)
-        assertEquals(Direction.RECEIVING_FROM, status.activeSessions[0].direction)
+        assertEquals(Direction.FORWARDING_TO, status.activeSessions[0].direction)
     }
 
     @Test
@@ -240,15 +240,15 @@ class DirectionalStatusTest {
             sessions,
         )
 
-        assertEquals(1, status.forwardingToCount)
         assertEquals(1, status.receivingFromCount)
+        assertEquals(1, status.forwardingToCount)
         assertEquals(1, status.bidirectionalCount)
         assertEquals(3, status.activeSessions.size)
 
         // Verify each session has correct direction
         val sessionsByPhone = status.activeSessions.associateBy { it.session.devicePhoneNumber }
-        assertEquals(Direction.FORWARDING_TO, sessionsByPhone["+1111111111"]?.direction)
-        assertEquals(Direction.RECEIVING_FROM, sessionsByPhone["+2222222222"]?.direction)
+        assertEquals(Direction.RECEIVING_FROM, sessionsByPhone["+1111111111"]?.direction)
+        assertEquals(Direction.FORWARDING_TO, sessionsByPhone["+2222222222"]?.direction)
         assertEquals(Direction.BIDIRECTIONAL, sessionsByPhone["+3333333333"]?.direction)
     }
 
@@ -266,13 +266,13 @@ class DirectionalStatusTest {
 
         val status = calculateDirectionalStatus(listOf(device), sessions)
 
-        assertEquals(3, status.forwardingToCount)
-        assertEquals(0, status.receivingFromCount)
+        assertEquals(0, status.forwardingToCount)
+        assertEquals(3, status.receivingFromCount)
         assertEquals(0, status.bidirectionalCount)
         assertEquals(3, status.activeSessions.size)
 
-        // All sessions should have FORWARDING_TO direction
-        assertTrue(status.activeSessions.all { it.direction == Direction.FORWARDING_TO })
+        // All sessions should have RECEIVING_FROM direction
+        assertTrue(status.activeSessions.all { it.direction == Direction.RECEIVING_FROM })
     }
 
     @Test
@@ -380,8 +380,8 @@ class DirectionalStatusTest {
         val status = calculateDirectionalStatus(nonArchivedDevices, sessions)
 
         // Only the active device's session should be counted
-        assertEquals(1, status.forwardingToCount)
-        assertEquals(0, status.receivingFromCount)
+        assertEquals(0, status.forwardingToCount)
+        assertEquals(1, status.receivingFromCount)
         assertEquals(0, status.bidirectionalCount)
         assertEquals(1, status.activeSessions.size)
         assertEquals("+1111111111", status.activeSessions[0].session.devicePhoneNumber)
@@ -410,7 +410,7 @@ class DirectionalStatusTest {
         val activeSessions = listOf(activeSession, endedSession).filter { it.isActive }
         val status = calculateDirectionalStatus(listOf(device), activeSessions)
 
-        assertEquals(1, status.forwardingToCount)
+        assertEquals(1, status.receivingFromCount)
         assertEquals(1, status.activeSessions.size)
         assertEquals(1L, status.activeSessions[0].session.id)
     }
@@ -440,12 +440,12 @@ class DirectionalStatusTest {
 
         val status = calculateDirectionalStatus(devices, sessions)
 
-        // Phone 1: 2 FORWARDING_TO sessions
-        // Phone 4: 1 FORWARDING_TO session
-        assertEquals(3, status.forwardingToCount)
+        // Phone 1: 2 RECEIVING_FROM sessions
+        // Phone 4: 1 RECEIVING_FROM session
+        assertEquals(3, status.receivingFromCount)
 
-        // Phone 2: 1 RECEIVING_FROM session
-        assertEquals(1, status.receivingFromCount)
+        // Phone 2: 1 FORWARDING_TO session
+        assertEquals(1, status.forwardingToCount)
 
         // Phone 3: 1 BIDIRECTIONAL session
         assertEquals(1, status.bidirectionalCount)
@@ -525,25 +525,25 @@ class DirectionalStatusTest {
                     }
                 }
                 sourceDevice != null -> {
-                    forwardingToCount += phoneSessions.size
-                    phoneSessions.forEach { session ->
-                        sessionsWithDirection.add(
-                            SessionWithDirection(
-                                session = session,
-                                device = sourceDevice,
-                                direction = Direction.FORWARDING_TO,
-                            ),
-                        )
-                    }
-                }
-                targetDevice != null -> {
                     receivingFromCount += phoneSessions.size
                     phoneSessions.forEach { session ->
                         sessionsWithDirection.add(
                             SessionWithDirection(
                                 session = session,
-                                device = targetDevice,
+                                device = sourceDevice,
                                 direction = Direction.RECEIVING_FROM,
+                            ),
+                        )
+                    }
+                }
+                targetDevice != null -> {
+                    forwardingToCount += phoneSessions.size
+                    phoneSessions.forEach { session ->
+                        sessionsWithDirection.add(
+                            SessionWithDirection(
+                                session = session,
+                                device = targetDevice,
+                                direction = Direction.FORWARDING_TO,
                             ),
                         )
                     }

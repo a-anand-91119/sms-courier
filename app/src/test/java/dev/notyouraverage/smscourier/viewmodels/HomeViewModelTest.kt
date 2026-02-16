@@ -4,6 +4,9 @@ import app.cash.turbine.test
 import dev.notyouraverage.smscourier.MainCoroutineRule
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
 import dev.notyouraverage.smscourier.TestFixtures.createTestSession
+import dev.notyouraverage.smscourier.UATTest
+import dev.notyouraverage.smscourier.data.Direction
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
 import dev.notyouraverage.smscourier.repository.PairedDeviceRepository
@@ -18,9 +21,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.categories.Category
-import dev.notyouraverage.smscourier.UATTest
-import dev.notyouraverage.smscourier.data.Direction
-import dev.notyouraverage.smscourier.data.entities.DeviceRole
 
 @ExperimentalCoroutinesApi
 class HomeViewModelTest {

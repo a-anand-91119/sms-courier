@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import dev.notyouraverage.smscourier.MainCoroutineRule
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
 import dev.notyouraverage.smscourier.TestFixtures.createTestSession
+import dev.notyouraverage.smscourier.UATTest
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
@@ -34,7 +35,6 @@ import org.junit.experimental.categories.Category
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import dev.notyouraverage.smscourier.UATTest
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
