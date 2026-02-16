@@ -424,8 +424,10 @@ fun DeviceCard(
                 // Directional subtitle
                 val direction = if (activeSession != null) {
                     when (device.role) {
-                        DeviceRole.SOURCE -> Direction.FORWARDING_TO
-                        DeviceRole.TARGET -> Direction.RECEIVING_FROM
+                        // SOURCE role: this device receives FROM others (arrow down)
+                        DeviceRole.SOURCE -> Direction.RECEIVING_FROM
+                        // TARGET role: this device forwards TO others (arrow up)
+                        DeviceRole.TARGET -> Direction.FORWARDING_TO
                     }
                 } else {
                     null
