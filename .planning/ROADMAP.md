@@ -213,10 +213,11 @@ Plans:
   2. SOURCE device Home screen continues to show "Receiving from: [phone number]" correctly (no regression)
   3. Active session badge on Home screen renders without text wrapping or overflow on a small screen device (e.g., 320dp width)
   4. Phase 24 test for HOME-01 now PASSES (no code change to the test)
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 25-01: TBD
+- [ ] 25-01-PLAN.md — Fix Direction enum mapping in data/ViewModel layer (HOME-01 root cause)
+- [ ] 25-02-PLAN.md — Update UI labels, terminology consistency, and responsive layout (HOME-01 labels + HOME-02)
 
 ### Phase 26: Session Management Fixes
 
