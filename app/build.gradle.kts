@@ -89,6 +89,19 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
+tasks.register<Test>("uatTest") {
+    description = "Runs all UAT tests annotated with @Category(UATTest::class)"
+    group = "verification"
+
+    useJUnit {
+        includeCategories("dev.notyouraverage.smscourier.UATTest")
+    }
+
+    // Use same classpath and test source sets as the default test task
+    testClassesDirs = tasks.named<Test>("testDebugUnitTest").get().testClassesDirs
+    classpath = tasks.named<Test>("testDebugUnitTest").get().classpath
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
