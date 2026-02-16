@@ -1,6 +1,7 @@
 package dev.notyouraverage.smscourier.composables.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
@@ -31,11 +31,13 @@ import androidx.compose.ui.unit.dp
  * Card displaying directional forwarding status indicators.
  *
  * Shows at-a-glance whether this device is:
- * - Receiving (arrow down): forwardingToCount sessions where this device receives messages
- * - Forwarding (arrow up): receivingFromCount sessions where this device sends messages
- * - Bidirectional (swap vert): bidirectionalCount sessions with both directions active
+ * - Receiving from (arrow down): RECEIVING_FROM direction = SOURCE role, messages flow TO this device
+ * - Forwarding to (arrow up): FORWARDING_TO direction = TARGET role, messages flow FROM this device
  *
- * Inactive directions (zero count) are grayed out but always visible.
+ * Bidirectional sessions are merged into both counts. On large screens (>=400dp), shows both
+ * direction indicators (grayed out when zero). On small screens (<400dp), shows compact text-only
+ * list, hiding zero-count directions.
+ *
  * Tapping the card triggers [onCardClick] to open the session breakdown sheet.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +49,10 @@ fun DirectionalStatusCard(
     onCardClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Merge bidirectional count into both directions
+    val effectiveForwardingTo = forwardingToCount + bidirectionalCount
+    val effectiveReceivingFrom = receivingFromCount + bidirectionalCount
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -67,43 +73,64 @@ fun DirectionalStatusCard(
                 fontWeight = FontWeight.SemiBold,
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                // Receiving (arrow down) - this device is SOURCE, receiving messages
-                // Uses primary color (green-ish in Material You)
-                DirectionalIndicator(
-                    icon = Icons.Default.KeyboardArrowDown,
-                    count = forwardingToCount,
-                    label = "Receiving",
-                    color = MaterialTheme.colorScheme.primary,
-                    isActive = forwardingToCount > 0,
-                    modifier = Modifier.weight(1f),
-                )
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                if (maxWidth >= 400.dp) {
+                    // Large screen: horizontal layout with icons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        // Receiving from (arrow down) - this device is SOURCE, receiving messages
+                        // Uses primary color (green-ish in Material You)
+                        DirectionalIndicator(
+                            icon = Icons.Default.KeyboardArrowDown,
+                            count = effectiveReceivingFrom,
+                            label = "Receiving from",
+                            color = MaterialTheme.colorScheme.primary,
+                            isActive = effectiveReceivingFrom > 0,
+                            modifier = Modifier.weight(1f),
+                        )
 
-                // Forwarding (arrow up) - this device is TARGET, sending messages
-                // Uses tertiary color (blue-ish in Material You)
-                DirectionalIndicator(
-                    icon = Icons.Default.KeyboardArrowUp,
-                    count = receivingFromCount,
-                    label = "Forwarding",
-                    color = MaterialTheme.colorScheme.tertiary,
-                    isActive = receivingFromCount > 0,
-                    modifier = Modifier.weight(1f),
-                )
-
-                // Bidirectional (refresh) - both directions active
-                // Uses secondary color (purple-ish in Material You)
-                // IMPORTANT: Label is "Bidirectional" per CONTEXT.md locked decision
-                DirectionalIndicator(
-                    icon = Icons.Default.Refresh,
-                    count = bidirectionalCount,
-                    label = "Bidirectional",
-                    color = MaterialTheme.colorScheme.secondary,
-                    isActive = bidirectionalCount > 0,
-                    modifier = Modifier.weight(1f),
-                )
+                        // Forwarding to (arrow up) - this device is TARGET, sending messages
+                        // Uses tertiary color (blue-ish in Material You)
+                        DirectionalIndicator(
+                            icon = Icons.Default.KeyboardArrowUp,
+                            count = effectiveForwardingTo,
+                            label = "Forwarding to",
+                            color = MaterialTheme.colorScheme.tertiary,
+                            isActive = effectiveForwardingTo > 0,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                } else {
+                    // Small screen: compact vertical layout, text-only, hide zero counts
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        if (effectiveForwardingTo > 0) {
+                            Text(
+                                text = "Forwarding to: $effectiveForwardingTo",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.tertiary,
+                            )
+                        }
+                        if (effectiveReceivingFrom > 0) {
+                            Text(
+                                text = "Receiving from: $effectiveReceivingFrom",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        if (effectiveForwardingTo == 0 && effectiveReceivingFrom == 0) {
+                            Text(
+                                text = "No active sessions",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
