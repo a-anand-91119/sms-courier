@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** Reliable, secure SMS forwarding between paired devices with minimal user intervention
-**Current focus:** v0.0.65 UAT Fixes — fixing issues found during testing
+**Current focus:** v0.0.65 UAT Fixes -- Phase 24 Reproduce UAT Issues
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-02-16 — Milestone v0.0.65 started
+Phase: 24 (first of 5 in v0.0.65) — Reproduce UAT Issues
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-02-16 — Roadmap revised: inserted Phase 24 (test-first), shifted fix phases to 25-28
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -37,18 +37,21 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - DataStore Preferences for settings
 - WorkManager for background cleanup
 
+**v0.0.65 approach:**
+- Test-driven: write failing tests first (Phase 24), then fix in subsequent phases
+- HOME-02 and HIST-01 are UI/icon issues not reproducible in unit/integration tests -- manual verification only
+
 ### Pending Todos
 
 11 todos tracked in `.planning/todos/pending/`
 
-**UAT Issues (v0.0.65) — this milestone:**
-- Home screen forwarding direction wrong for TARGET devices
-- Active badge layout broken on small screens
-- Session History uses share icon instead of export icon
-- Both devices should see active sessions and stop them
-- Session stop should notify other device
-- Removed device history empty when viewed
-- Notification Approve action broken
+**UAT Issues (v0.0.65) -- this milestone:**
+- HOME-01: Forwarding direction wrong for TARGET devices
+- HOME-02: Active badge layout broken on small screens
+- SESS-01/02/03: Session visibility and stop for both devices
+- DEVH-01/02: Removed device history and archive action
+- HIST-01: Wrong icon in Session History
+- NOTF-01: Notification Approve action broken
 
 ### Blockers/Concerns
 
@@ -57,9 +60,9 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-16
-Stopped at: Defining v0.0.65 requirements
+Stopped at: Roadmap revised -- inserted Phase 24 (reproduce UAT issues with failing tests), shifted fix phases to 25-28
 Resume file: None
 
 **Next actions:**
-- Define requirements and create roadmap
+- Plan Phase 24 (Reproduce UAT Issues -- write failing tests)
 - Parallel: Play Store Launch Phase 4 awaiting Google review

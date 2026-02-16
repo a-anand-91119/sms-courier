@@ -58,21 +58,25 @@ Deferred to later milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOME-01 | TBD | Pending |
-| HOME-02 | TBD | Pending |
-| SESS-01 | TBD | Pending |
-| SESS-02 | TBD | Pending |
-| SESS-03 | TBD | Pending |
-| HIST-01 | TBD | Pending |
-| DEVH-01 | TBD | Pending |
-| DEVH-02 | TBD | Pending |
-| NOTF-01 | TBD | Pending |
+| HOME-01 | Phase 24 (test), Phase 25 (fix) | Pending |
+| HOME-02 | Phase 25 (fix, manual verify) | Pending |
+| SESS-01 | Phase 24 (test), Phase 26 (fix) | Pending |
+| SESS-02 | Phase 24 (test), Phase 26 (fix) | Pending |
+| SESS-03 | Phase 24 (test), Phase 26 (fix) | Pending |
+| HIST-01 | Phase 28 (fix, manual verify) | Pending |
+| DEVH-01 | Phase 24 (test), Phase 27 (fix) | Pending |
+| DEVH-02 | Phase 24 (test), Phase 27 (fix) | Pending |
+| NOTF-01 | Phase 24 (test), Phase 28 (fix) | Pending |
 
 **Coverage:**
 - v0.0.65 requirements: 9 total
-- Mapped to phases: 0
-- Unmapped: 9
+- Mapped to phases: 9
+- Unmapped: 0
+
+**Test-driven approach:**
+- 7 of 9 requirements have failing tests written in Phase 24
+- 2 requirements (HOME-02, HIST-01) are UI/icon issues verified manually only
 
 ---
 *Requirements defined: 2026-02-16*
-*Last updated: 2026-02-16 after initial definition*
+*Last updated: 2026-02-16 after roadmap revision (test-first approach)*
