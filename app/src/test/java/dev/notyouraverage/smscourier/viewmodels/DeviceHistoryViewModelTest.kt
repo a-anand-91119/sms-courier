@@ -2,7 +2,9 @@ package dev.notyouraverage.smscourier.viewmodels
 
 import dev.notyouraverage.smscourier.MainCoroutineRule
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
+import dev.notyouraverage.smscourier.UATTest
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
+import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.export.ExportManager
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
@@ -22,6 +24,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.experimental.categories.Category
 
 @ExperimentalCoroutinesApi
 class DeviceHistoryViewModelTest {
@@ -113,4 +116,46 @@ class DeviceHistoryViewModelTest {
         // But should still archive
         coVerify { deviceRepository.archiveDevice("+1234567890", DeviceRole.TARGET, "USER") }
     }
+
+    @Category(UATTest::class)
+    @Test
+    fun `UAT DEVH-02 - archiveDevice moves active device to archived state without unpairing`() = runTest {
+        // DEVH-02: There is no explicit "Archive" action on a paired device. Users must
+        // unpair first, which sends UNPAIR SMS to the remote device. This test verifies
+        // that an archiveDevice method should exist to archive a device locally WITHOUT
+        // unpairing (preserving the pairing relationship, just hiding the device).
+
+        val device = createTestDevice(
+            phoneNumber = "+5551234567",
+            role = DeviceRole.TARGET,
+            status = PairingStatus.APPROVED,
+            isArchived = false,
+        )
+        coEvery { deviceRepository.archiveDevice(any(), any(), any()) } just runs
+
+        // This method call will throw NotImplementedError because archiveDevice
+        // doesn't exist on DeviceHistoryViewModel yet
+        viewModel.archiveDevice(device)
+
+        // DEVH-02: Should call repository archiveDevice method WITHOUT sending UNPAIR SMS
+        coVerify {
+            deviceRepository.archiveDevice(
+                phoneNumber = "+5551234567",
+                role = DeviceRole.TARGET,
+                initiatedBy = "USER",
+            )
+        }
+
+        // Should NOT send UNPAIR SMS (archive preserves pairing relationship)
+        verify(exactly = 0) { smsSender.sendUnpair(any(), any()) }
+
+        // After fix in Phase 27: DeviceHistoryViewModel will have an archiveDevice method
+        // that archives the device without sending UNPAIR SMS to the remote device.
+    }
+}
+
+// TODO: This extension function stubs archiveDevice to make the test compile.
+// DEVH-02 fix (Phase 27) will add the actual archiveDevice method to DeviceHistoryViewModel.
+private fun DeviceHistoryViewModel.archiveDevice(device: PairedDevice) {
+    throw NotImplementedError("DEVH-02: archiveDevice not yet implemented on DeviceHistoryViewModel")
 }
