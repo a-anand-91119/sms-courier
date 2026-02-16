@@ -195,10 +195,12 @@ See [milestones/v0.0.64-device-management/ROADMAP.md](milestones/v0.0.64-device-
 - HOME-02 (active badge layout on small screens): UI layout issue -- not reproducible with unit/integration tests. Will be verified manually in Phase 25.
 - HIST-01 (export icon vs share icon): Icon resource reference issue -- not reproducible with unit/integration tests. Will be verified manually in Phase 28.
 
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 24-01: TBD
+- [ ] 24-01-PLAN.md — HOME-01 and SESS-03 failing tests (direction label + SMS stop notification)
+- [ ] 24-02-PLAN.md — DEVH-01 and DEVH-02 failing tests (archived device history + archive action)
+- [ ] 24-03-PLAN.md — SESS-01, SESS-02, and NOTF-01 failing tests (session visibility/stop + notification approve)
 
 ### Phase 25: Home Screen Fixes
 
@@ -289,7 +291,7 @@ Plans:
 | 21. History Retention Settings | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 23. UAT Bug Fixes | v0.0.64 | 3/3 | Complete | 2026-02-08 |
-| 24. Reproduce UAT Issues | v0.0.65 | 0/TBD | Not started | - |
+| 24. Reproduce UAT Issues | v0.0.65 | 0/3 | Planned | - |
 | 25. Home Screen Fixes | v0.0.65 | 0/TBD | Not started | - |
 | 26. Session Management Fixes | v0.0.65 | 0/TBD | Not started | - |
 | 27. Device History Fixes | v0.0.65 | 0/TBD | Not started | - |
