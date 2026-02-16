@@ -287,4 +287,30 @@ class ForwardingControlViewModelTest {
         // THIS TEST WILL FAIL until Phase 26 adds the SMS notification.
         verify { smsSender.sendStopForward(devicePhoneNumber) }
     }
+
+    @Category(UATTest::class)
+    @Test
+    fun `UAT SESS-01 - approvedSourceDevices includes TARGET role devices with active sessions`() = runTest {
+        // SESS-01 BUG: The ViewModel only queries SOURCE devices
+        // This means TARGET devices with active sessions are invisible
+        // Verify the ViewModel queries TARGET devices too
+        verify {
+            deviceRepository.getDevicesByRoleAndStatus(DeviceRole.TARGET, PairingStatus.APPROVED)
+        }
+    }
+
+    @Category(UATTest::class)
+    @Test
+    fun `UAT SESS-02 - stopForwarding clears encryption key for correct device role`() = runTest {
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
+        coEvery { deviceRepository.updateEncryptionKey(any(), any(), any()) } just runs
+
+        viewModel.stopForwarding("+5559876543")
+
+        // SESS-02: Should clear encryption key for the correct role
+        // Currently hardcoded to DeviceRole.SOURCE
+        coVerify {
+            deviceRepository.updateEncryptionKey("+5559876543", DeviceRole.TARGET, null)
+        }
+    }
 }
