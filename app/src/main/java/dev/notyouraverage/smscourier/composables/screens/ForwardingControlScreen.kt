@@ -59,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +67,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import dev.notyouraverage.smscourier.data.entities.DeviceRole
 import dev.notyouraverage.smscourier.data.entities.ForwardingSession
 import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.viewmodels.ForwardingControlViewModel
@@ -78,34 +80,55 @@ fun ForwardingControlScreen(
     onNavigateBack: () -> Unit,
 ) {
     val context = LocalContext.current
-    val approvedDevices by viewModel.approvedSourceDevices.collectAsState()
+    val approvedDevices by viewModel.approvedDevices.collectAsState()
     val activeSessions by viewModel.activeSessions.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     var selectedDevice by remember { mutableStateOf<PairedDevice?>(null) }
-    var sessionToStop by remember { mutableStateOf<ForwardingSession?>(null) }
 
-    // Confirmation dialog for stopping session
-    sessionToStop?.let { session ->
+    // Confirmation dialog for stopping session (bidirectional-aware)
+    uiState.confirmStopPhoneNumber?.let { phoneNumber ->
+        // Detect bidirectional: same phone has active sessions in both roles
+        val isBidirectional = approvedDevices.count { device ->
+            device.phoneNumber == phoneNumber &&
+                activeSessions.any { it.devicePhoneNumber == device.phoneNumber }
+        } > 1
+
+        val dialogText = if (isBidirectional) {
+            "Stop all forwarding with $phoneNumber? This will stop forwarding in both directions. The other device will be notified."
+        } else {
+            "Stop forwarding to $phoneNumber? The other device will be notified."
+        }
+
         AlertDialog(
-            onDismissRequest = { sessionToStop = null },
-            title = { Text("Stop Forwarding") },
-            text = {
-                Text("Stop forwarding SMS to ${session.devicePhoneNumber}?")
+            onDismissRequest = {
+                if (!uiState.isLoading) viewModel.cancelStopConfirmation()
             },
+            title = { Text("Stop Forwarding") },
+            text = { Text(dialogText) },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.stopForwarding(session.devicePhoneNumber)
-                        sessionToStop = null
+                        viewModel.stopForwarding(phoneNumber)
                     },
+                    enabled = !uiState.isLoading,
                 ) {
-                    Text("Stop", color = MaterialTheme.colorScheme.error)
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text("Stop", color = MaterialTheme.colorScheme.error)
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { sessionToStop = null }) {
+                TextButton(
+                    onClick = { viewModel.cancelStopConfirmation() },
+                    enabled = !uiState.isLoading,
+                ) {
                     Text("Cancel")
                 }
             },
@@ -117,6 +140,12 @@ fun ForwardingControlScreen(
             Toast.makeText(context, "Forwarding started!", Toast.LENGTH_SHORT).show()
             viewModel.clearSuccess()
             selectedDevice = null
+        }
+    }
+
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -150,8 +179,75 @@ fun ForwardingControlScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-            // Active Sessions Section
-            if (activeSessions.isNotEmpty()) {
+            // Active Sessions Sections (role-based)
+            // Partition approved devices by role
+            val forwardingToDevices = approvedDevices.filter { it.role == DeviceRole.TARGET }
+            val receivingFromDevices = approvedDevices.filter { it.role == DeviceRole.SOURCE }
+
+            // Helper: find active session for a device phone number
+            fun activeSessionFor(phoneNumber: String): ForwardingSession? =
+                activeSessions.find { it.devicePhoneNumber == phoneNumber }
+
+            // "Forwarding to" section (TARGET role)
+            val activeForwardingTo = forwardingToDevices.filter { device ->
+                activeSessions.any { it.devicePhoneNumber == device.phoneNumber }
+            }
+            if (activeForwardingTo.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    ),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.tertiary),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Default.PlayArrow,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onTertiary,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            }
+                            Text(
+                                text = "Forwarding to",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                        }
+                        activeForwardingTo.forEach { device ->
+                            ActiveSessionRow(
+                                phoneNumber = device.phoneNumber,
+                                initiatedByLabel = "Started by other device",
+                                onStopClick = { viewModel.requestStopConfirmation(device.phoneNumber) },
+                                containerContentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                        }
+                    }
+                }
+            }
+
+            // "Receiving from" section (SOURCE role)
+            val activeReceivingFrom = receivingFromDevices.filter { device ->
+                activeSessions.any { it.devicePhoneNumber == device.phoneNumber }
+            }
+            if (activeReceivingFrom.isNotEmpty()) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -184,40 +280,19 @@ fun ForwardingControlScreen(
                                 )
                             }
                             Text(
-                                text = "Active Sessions",
+                                text = "Receiving from",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                             )
                         }
-
-                        activeSessions.forEach { session ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = session.devicePhoneNumber,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                )
-                                OutlinedButton(
-                                    onClick = { sessionToStop = session },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(
-                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    ),
-                                ) {
-                                    Icon(
-                                        Icons.Default.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Stop")
-                                }
-                            }
+                        activeReceivingFrom.forEach { device ->
+                            ActiveSessionRow(
+                                phoneNumber = device.phoneNumber,
+                                initiatedByLabel = "Started by you",
+                                onStopClick = { viewModel.requestStopConfirmation(device.phoneNumber) },
+                                containerContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
                         }
                     }
                 }
@@ -275,7 +350,7 @@ fun ForwardingControlScreen(
                     contentPadding = PaddingValues(horizontal = 20.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(approvedDevices, key = { it.phoneNumber }) { device ->
+                    items(approvedDevices, key = { "${it.phoneNumber}_${it.role}" }) { device ->
                         ForwardingDeviceItem(
                             device = device,
                             onClick = { selectedDevice = device },
@@ -302,6 +377,44 @@ fun ForwardingControlScreen(
             onConfirm = { viewModel.startForwarding(device.phoneNumber) },
             onDismiss = { selectedDevice = null },
         )
+    }
+}
+
+@Composable
+private fun ActiveSessionRow(
+    phoneNumber: String,
+    initiatedByLabel: String,
+    onStopClick: () -> Unit,
+    containerContentColor: Color,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column {
+            Text(
+                text = phoneNumber,
+                style = MaterialTheme.typography.bodyLarge,
+                color = containerContentColor,
+            )
+            Text(
+                text = initiatedByLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = containerContentColor.copy(alpha = 0.7f),
+            )
+        }
+        OutlinedButton(
+            onClick = onStopClick,
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = containerContentColor,
+            ),
+        ) {
+            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("Stop")
+        }
     }
 }
 
