@@ -72,9 +72,9 @@ class PairedDevicesViewModel(
         if (activeSession == null) return null
         return when (device.role) {
             // SOURCE devices request forwarding = they RECEIVE messages (arrow down)
-            DeviceRole.SOURCE -> Direction.FORWARDING_TO
-            // TARGET devices provide forwarding = they SEND messages (arrow up)
-            DeviceRole.TARGET -> Direction.RECEIVING_FROM
+            DeviceRole.SOURCE -> Direction.RECEIVING_FROM
+            // TARGET devices provide forwarding = they FORWARD messages (arrow up)
+            DeviceRole.TARGET -> Direction.FORWARDING_TO
         }
     }
 

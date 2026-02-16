@@ -11,20 +11,20 @@ import dev.notyouraverage.smscourier.data.entities.PairedDevice
  * - TARGET devices PROVIDE forwarding = they SEND messages to SOURCE devices (arrow up)
  *
  * Mental model:
- * - FORWARDING_TO: Messages are flowing TO this device (this device is SOURCE, receiving)
- * - RECEIVING_FROM: Messages are flowing FROM this device (this device is TARGET, sending)
+ * - FORWARDING_TO: This device forwards messages TO others (TARGET role, sending, arrow up)
+ * - RECEIVING_FROM: This device receives messages FROM others (SOURCE role, receiving, arrow down)
  * - BIDIRECTIONAL: Both directions active with same phone number
  */
 enum class Direction {
     /**
-     * This device is SOURCE role - requesting/receiving forwarded messages.
-     * Messages flow TO this device (arrow down).
+     * This device is TARGET role - forwarding messages TO source device(s).
+     * Messages flow FROM this device (arrow up).
      */
     FORWARDING_TO,
 
     /**
-     * This device is TARGET role - providing/sending forwarded messages.
-     * Messages flow FROM this device (arrow up).
+     * This device is SOURCE role - receiving messages FROM target device(s).
+     * Messages flow TO this device (arrow down).
      */
     RECEIVING_FROM,
 
@@ -48,8 +48,8 @@ data class SessionWithDirection(
  * Aggregated directional status for active forwarding sessions.
  *
  * Counts represent the number of active sessions in each direction:
- * - forwardingToCount: Sessions where this device RECEIVES messages (SOURCE role)
- * - receivingFromCount: Sessions where this device SENDS messages (TARGET role)
+ * - forwardingToCount: Sessions where this device FORWARDS messages (TARGET role)
+ * - receivingFromCount: Sessions where this device RECEIVES messages (SOURCE role)
  * - bidirectionalCount: Sessions where both directions are active with same phone
  */
 data class DirectionalStatus(

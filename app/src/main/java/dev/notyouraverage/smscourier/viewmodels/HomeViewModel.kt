@@ -48,8 +48,8 @@ class HomeViewModel(
      * - Group sessions by devicePhoneNumber
      * - For each phone with active sessions, check if device has SOURCE and/or TARGET role
      * - BIDIRECTIONAL requires active sessions for BOTH roles with same phone number
-     * - FORWARDING_TO: only SOURCE role has active session (this device receives)
-     * - RECEIVING_FROM: only TARGET role has active session (this device sends)
+     * - RECEIVING_FROM: only SOURCE role has active session (this device receives)
+     * - FORWARDING_TO: only TARGET role has active session (this device forwards)
      */
     private fun calculateDirectionalStatus(
         devices: List<PairedDevice>,
@@ -94,26 +94,26 @@ class HomeViewModel(
                 }
                 sourceDevice != null -> {
                     // Only SOURCE role: this device RECEIVES messages
-                    forwardingToCount += phoneSessions.size
-                    phoneSessions.forEach { session ->
-                        sessionsWithDirection.add(
-                            SessionWithDirection(
-                                session = session,
-                                device = sourceDevice,
-                                direction = Direction.FORWARDING_TO,
-                            ),
-                        )
-                    }
-                }
-                targetDevice != null -> {
-                    // Only TARGET role: this device SENDS messages
                     receivingFromCount += phoneSessions.size
                     phoneSessions.forEach { session ->
                         sessionsWithDirection.add(
                             SessionWithDirection(
                                 session = session,
-                                device = targetDevice,
+                                device = sourceDevice,
                                 direction = Direction.RECEIVING_FROM,
+                            ),
+                        )
+                    }
+                }
+                targetDevice != null -> {
+                    // Only TARGET role: this device FORWARDS messages
+                    forwardingToCount += phoneSessions.size
+                    phoneSessions.forEach { session ->
+                        sessionsWithDirection.add(
+                            SessionWithDirection(
+                                session = session,
+                                device = targetDevice,
+                                direction = Direction.FORWARDING_TO,
                             ),
                         )
                     }
