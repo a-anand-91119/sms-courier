@@ -8,9 +8,18 @@ SMS Courier is an Android app for forwarding SMS messages between two paired dev
 
 Reliable, secure SMS forwarding between paired devices with minimal user intervention.
 
-## Current State (v0.0.64 Shipped)
+## Current Milestone: v0.0.65 UAT Fixes
 
-**Just shipped:** Device Management & Visibility milestone with session history, export, and bidirectional indicators.
+**Goal:** Fix UAT issues discovered during testing — forwarding direction labels, session visibility for both devices, notification actions, and device history bugs.
+
+**Target fixes:**
+- Home screen forwarding direction shows "Receiving" instead of "Forwarding to: [numbers]" for TARGET devices
+- Active badge layout breaks on small screen devices
+- Session History uses wrong icon (share instead of export)
+- Both SOURCE and TARGET should see active sessions and stop them
+- Session stop should notify the other device via SMS
+- Removed device history is empty when viewed; no archive option
+- Notification "Approve" action dismisses without approving
 
 **Parallel:** Play Store Launch (Phase 4 in progress - awaiting Google review)
 
@@ -48,7 +57,14 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 
 ### Active
 
-**Next milestone TBD** — Define via `/gsd:new-milestone`
+**v0.0.65 UAT Fixes:**
+- [ ] Fix forwarding direction labels on Home screen (TARGET should show "Forwarding to")
+- [ ] Fix active badge layout for small screen devices
+- [ ] Replace share icon with export icon in Session History
+- [ ] Enable both devices to see and stop active sessions
+- [ ] Send SMS notification when session is stopped by either side
+- [ ] Fix removed device history visibility (show archived session/message data)
+- [ ] Fix notification "Approve" action to actually approve pairing
 
 ### Out of Scope
 
@@ -101,4 +117,4 @@ Reliable, secure SMS forwarding between paired devices with minimal user interve
 | WorkManager for cleanup | Battery-efficient background processing | ✓ Good |
 
 ---
-*Last updated: 2026-02-09 after v0.0.64 milestone*
+*Last updated: 2026-02-16 after v0.0.65 milestone start*
