@@ -171,7 +171,7 @@ See [milestones/v0.0.64-device-management/ROADMAP.md](milestones/v0.0.64-device-
 **Milestone Goal:** Fix UAT issues discovered during testing -- forwarding direction labels, session visibility for both devices, notification actions, device history bugs, and icon corrections. Test-driven: write failing tests first, then fix.
 
 - [x] **Phase 24: Reproduce UAT Issues** - Write failing tests for all 7 reported UAT issues (completed 2026-02-16)
-- [ ] **Phase 25: Home Screen Fixes** - Fix forwarding direction labels and active badge layout
+- [x] **Phase 25: Home Screen Fixes** - Fix forwarding direction labels and active badge layout (completed 2026-02-16)
 - [ ] **Phase 26: Session Management Fixes** - Both devices see/stop sessions with SMS notification
 - [ ] **Phase 27: Device History Fixes** - Archived device history visibility and explicit archive action
 - [ ] **Phase 28: UI & Notification Quick Fixes** - Export icon swap and notification approve action
@@ -213,11 +213,12 @@ Plans:
   2. SOURCE device Home screen continues to show "Receiving from: [phone number]" correctly (no regression)
   3. Active session badge on Home screen renders without text wrapping or overflow on a small screen device (e.g., 320dp width)
   4. Phase 24 test for HOME-01 now PASSES (no code change to the test)
-**Plans:** 2 plans
+**Status**: Complete (2026-02-16)
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 25-01-PLAN.md — Fix Direction enum mapping in data/ViewModel layer (HOME-01 root cause)
-- [ ] 25-02-PLAN.md — Update UI labels, terminology consistency, and responsive layout (HOME-01 labels + HOME-02)
+- [x] 25-01-PLAN.md — Fix Direction enum mapping in data/ViewModel layer (HOME-01 root cause)
+- [x] 25-02-PLAN.md — Update UI labels, terminology consistency, and responsive layout (HOME-01 labels + HOME-02)
 
 ### Phase 26: Session Management Fixes
 
@@ -294,7 +295,7 @@ Plans:
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 23. UAT Bug Fixes | v0.0.64 | 3/3 | Complete | 2026-02-08 |
 | 24. Reproduce UAT Issues | v0.0.65 | 3/3 | Complete | 2026-02-16 |
-| 25. Home Screen Fixes | v0.0.65 | 0/TBD | Not started | - |
+| 25. Home Screen Fixes | v0.0.65 | 2/2 | Complete | 2026-02-16 |
 | 26. Session Management Fixes | v0.0.65 | 0/TBD | Not started | - |
 | 27. Device History Fixes | v0.0.65 | 0/TBD | Not started | - |
 | 28. UI & Notification Quick Fixes | v0.0.65 | 0/TBD | Not started | - |

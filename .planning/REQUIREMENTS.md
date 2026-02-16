@@ -9,8 +9,8 @@ Requirements for UAT fixes milestone. Each maps to roadmap phases.
 
 ### Home Screen
 
-- [ ] **HOME-01**: TARGET device shows "Forwarding to: [phone numbers]" instead of "Receiving" for active sessions
-- [ ] **HOME-02**: Active badge layout handles small screen devices without vertical text wrapping
+- [x] **HOME-01**: TARGET device shows "Forwarding to: [phone numbers]" instead of "Receiving" for active sessions
+- [x] **HOME-02**: Active badge layout handles small screen devices without vertical text wrapping
 
 ### Session Management
 
@@ -58,8 +58,8 @@ Deferred to later milestones.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOME-01 | Phase 24 (test), Phase 25 (fix) | Pending |
-| HOME-02 | Phase 25 (fix, manual verify) | Pending |
+| HOME-01 | Phase 24 (test), Phase 25 (fix) | Complete |
+| HOME-02 | Phase 25 (fix, manual verify) | Complete |
 | SESS-01 | Phase 24 (test), Phase 26 (fix) | Pending |
 | SESS-02 | Phase 24 (test), Phase 26 (fix) | Pending |
 | SESS-03 | Phase 24 (test), Phase 26 (fix) | Pending |
