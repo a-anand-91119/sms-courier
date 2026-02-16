@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 ## Current Position
 
 Phase: 24 (first of 5 in v0.0.65) — Reproduce UAT Issues
-Plan: 2 of 3 complete (24-01 UAT infrastructure, 24-02 Device History tests)
-Status: In progress
-Last activity: 2026-02-16 — Completed 24-01-PLAN.md (HOME-01/SESS-03 failing tests)
+Plan: 3 of 3 complete (all UAT tests written)
+Status: Phase complete
+Last activity: 2026-02-16 — Completed 24-03-PLAN.md (SESS-01/02, NOTF-01 failing tests)
 
-Progress: [██████░░░░] 67% (2/3 Phase 24 plans)
+Progress: [██████████] 100% (3/3 Phase 24 plans complete)
 
 ## Performance Metrics
 
@@ -45,10 +45,16 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - Repository-layer test pattern with mocked DAO and Flow assertions (Turbine)
 - Stub extension function pattern for missing ViewModel methods in TDD red phase
 - @Category(UATTest::class) for grouped UAT test execution via `./gradlew uatTest`
+- Robolectric receiver test pattern: RuntimeEnvironment + shadowOf() for service verification
 
-**DEVH bugs identified:**
+**UAT bugs reproduced (Phase 24 complete):**
+- HOME-01: Forwarding direction wrong for TARGET devices (HomeViewModel.determineActiveForwarding)
+- SESS-01: TARGET devices with active sessions not visible (ForwardingControlViewModel only queries SOURCE)
+- SESS-02: stopForwarding uses wrong DeviceRole for encryption key (hardcoded SOURCE)
+- SESS-03: stopForwarding doesn't send STOP_FORWARD SMS to other device
 - DEVH-01: Repository correctly returns session data for archived devices (bug is at UI/ViewModel layer)
 - DEVH-02: No archiveDevice method exists on DeviceHistoryViewModel (users must unpair to archive)
+- NOTF-01: Notification approve action opens MainActivity instead of triggering approval
 
 ### Pending Todos
 
@@ -68,10 +74,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16T07:22:23Z
-Stopped at: Completed 24-01-PLAN.md (HOME-01/SESS-03 UAT test infrastructure)
+Last session: 2026-02-16T12:17:34Z
+Stopped at: Completed Phase 24 (all 3 plans - UAT tests complete)
 Resume file: None
 
 **Next actions:**
-- Continue Phase 24: Plan 03 (SESS-01/02/03, NOTF-01 failing tests)
+- Begin Phase 25: Device History Archival (first fix phase)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
