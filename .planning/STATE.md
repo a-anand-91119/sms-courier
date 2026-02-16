@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-16)
 
 ## Current Position
 
-Phase: 24 (first of 5 in v0.0.65) — Reproduce UAT Issues
-Plan: 3 of 3 complete (all UAT tests written)
-Status: Phase complete
-Last activity: 2026-02-16 — Completed 24-03-PLAN.md (SESS-01/02, NOTF-01 failing tests)
+Phase: 25 (second of 5 in v0.0.65) — Home Screen Fixes
+Plan: 1 of 2 complete (Direction mapping fixed)
+Status: In progress
+Last activity: 2026-02-16 — Completed 25-01-PLAN.md (Direction enum mapping fix)
 
-Progress: [██████████] 100% (3/3 Phase 24 plans complete)
+Progress: [█████░░░░░] 50% (1/2 Phase 25 plans complete)
 
 ## Performance Metrics
 
@@ -41,27 +41,34 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - Test-driven: write failing tests first (Phase 24), then fix in subsequent phases
 - HOME-02 and HIST-01 are UI/icon issues not reproducible in unit/integration tests -- manual verification only
 
+**Phase 25 Direction mapping (established):**
+- TARGET devices map to FORWARDING_TO direction (forwards messages TO others, arrow up)
+- SOURCE devices map to RECEIVING_FROM direction (receives messages FROM others, arrow down)
+- Enum value names unchanged, only DeviceRole → Direction mapping swapped
+
 **Phase 24 test patterns (established):**
 - Repository-layer test pattern with mocked DAO and Flow assertions (Turbine)
 - Stub extension function pattern for missing ViewModel methods in TDD red phase
 - @Category(UATTest::class) for grouped UAT test execution via `./gradlew uatTest`
 - Robolectric receiver test pattern: RuntimeEnvironment + shadowOf() for service verification
 
-**UAT bugs reproduced (Phase 24 complete):**
-- HOME-01: Forwarding direction wrong for TARGET devices (HomeViewModel.determineActiveForwarding)
-- SESS-01: TARGET devices with active sessions not visible (ForwardingControlViewModel only queries SOURCE)
-- SESS-02: stopForwarding uses wrong DeviceRole for encryption key (hardcoded SOURCE)
-- SESS-03: stopForwarding doesn't send STOP_FORWARD SMS to other device
-- DEVH-01: Repository correctly returns session data for archived devices (bug is at UI/ViewModel layer)
-- DEVH-02: No archiveDevice method exists on DeviceHistoryViewModel (users must unpair to archive)
-- NOTF-01: Notification approve action opens MainActivity instead of triggering approval
+**UAT fixes (v0.0.65 progress):**
+- HOME-01: ✓ FIXED (Phase 25-01) - Direction mapping corrected at data/ViewModel layer
+- HOME-02: Pending (Phase 25-02) - Active badge layout for small screens
+- SESS-01: Pending (Phase 26) - TARGET devices with active sessions not visible
+- SESS-02: Pending (Phase 26) - stopForwarding uses wrong DeviceRole for encryption key
+- SESS-03: Pending (Phase 26) - stopForwarding doesn't send STOP_FORWARD SMS
+- DEVH-01: Pending (Phase 27) - Archived device history visibility
+- DEVH-02: Pending (Phase 27) - No archiveDevice method exists
+- HIST-01: Pending (Phase 28) - Wrong icon in Session History
+- NOTF-01: Pending (Phase 28) - Notification approve action broken
 
 ### Pending Todos
 
 11 todos tracked in `.planning/todos/pending/`
 
 **UAT Issues (v0.0.65) -- this milestone:**
-- HOME-01: Forwarding direction wrong for TARGET devices
+- HOME-01: ✓ Fixed (Direction mapping)
 - HOME-02: Active badge layout broken on small screens
 - SESS-01/02/03: Session visibility and stop for both devices
 - DEVH-01/02: Removed device history and archive action
@@ -74,10 +81,10 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-16T12:17:34Z
-Stopped at: Completed Phase 24 (all 3 plans - UAT tests complete)
+Last session: 2026-02-16T10:45:46Z
+Stopped at: Completed 25-01-PLAN.md (Direction mapping fix)
 Resume file: None
 
 **Next actions:**
-- Begin Phase 25: Device History Archival (first fix phase)
+- Continue Phase 25: Plan 25-02 (UI labels and responsive layout)
 - Parallel: Play Store Launch Phase 4 awaiting Google review
