@@ -14,9 +14,9 @@ Requirements for UAT fixes milestone. Each maps to roadmap phases.
 
 ### Session Management
 
-- [ ] **SESS-01**: Both SOURCE and TARGET devices can see active forwarding sessions
-- [ ] **SESS-02**: Both SOURCE and TARGET devices can stop an active session
-- [ ] **SESS-03**: When a session is stopped, the other device receives an SMS notification
+- [x] **SESS-01**: Both SOURCE and TARGET devices can see active forwarding sessions
+- [x] **SESS-02**: Both SOURCE and TARGET devices can stop an active session
+- [x] **SESS-03**: When a session is stopped, the other device receives an SMS notification
 
 ### Session History UI
 
@@ -60,9 +60,9 @@ Deferred to later milestones.
 |-------------|-------|--------|
 | HOME-01 | Phase 24 (test), Phase 25 (fix) | Complete |
 | HOME-02 | Phase 25 (fix, manual verify) | Complete |
-| SESS-01 | Phase 24 (test), Phase 26 (fix) | Pending |
-| SESS-02 | Phase 24 (test), Phase 26 (fix) | Pending |
-| SESS-03 | Phase 24 (test), Phase 26 (fix) | Pending |
+| SESS-01 | Phase 24 (test), Phase 26 (fix) | Complete |
+| SESS-02 | Phase 24 (test), Phase 26 (fix) | Complete |
+| SESS-03 | Phase 24 (test), Phase 26 (fix) | Complete |
 | HIST-01 | Phase 28 (fix, manual verify) | Pending |
 | DEVH-01 | Phase 24 (test), Phase 27 (fix) | Pending |
 | DEVH-02 | Phase 24 (test), Phase 27 (fix) | Pending |
