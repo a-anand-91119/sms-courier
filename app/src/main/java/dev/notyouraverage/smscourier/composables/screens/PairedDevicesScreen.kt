@@ -493,9 +493,9 @@ fun StatusBadge(status: PairingStatus) {
  * Displays directional status subtitle for a device.
  *
  * Shows:
- * - "Receiving - Active now" (primary color) for SOURCE devices with active session
- * - "Forwarding - Active now" (tertiary color) for TARGET devices with active session
- * - "Bidirectional - Active now" (secondary color) for bidirectional sessions
+ * - "Forwarding to - Active now" (tertiary color) for FORWARDING_TO direction (TARGET role)
+ * - "Receiving from - Active now" (primary color) for RECEIVING_FROM direction (SOURCE role)
+ * - "Forwarding & Receiving - Active now" (secondary color) for bidirectional sessions
  * - "Idle - Last active: X ago" (gray) for inactive devices
  */
 @Composable
@@ -505,12 +505,12 @@ fun DirectionalSubtitle(
     modifier: Modifier = Modifier,
 ) {
     val (text, color) = when (direction) {
-        // SOURCE device receiving messages from remote TARGET
-        Direction.FORWARDING_TO -> "Receiving - Active now" to MaterialTheme.colorScheme.primary
-        // TARGET device forwarding messages to remote SOURCE
-        Direction.RECEIVING_FROM -> "Forwarding - Active now" to MaterialTheme.colorScheme.tertiary
+        // FORWARDING_TO: this device forwards messages TO others (TARGET role)
+        Direction.FORWARDING_TO -> "Forwarding to - Active now" to MaterialTheme.colorScheme.tertiary
+        // RECEIVING_FROM: this device receives messages FROM others (SOURCE role)
+        Direction.RECEIVING_FROM -> "Receiving from - Active now" to MaterialTheme.colorScheme.primary
         // Both directions active
-        Direction.BIDIRECTIONAL -> "Bidirectional - Active now" to MaterialTheme.colorScheme.secondary
+        Direction.BIDIRECTIONAL -> "Forwarding & Receiving - Active now" to MaterialTheme.colorScheme.secondary
         // No active session
         null -> {
             val timeText = lastActivityAt?.let { formatLastActive(it) } ?: "Never"

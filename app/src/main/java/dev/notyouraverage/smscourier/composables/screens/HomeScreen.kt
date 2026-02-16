@@ -715,21 +715,21 @@ private fun ActiveSessionsTabContent(
                 ) {
                     if (directionalStatus.receivingFromCount > 0) {
                         DirectionSummary(
-                            label = "Receiving",
+                            label = "Receiving from",
                             count = directionalStatus.receivingFromCount,
                             direction = Direction.RECEIVING_FROM,
                         )
                     }
                     if (directionalStatus.forwardingToCount > 0) {
                         DirectionSummary(
-                            label = "Forwarding",
+                            label = "Forwarding to",
                             count = directionalStatus.forwardingToCount,
                             direction = Direction.FORWARDING_TO,
                         )
                     }
                     if (directionalStatus.bidirectionalCount > 0) {
                         DirectionSummary(
-                            label = "Bidirectional",
+                            label = "Forwarding & Receiving",
                             count = directionalStatus.bidirectionalCount,
                             direction = Direction.BIDIRECTIONAL,
                         )
@@ -837,7 +837,7 @@ private fun CompactDeviceRow(
                     fontWeight = FontWeight.Medium,
                 )
                 Text(
-                    text = if (role == DeviceRole.SOURCE) "Receives from you" else "Forwards to you",
+                    text = if (role == DeviceRole.SOURCE) "You receive from them" else "You forward to them",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -895,9 +895,9 @@ private fun CompactSessionRow(
                 )
                 Text(
                     text = when (direction) {
-                        Direction.FORWARDING_TO -> "Receiving messages"
-                        Direction.RECEIVING_FROM -> "Forwarding messages"
-                        Direction.BIDIRECTIONAL -> "Bidirectional"
+                        Direction.FORWARDING_TO -> "You are forwarding"
+                        Direction.RECEIVING_FROM -> "You are receiving"
+                        Direction.BIDIRECTIONAL -> "Forwarding & Receiving"
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

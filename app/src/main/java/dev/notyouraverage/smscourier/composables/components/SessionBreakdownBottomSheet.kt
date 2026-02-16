@@ -69,29 +69,29 @@ fun SessionBreakdownBottomSheet(
                 val receivingFrom = sessions.filter { it.direction == Direction.RECEIVING_FROM }
                 val bidirectional = sessions.filter { it.direction == Direction.BIDIRECTIONAL }
 
-                // "Receiving From" = FORWARDING_TO direction (messages coming TO this device)
+                // FORWARDING_TO direction: this device forwards messages TO others (TARGET role)
                 if (forwardingTo.isNotEmpty()) {
                     SessionGroup(
-                        title = "Receiving From (${forwardingTo.size})",
+                        title = "Forwarding To (${forwardingTo.size})",
                         sessions = forwardingTo,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.tertiary,
                         onStopSession = onStopSession,
                     )
                 }
 
-                // "Forwarding To" = RECEIVING_FROM direction (messages going FROM this device)
+                // RECEIVING_FROM direction: this device receives messages FROM others (SOURCE role)
                 if (receivingFrom.isNotEmpty()) {
                     SessionGroup(
-                        title = "Forwarding To (${receivingFrom.size})",
+                        title = "Receiving From (${receivingFrom.size})",
                         sessions = receivingFrom,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.primary,
                         onStopSession = onStopSession,
                     )
                 }
 
                 if (bidirectional.isNotEmpty()) {
                     SessionGroup(
-                        title = "Bidirectional (${bidirectional.size})",
+                        title = "Forwarding & Receiving (${bidirectional.size})",
                         sessions = bidirectional,
                         color = MaterialTheme.colorScheme.secondary,
                         onStopSession = onStopSession,
