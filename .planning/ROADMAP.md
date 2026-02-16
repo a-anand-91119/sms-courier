@@ -170,7 +170,7 @@ See [milestones/v0.0.64-device-management/ROADMAP.md](milestones/v0.0.64-device-
 
 **Milestone Goal:** Fix UAT issues discovered during testing -- forwarding direction labels, session visibility for both devices, notification actions, device history bugs, and icon corrections. Test-driven: write failing tests first, then fix.
 
-- [ ] **Phase 24: Reproduce UAT Issues** - Write failing tests for all 7 reported UAT issues
+- [x] **Phase 24: Reproduce UAT Issues** - Write failing tests for all 7 reported UAT issues (completed 2026-02-16)
 - [ ] **Phase 25: Home Screen Fixes** - Fix forwarding direction labels and active badge layout
 - [ ] **Phase 26: Session Management Fixes** - Both devices see/stop sessions with SMS notification
 - [ ] **Phase 27: Device History Fixes** - Archived device history visibility and explicit archive action
@@ -195,12 +195,13 @@ See [milestones/v0.0.64-device-management/ROADMAP.md](milestones/v0.0.64-device-
 - HOME-02 (active badge layout on small screens): UI layout issue -- not reproducible with unit/integration tests. Will be verified manually in Phase 25.
 - HIST-01 (export icon vs share icon): Icon resource reference issue -- not reproducible with unit/integration tests. Will be verified manually in Phase 28.
 
-**Plans:** 3 plans
+**Status**: Complete (2026-02-16)
+**Plans:** 3/3 complete
 
 Plans:
-- [ ] 24-01-PLAN.md — HOME-01 and SESS-03 failing tests (direction label + SMS stop notification)
-- [ ] 24-02-PLAN.md — DEVH-01 and DEVH-02 failing tests (archived device history + archive action)
-- [ ] 24-03-PLAN.md — SESS-01, SESS-02, and NOTF-01 failing tests (session visibility/stop + notification approve)
+- [x] 24-01-PLAN.md — HOME-01 and SESS-03 failing tests (direction label + SMS stop notification)
+- [x] 24-02-PLAN.md — DEVH-01 and DEVH-02 failing tests (archived device history + archive action)
+- [x] 24-03-PLAN.md — SESS-01, SESS-02, and NOTF-01 failing tests (session visibility/stop + notification approve)
 
 ### Phase 25: Home Screen Fixes
 
@@ -291,7 +292,7 @@ Plans:
 | 21. History Retention Settings | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 22. Auto-Cleanup with WorkManager | v0.0.64 | 2/2 | Complete | 2026-02-08 |
 | 23. UAT Bug Fixes | v0.0.64 | 3/3 | Complete | 2026-02-08 |
-| 24. Reproduce UAT Issues | v0.0.65 | 0/3 | Planned | - |
+| 24. Reproduce UAT Issues | v0.0.65 | 3/3 | Complete | 2026-02-16 |
 | 25. Home Screen Fixes | v0.0.65 | 0/TBD | Not started | - |
 | 26. Session Management Fixes | v0.0.65 | 0/TBD | Not started | - |
 | 27. Device History Fixes | v0.0.65 | 0/TBD | Not started | - |
