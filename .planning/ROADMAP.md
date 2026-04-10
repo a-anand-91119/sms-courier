@@ -249,7 +249,7 @@ Plans:
   2. User can explicitly archive an active paired device from the device list (without needing to unpair first, or via a clear archive action)
   3. Archived device appears in the "Removed" section of Device History with its history preserved
   4. Phase 24 tests for DEVH-01, DEVH-02 now PASS (no code changes to the tests)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 27-01-PLAN.md — Add archiveDevice() to DeviceHistoryViewModel + unit tests (DEVH-02)
@@ -300,5 +300,5 @@ Plans:
 | 24. Reproduce UAT Issues | v0.0.65 | 3/3 | Complete | 2026-02-16 |
 | 25. Home Screen Fixes | v0.0.65 | 2/2 | Complete | 2026-02-16 |
 | 26. Session Management Fixes | v0.0.65 | 2/2 | Complete | 2026-02-16 |
-| 27. Device History Fixes | v0.0.65 | 0/2 | Planned | - |
+| 27. Device History Fixes | 1/2 | In Progress|  | - |
 | 28. UI & Notification Quick Fixes | v0.0.65 | 0/TBD | Not started | - |

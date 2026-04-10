@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v0.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 27 context gathered
-last_updated: "2026-04-10T08:29:27.182Z"
-last_activity: 2026-02-16 — Completed 26-02-PLAN.md (UI session list with confirmation dialogs)
+status: in_progress
+stopped_at: Completed 27-01-PLAN.md (DEVH-02 archiveDevice)
+last_updated: "2026-04-10T13:01:20.680Z"
+last_activity: 2026-04-10 — Completed 27-01-PLAN.md (DEVH-02 archiveDevice implementation)
 progress:
   total_phases: 9
   completed_phases: 3
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-16)
 
 **Core value:** Reliable, secure SMS forwarding between paired devices with minimal user intervention
-**Current focus:** v0.0.65 UAT Fixes -- Phase 26 Session Management Fixes complete
+**Current focus:** v0.0.65 UAT Fixes -- Phase 27 Device History Fixes in progress
 
 ## Current Position
 
-Phase: 26 (third of 5 in v0.0.65) — Session Management Fixes
-Plan: 2 of 2 complete
-Status: Phase complete
-Last activity: 2026-02-16 — Completed 26-02-PLAN.md (UI session list with confirmation dialogs)
+Phase: 27 (fourth of 5 in v0.0.65) — Device History Fixes
+Plan: 1 of 2 complete (DEVH-02 done, DEVH-01 next)
+Status: In progress
+Last activity: 2026-04-10 — Completed 27-01-PLAN.md (archiveDevice member added)
 
-Progress: [██████████] 100% (2/2 Phase 26 plans complete)
+Progress: [█████░░░░░] 50% (1/2 Phase 27 plans complete)
 
 ## Performance Metrics
 
@@ -82,10 +82,11 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - SESS-02: ✓ FIXED (Phase 26-01) - stopForwarding clears encryption keys for both roles
 - SESS-03: ✓ FIXED (Phase 26-01) - stopForwarding sends STOP_FORWARD SMS with graceful degradation
 - SESS-04: ✓ FIXED (Phase 26-02) - UI now shows role-based sections with bidirectional awareness
-- DEVH-01: Pending (Phase 27) - Archived device history visibility
-- DEVH-02: Pending (Phase 27) - No archiveDevice method exists
+- DEVH-01: Pending (Phase 27-02) - Archived device history visibility
+- DEVH-02: ✓ FIXED (Phase 27-01) - archiveDevice member added to DeviceHistoryViewModel
 - HIST-01: Pending (Phase 28) - Wrong icon in Session History
 - NOTF-01: Pending (Phase 28) - Notification approve action broken
+- [Phase 27-device-history-fixes]: archiveDevice uses initiatedBy=USER (not LOCAL) to satisfy Phase 24 UAT DEVH-02 test and match unpairDevice convention
 
 ### Pending Todos
 
@@ -100,10 +101,13 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-04-10T08:29:27.180Z
-Stopped at: Phase 27 context gathered
-Resume file: .planning/phases/27-device-history-fixes/27-CONTEXT.md
+Last session: 2026-04-10T13:01:20.678Z
+Stopped at: Completed 27-01-PLAN.md (DEVH-02 archiveDevice)
+Resume file: None
 
 **Next actions:**
-- Begin Phase 27: Device History Fixes (DEVH-01, DEVH-02)
+- Execute Phase 27-02: DEVH-01 archived device history visibility
 - Parallel: Play Store Launch Phase 4 awaiting Google review
+
+**Follow-up (post-Phase-27):**
+- Audit `initiatedBy` string convention: both `unpairDevice` and `archiveDevice` pass `"USER"` but `ArchiveManagementViewModel.getRemovalReason()` may expect `LOCAL`/`REMOTE` (Research OQ3, out of scope for Phase 27)

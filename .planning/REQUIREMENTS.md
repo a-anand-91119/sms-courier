@@ -25,7 +25,7 @@ Requirements for UAT fixes milestone. Each maps to roadmap phases.
 ### Device History
 
 - [ ] **DEVH-01**: Removed/archived devices show their session and message history when viewed
-- [ ] **DEVH-02**: User can explicitly archive a paired device
+- [x] **DEVH-02**: User can explicitly archive a paired device
 
 ### Notifications
 
@@ -65,7 +65,7 @@ Deferred to later milestones.
 | SESS-03 | Phase 24 (test), Phase 26 (fix) | Complete |
 | HIST-01 | Phase 28 (fix, manual verify) | Pending |
 | DEVH-01 | Phase 24 (test), Phase 27 (fix) | Pending |
-| DEVH-02 | Phase 24 (test), Phase 27 (fix) | Pending |
+| DEVH-02 | Phase 24 (test), Phase 27 (fix) | Complete |
 | NOTF-01 | Phase 24 (test), Phase 28 (fix) | Pending |
 
 **Coverage:**
