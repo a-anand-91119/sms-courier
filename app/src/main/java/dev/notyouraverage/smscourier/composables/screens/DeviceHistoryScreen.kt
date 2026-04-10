@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -85,6 +86,8 @@ fun DeviceHistoryScreen(
     var deviceToExport by remember { mutableStateOf<PairedDevice?>(null) }
     var deviceToUnpair by remember { mutableStateOf<PairedDevice?>(null) }
     var deviceToUnpairHasActiveSession by remember { mutableStateOf(false) }
+    var deviceToArchive by remember { mutableStateOf<PairedDevice?>(null) }
+    var deviceToArchiveHasActiveSession by remember { mutableStateOf(false) }
     var deviceToDelete by remember { mutableStateOf<PairedDevice?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -256,6 +259,15 @@ fun DeviceHistoryScreen(
                         it.hasActiveSession
                 }
             },
+            onArchive = {
+                val hasSession = activeDevices.any {
+                    it.device.phoneNumber == device.phoneNumber &&
+                        it.device.role == device.role &&
+                        it.hasActiveSession
+                }
+                deviceToArchive = device
+                deviceToArchiveHasActiveSession = hasSession
+            },
         )
     }
 
@@ -266,7 +278,7 @@ fun DeviceHistoryScreen(
             onDismiss = { selectedRemovedDevice = null },
             onViewHistory = {
                 selectedRemovedDevice = null
-                onNavigateToArchiveManagement(device.phoneNumber, device.role.name)
+                onNavigateToSessionHistory(device.phoneNumber, device.role.name)
             },
             onDelete = {
                 deviceToDelete = device
@@ -281,10 +293,17 @@ fun DeviceHistoryScreen(
             onDismissRequest = { deviceToUnpair = null },
             title = { Text("Unpair Device") },
             text = {
+                val label = device.displayName?.takeIf { it.isNotBlank() } ?: device.phoneNumber
                 if (deviceToUnpairHasActiveSession) {
-                    Text("This device has an active forwarding session. Unpairing will end the session and remove ${device.displayName ?: device.phoneNumber} from your paired devices.")
+                    Text(
+                        "This device has an active forwarding session. Unpairing will end the session and remove $label from your paired devices. They will be notified.\n\n" +
+                            "To keep history without notifying, use Archive instead.",
+                    )
                 } else {
-                    Text("Remove ${device.displayName ?: device.phoneNumber} from your paired devices? You can re-pair later.")
+                    Text(
+                        "Remove $label from your paired devices? They will be notified.\n\n" +
+                            "To keep history without notifying, use Archive instead.",
+                    )
                 }
             },
             confirmButton = {
@@ -304,6 +323,54 @@ fun DeviceHistoryScreen(
                     deviceToUnpair = null
                     deviceToUnpairHasActiveSession = false
                 }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
+    // Archive confirmation dialog
+    deviceToArchive?.let { device ->
+        AlertDialog(
+            onDismissRequest = {
+                deviceToArchive = null
+                deviceToArchiveHasActiveSession = false
+            },
+            title = { Text("Archive Device") },
+            text = {
+                if (deviceToArchiveHasActiveSession) {
+                    Text(
+                        "\u26A0\uFE0F This device has an active session. Archiving will end it. " +
+                            "They won't be notified.\n\n" +
+                            "Use Unpair instead if you want to notify the other device.",
+                    )
+                } else {
+                    val label = device.displayName?.takeIf { it.isNotBlank() } ?: device.phoneNumber
+                    Text(
+                        "This removes $label from your active devices and preserves history.\n\n" +
+                            "Use Unpair instead if you want to notify the other device.",
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.archiveDevice(device)
+                        deviceToArchive = null
+                        deviceToArchiveHasActiveSession = false
+                        selectedActiveDevice = null
+                    },
+                ) {
+                    Text("Archive")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        deviceToArchive = null
+                        deviceToArchiveHasActiveSession = false
+                    },
+                ) {
                     Text("Cancel")
                 }
             },
@@ -367,6 +434,7 @@ private fun DeviceDetailBottomSheet(
     onDismiss: () -> Unit,
     onViewSessions: () -> Unit,
     onExport: () -> Unit,
+    onArchive: () -> Unit,
     onUnpair: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -421,7 +489,22 @@ private fun DeviceDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Action buttons
+            // Action buttons — order per CONTEXT.md: View Sessions → Export → Archive → Unpair
+            FilledTonalButton(
+                onClick = onViewSessions,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(
+                    Icons.Default.Refresh,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("View Sessions")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedButton(
                 onClick = onExport,
                 modifier = Modifier.fillMaxWidth(),
@@ -447,17 +530,20 @@ private fun DeviceDetailBottomSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            FilledTonalButton(
-                onClick = onViewSessions,
+            OutlinedButton(
+                onClick = onArchive,
                 modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ),
             ) {
                 Icon(
-                    Icons.Default.Refresh,
+                    imageVector = Icons.Outlined.Archive,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("View Sessions")
+                Text("Archive Device")
             }
 
             TextButton(
