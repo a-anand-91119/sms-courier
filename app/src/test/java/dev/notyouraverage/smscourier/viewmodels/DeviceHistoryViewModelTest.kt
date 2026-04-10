@@ -4,7 +4,6 @@ import dev.notyouraverage.smscourier.MainCoroutineRule
 import dev.notyouraverage.smscourier.TestFixtures.createTestDevice
 import dev.notyouraverage.smscourier.UATTest
 import dev.notyouraverage.smscourier.data.entities.DeviceRole
-import dev.notyouraverage.smscourier.data.entities.PairedDevice
 import dev.notyouraverage.smscourier.data.entities.PairingStatus
 import dev.notyouraverage.smscourier.export.ExportManager
 import dev.notyouraverage.smscourier.repository.ForwardingSessionRepository
@@ -13,6 +12,7 @@ import dev.notyouraverage.smscourier.services.SmsSender
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.just
@@ -152,10 +152,67 @@ class DeviceHistoryViewModelTest {
         // After fix in Phase 27: DeviceHistoryViewModel will have an archiveDevice method
         // that archives the device without sending UNPAIR SMS to the remote device.
     }
-}
 
-// TODO: This extension function stubs archiveDevice to make the test compile.
-// DEVH-02 fix (Phase 27) will add the actual archiveDevice method to DeviceHistoryViewModel.
-private fun DeviceHistoryViewModel.archiveDevice(device: PairedDevice) {
-    throw NotImplementedError("DEVH-02: archiveDevice not yet implemented on DeviceHistoryViewModel")
+    @Test
+    fun `archiveDevice ends active session before archiving`() = runTest {
+        val device = createTestDevice(
+            phoneNumber = "+1112223333",
+            role = DeviceRole.TARGET,
+            status = PairingStatus.APPROVED,
+        )
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
+        coEvery { deviceRepository.archiveDevice(any(), any(), any()) } just runs
+
+        viewModel.archiveDevice(device)
+
+        coVerifyOrder {
+            sessionRepository.endSessionForDevice("+1112223333", "ARCHIVE")
+            deviceRepository.archiveDevice(any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `archiveDevice does NOT send UNPAIR SMS for APPROVED status`() = runTest {
+        val device = createTestDevice(
+            phoneNumber = "+2223334444",
+            role = DeviceRole.TARGET,
+            status = PairingStatus.APPROVED,
+        )
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
+        coEvery { deviceRepository.archiveDevice(any(), any(), any()) } just runs
+
+        viewModel.archiveDevice(device)
+
+        coVerify(exactly = 0) { smsSender.sendUnpair(any(), any()) }
+    }
+
+    @Test
+    fun `archiveDevice does NOT send UNPAIR SMS for PENDING_RECEIVED status`() = runTest {
+        val device = createTestDevice(
+            phoneNumber = "+3334445555",
+            role = DeviceRole.SOURCE,
+            status = PairingStatus.PENDING_RECEIVED,
+        )
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
+        coEvery { deviceRepository.archiveDevice(any(), any(), any()) } just runs
+
+        viewModel.archiveDevice(device)
+
+        coVerify(exactly = 0) { smsSender.sendUnpair(any(), any()) }
+    }
+
+    @Test
+    fun `archiveDevice does NOT send UNPAIR SMS for REJECTED status`() = runTest {
+        val device = createTestDevice(
+            phoneNumber = "+4445556666",
+            role = DeviceRole.TARGET,
+            status = PairingStatus.REJECTED,
+        )
+        coEvery { sessionRepository.endSessionForDevice(any(), any()) } just runs
+        coEvery { deviceRepository.archiveDevice(any(), any(), any()) } just runs
+
+        viewModel.archiveDevice(device)
+
+        coVerify(exactly = 0) { smsSender.sendUnpair(any(), any()) }
+    }
 }
