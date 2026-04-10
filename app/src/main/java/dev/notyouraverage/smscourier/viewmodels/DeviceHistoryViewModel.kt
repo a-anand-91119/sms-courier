@@ -174,6 +174,29 @@ class DeviceHistoryViewModel(
     }
 
     /**
+     * Archives a device locally without sending an UNPAIR SMS to the remote device.
+     * - Ends any active session for the device (local only, no SMS).
+     * - Archives the device so it appears in the Removed Devices section.
+     * - The remote device is NOT notified; the pairing remains valid on their side.
+     *
+     * Use [unpairDevice] if you want to notify the other device.
+     */
+    fun archiveDevice(device: PairedDevice) {
+        viewModelScope.launch {
+            // End any active session locally (idempotent -- no-op if none)
+            sessionRepository.endSessionForDevice(device.phoneNumber, "ARCHIVE")
+
+            // Archive the device. initiatedBy = "USER" matches the existing unpairDevice()
+            // convention AND the Phase 24 UAT DEVH-02 test's locked assertion.
+            deviceRepository.archiveDevice(
+                phoneNumber = device.phoneNumber,
+                role = device.role,
+                initiatedBy = "USER",
+            )
+        }
+    }
+
+    /**
      * Permanently deletes a device and all its history.
      * This removes all sessions (messages cascade delete) and the device record.
      */
