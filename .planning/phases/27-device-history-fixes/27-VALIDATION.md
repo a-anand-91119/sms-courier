@@ -40,7 +40,7 @@ updated: 2026-04-10
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 27-01-T1 | 27-01 | 1 | DEVH-02 | unit (RED) | `./gradlew :app:testDebugUnitTest --tests "dev.notyouraverage.smscourier.viewmodels.DeviceHistoryViewModelTest"` | ✅ existing (+5 new tests added by this task) | ⬜ pending |
+| 27-01-T1 | 27-01 | 1 | DEVH-02 | unit (RED) | `./gradlew :app:testDebugUnitTest --tests "dev.notyouraverage.smscourier.viewmodels.DeviceHistoryViewModelTest"` | ✅ existing (+4 new tests added by this task) | ⬜ pending |
 | 27-01-T2 | 27-01 | 1 | DEVH-02 | unit (GREEN) | `./gradlew :app:testDebugUnitTest --tests "dev.notyouraverage.smscourier.viewmodels.DeviceHistoryViewModelTest"` | ✅ existing | ⬜ pending |
 | 27-02-T1 | 27-02 | 2 | DEVH-01, DEVH-02 | build + regression unit | `./gradlew :app:assembleDebug && ./gradlew :app:testDebugUnitTest --tests "*DeviceHistoryViewModelTest*" && ./gradlew spotlessCheck` | ✅ build tooling existing | ⬜ pending |
 | 27-02-T2 | 27-02 | 2 | DEVH-01, DEVH-02 | manual UAT | Physical device walkthrough (6 scenarios in Plan 27-02) | manual only | ⬜ pending |
@@ -53,7 +53,7 @@ updated: 2026-04-10
 
 ## Wave 0 Requirements
 
-Wave 0 gaps are handled **inline inside Plan 27-01 Task 1** rather than as a separate wave, because the test scaffold already exists and the only action is (a) delete a test stub and (b) add 5 new test cases.
+Wave 0 gaps are handled **inline inside Plan 27-01 Task 1** rather than as a separate wave, because the test scaffold already exists and the only action is (a) delete a test stub and (b) add 4 new test cases.
 
 - [x] **Delete test stub** at `DeviceHistoryViewModelTest.kt` lines 157–161 (`private fun DeviceHistoryViewModel.archiveDevice(device: PairedDevice)` throwing `NotImplementedError`) — assigned to Plan 27-01 Task 1.
 - [x] **Add new tests** to `DeviceHistoryViewModelTest.kt` — assigned to Plan 27-01 Task 1:
@@ -61,11 +61,11 @@ Wave 0 gaps are handled **inline inside Plan 27-01 Task 1** rather than as a sep
   - `archiveDevice does NOT send UNPAIR SMS for APPROVED status`
   - `archiveDevice does NOT send UNPAIR SMS for PENDING_RECEIVED status`
   - `archiveDevice does NOT send UNPAIR SMS for REJECTED status`
-  - `archiveDevice passes initiatedBy=LOCAL to repository`
+- [x] **No new `initiatedBy` assertion test** — Phase 24 UAT DEVH-02 already asserts `initiatedBy = "USER"` and is the canonical contract; adding a duplicate would be noise, and a `"LOCAL"` variant would conflict with that locked assertion (see Plan 27-01 revision note).
 - [x] **No new test files** required.
 - [x] **No framework install** — JUnit4/MockK/Robolectric already on classpath.
 
-Existing Phase 24 failing test (`UAT DEVH-02`) remains unchanged and serves as the primary contract assertion.
+Existing Phase 24 failing test (`UAT DEVH-02`) remains **byte-unchanged** and serves as the primary contract assertion for `initiatedBy = "USER"` and the no-SMS guarantee on APPROVED devices.
 
 ---
 
